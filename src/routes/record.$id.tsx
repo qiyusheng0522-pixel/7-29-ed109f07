@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { X, Check, RotateCcw, Delete, ArrowRight, ChevronUp, Zap } from "lucide-react";
+import { X, Check, RotateCcw, Delete, ArrowRight, ChevronUp, Zap, ShieldAlert, Siren } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { EIcon } from "@/components/EIcon";
 import { EXAM_USERS, findExamUser, nextPendingExamUser } from "@/lib/exam-users";
@@ -10,10 +10,14 @@ import {
   evalItem,
   seedValue,
   rangeLabel,
+  critFor,
+  CRIT_RULES,
   type ExamValue,
   type ExamItem,
   type ItemStatus,
+  type CritRule,
 } from "@/lib/exam-record";
+
 
 export const Route = createFileRoute("/record/$id")({
   component: RecordPage,
