@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
 import { ActionSheet } from "@/components/ActionSheet";
 import { useState } from "react";
+import { useSchoolView, MY_CLASS, MY_CLASS_LABEL, MY_TEACHER } from "@/lib/school-role";
+
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/school/intasks")({
