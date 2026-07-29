@@ -652,16 +652,100 @@ function ItemCard({
           {value?.retest ? "需重测" : "标重测"}
         </button>
         <button
-          onClick={onNext}
-          className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-2xl bg-deep py-3 text-[13.5px] font-bold text-deep-foreground shadow-sm active:scale-[0.98]"
+          onClick={() => {
+            if (crit && !critClosed) {
+              setShowPlan(true);
+              toast.error(`${crit.level}未闭环`, {
+                description: `请逐条确认「${crit.title}」的处置措施后再进入下一项`,
+              });
+              return;
+            }
+            onNext();
+          }}
+          className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-2xl py-3 text-[13.5px] font-bold shadow-sm active:scale-[0.98] ${
+            crit && !critClosed
+              ? "bg-surface text-muted-foreground ring-1 ring-border/60"
+              : "bg-deep text-deep-foreground"
+          }`}
         >
           <ChevronUp className="h-4 w-4" />
-          {isLast ? "确认 · 去复核" : "确认 · 下一项"}
+          {crit && !critClosed ? "危机值待闭环" : isLast ? "确认 · 去复核" : "确认 · 下一项"}
         </button>
       </div>
     </section>
   );
 }
+
+/** 危机值处置方案：逐条勾选闭环 */
+function CritPanel({
+  crit,
+  done,
+  onToggle,
+  onBack,
+}: {
+  crit: CritRule;
+  done: number[];
+  onToggle: (idx: number) => void;
+  onBack?: () => void;
+}) {
+  const closed = done.length >= crit.plan.length;
+  return (
+    <div className="no-scrollbar mt-2.5 min-h-0 flex-1 overflow-y-auto rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-danger/20">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[12.5px] font-bold text-foreground">危机值处置方案</p>
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-muted-foreground"
+          >
+            改数值
+          </button>
+        )}
+      </div>
+      <p className="mt-0.5 text-[10px] text-muted-foreground">
+        处置时限 {crit.timeLimit} · 逐条确认后自动写入质控留痕台账
+      </p>
+      <ul className="mt-2 space-y-1.5">
+        {crit.plan.map((step, i) => {
+          const on = done.includes(i);
+          return (
+            <li key={step}>
+              <button
+                onClick={() => onToggle(i)}
+                className={`flex w-full items-start gap-2 rounded-xl px-2.5 py-2 text-left transition active:scale-[0.99] ${
+                  on ? "bg-success/10 ring-1 ring-success/25" : "bg-surface-2 ring-1 ring-border/60"
+                }`}
+              >
+                <span
+                  className={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full ${
+                    on ? "bg-success text-success-foreground" : "bg-surface ring-1 ring-border"
+                  }`}
+                >
+                  {on ? <Check className="h-3 w-3" /> : null}
+                </span>
+                <span
+                  className={`text-[12px] leading-snug ${on ? "text-muted-foreground line-through" : "text-foreground"}`}
+                >
+                  {step}
+                </span>
+              </button>
+            </li>
+          );
+        })}
+      </ul>
+      <p
+        className={`mt-2 rounded-xl px-2.5 py-1.5 text-[10.5px] font-medium ${
+          closed ? "bg-success/12 text-success" : "bg-danger/10 text-danger"
+        }`}
+      >
+        {closed
+          ? "已闭环 · 张医生 于本次录检完成全部处置并双人签名"
+          : `待闭环 ${crit.plan.length - done.length} 步 · 未完成不可进入下一项`}
+      </p>
+    </div>
+  );
+}
+
 
 function BpField({
   label,
