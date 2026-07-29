@@ -300,6 +300,31 @@ function Recorder() {
             </div>
           </div>
 
+          {critCount > 0 && (
+            <div
+              className={`mt-2 rounded-2xl px-3 py-2.5 ring-1 ${
+                openCrits.length > 0
+                  ? "bg-danger/10 ring-danger/25"
+                  : "bg-success/10 ring-success/25"
+              }`}
+            >
+              <p className="flex items-center gap-1.5 text-[12px] font-bold text-foreground">
+                {openCrits.length > 0 ? (
+                  <Siren className="h-3.5 w-3.5 text-danger" />
+                ) : (
+                  <ShieldAlert className="h-3.5 w-3.5 text-success" />
+                )}
+                危机值 {critCount} 项（危急值 {criticalCount} 项）
+              </p>
+              <p className="mt-0.5 text-[10.5px] text-muted-foreground">
+                {openCrits.length > 0
+                  ? `${openCrits.map((it) => it.label).join("、")} 处置未闭环，需完成后方可提交`
+                  : "全部危机值已按方案闭环，已上报危急值台账"}
+              </p>
+            </div>
+          )}
+
+
           {emptyManual.length > 0 && (
             <button
               onClick={fillManualNormal}
