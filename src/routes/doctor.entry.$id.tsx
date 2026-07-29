@@ -697,6 +697,37 @@ function EntryPage() {
             </ul>
           </div>
 
+          {/* 本项危机值判定标准（示例参考） */}
+          {active.fields.some((f) => f.crit) && (
+            <div className="mb-4 rounded-xl bg-muted/50 p-3 ring-1 ring-border">
+              <p className="mb-1.5 text-[11.5px] font-semibold text-foreground">
+                <EIcon e="📕" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" /> 本项危机值判定标准（示例）
+              </p>
+              <ul className="space-y-1">
+                {active.fields
+                  .filter((f) => f.crit)
+                  .map((f) => (
+                    <li key={f.key} className="flex items-start gap-2 text-[10.5px] leading-relaxed">
+                      <span
+                        className={`mt-[1px] shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-medium ${
+                          f.crit!.level === "危急值" ? "bg-danger/15 text-danger" : "bg-warm/20 text-warm"
+                        }`}
+                      >
+                        {f.crit!.level}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {f.label}：
+                        {f.crit!.low !== undefined ? `≤ ${f.crit!.low}` : ""}
+                        {f.crit!.low !== undefined && f.crit!.high !== undefined ? " 或 " : ""}
+                        {f.crit!.high !== undefined ? `≥ ${f.crit!.high}` : ""}
+                        {f.unit ? ` ${f.unit}` : ""} · {f.crit!.timeLimit}处置 · 共 {f.crit!.plan.length} 步闭环
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
+
           {/* 危机值总提示 */}
           {critFields.length > 0 && (
             <div className="mb-4 rounded-xl bg-danger/10 p-3 ring-1 ring-danger/40">
