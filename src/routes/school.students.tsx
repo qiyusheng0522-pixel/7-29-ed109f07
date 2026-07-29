@@ -25,7 +25,13 @@ type Row = {
 
 const rows: Row[] = [
   { name: "王小明", class: "2年2班", grade: "二年级", gender: "男", homeroom: "王老师", doctor: "李医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "未读" },
-  { name: "李小雨", class: "3年3班", grade: "三年级", gender: "女", homeroom: "陈老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "已读" },
+  { name: "李小雨", class: "3年3班", grade: "三年级", gender: "女", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "已读" },
+  { name: "赵一鸣", class: "3年3班", grade: "三年级", gender: "男", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "未读" },
+  { name: "陈静雅", class: "3年3班", grade: "三年级", gender: "女", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: false, exam: "已完成", report: "未读" },
+  { name: "周子航", class: "3年3班", grade: "三年级", gender: "男", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "缺检", report: "-" },
+  { name: "吴梦洁", class: "3年3班", grade: "三年级", gender: "女", homeroom: "王老师", doctor: "张医生", bind: false, auth: "未授权", quest: false, exam: "缺检", report: "-" },
+  { name: "孙浩然", class: "3年3班", grade: "三年级", gender: "男", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: false, exam: "待检", report: "-" },
+
   { name: "张小乐", class: "1年1班", grade: "一年级", gender: "男", homeroom: "赵老师", doctor: "李医生", bind: true, auth: "已授权", quest: false, exam: "待检", report: "-" },
   { name: "陈小美", class: "4年2班", grade: "四年级", gender: "女", homeroom: "孙老师", doctor: "王医生", bind: true, auth: "未授权", quest: false, exam: "待检", report: "-" },
   { name: "刘小强", class: "5年1班", grade: "五年级", gender: "男", homeroom: "周老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "缺检", report: "-" },
