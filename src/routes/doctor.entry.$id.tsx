@@ -705,9 +705,73 @@ function EntryPage() {
                       )}
                     </div>
                   )}
+
+                  {/* 危机值处理方案 */}
+                  {crit && (
+                    <div className="mt-2 overflow-hidden rounded-xl ring-1 ring-danger/50">
+                      <div className="flex items-center justify-between bg-danger px-3 py-2">
+                        <p className="text-[11.5px] font-bold text-white">
+                          <EIcon e="🚨" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" /> {crit.level}｜{crit.name}
+                        </p>
+                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white">
+                          {crit.timeLimit}处置
+                        </span>
+                      </div>
+                      <div className="bg-danger/5 p-3">
+                        <p className="mb-2 text-[10.5px] text-danger">
+                          实测 {values[f.key]}
+                          {f.unit ? ` ${f.unit}` : ""}｜危机阈值{" "}
+                          {crit.low !== undefined ? `≤ ${crit.low}` : ""}
+                          {crit.low !== undefined && crit.high !== undefined ? " 或 " : ""}
+                          {crit.high !== undefined ? `≥ ${crit.high}` : ""}
+                          {f.unit ? ` ${f.unit}` : ""}
+                        </p>
+                        <p className="mb-1.5 text-[11px] font-semibold">处理方案（逐条执行并勾选）</p>
+                        <ul className="space-y-1.5">
+                          {crit.plan.map((s, i) => {
+                            const on = steps.includes(i);
+                            return (
+                              <li key={s}>
+                                <button
+                                  type="button"
+                                  disabled={critDone[f.key]}
+                                  onClick={() => toggleCritStep(f, i)}
+                                  className="flex w-full items-start gap-2 rounded-lg bg-surface p-2 text-left"
+                                >
+                                  <span
+                                    className={`mt-[1px] grid h-4 w-4 shrink-0 place-items-center rounded-full text-[9px] ${
+                                      on ? "bg-success text-white" : "bg-surface-2 text-muted-foreground"
+                                    }`}
+                                  >
+                                    {on ? "✓" : i + 1}
+                                  </span>
+                                  <span className={`text-[10.5px] leading-relaxed ${on ? "text-muted-foreground line-through" : ""}`}>
+                                    {s}
+                                  </span>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        {critDone[f.key] ? (
+                          <p className="mt-2 rounded-lg bg-success/10 px-2 py-1.5 text-[10.5px] text-success">
+                            ✓ 危机值已闭环 · 报告人 张医生 / 接收人 李医生 · 家长与校医已告知 · 已生成危急值登记
+                          </p>
+                        ) : (
+                          <button
+                            onClick={() => closeCrit(f)}
+                            className="mt-2 w-full rounded-lg bg-danger py-2 text-[11px] font-semibold text-white"
+                          >
+                            确认危机值处置完成并闭环（{steps.length}/{crit.plan.length}）
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
+
           </div>
 
           {/* 本项质控结论 */}
