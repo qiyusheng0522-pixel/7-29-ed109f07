@@ -100,10 +100,30 @@ const NODES: Node[] = [
       ],
     },
     fields: [
-      { key: "left", label: "左眼", type: "number", source: "auto", ref: "≥ 4.9", min: 4.9 },
+      {
+        key: "left",
+        label: "左眼",
+        type: "number",
+        source: "auto",
+        ref: "≥ 4.9",
+        min: 4.9,
+        crit: {
+          low: 4.0,
+          name: "重度视力低下（裸眼 ≤ 4.0）",
+          level: "预警值",
+          timeLimit: "当日内",
+          plan: [
+            "间隔 5 分钟遮盖单眼复测，排除配合不佳与镜片污损",
+            "加做电脑验光与眼位检查，记录是否有眯眼、歪头",
+            "当日推送家长端预警，建议 1 周内眼科散瞳验光",
+            "登记至视力重点关注名单，安排 3 个月复查",
+          ],
+        },
+      },
       { key: "right", label: "右眼", type: "number", source: "auto", ref: "≥ 4.9", min: 4.9 },
       { key: "visionNote", label: "备注", type: "text", source: "manual" },
     ],
+
   },
   {
     key: "bp",
