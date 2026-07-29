@@ -50,7 +50,7 @@ const quick = [
 
 function SchoolHome() {
   const pct = Math.round((schoolStats.examined / schoolStats.totalStudents) * 100);
-  const [view, setView] = useState<"health" | "teacher">("health");
+  const [view, setView] = useSchoolView();
   return (
     <div>
       <StatusBar />
