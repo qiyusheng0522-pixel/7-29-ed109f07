@@ -72,9 +72,14 @@ function InTasksPage() {
     <div>
       <StatusBar title="校内任务" />
       <div className="px-5 pt-2">
-        <h1 className="text-xl font-bold">校内任务</h1>
-        <p className="mb-3 text-xs text-muted-foreground">AI 自动按角色分派 · 支持手动调整</p>
+        <h1 className="text-xl font-bold">{isTeacher ? "我的任务" : "校内任务"}</h1>
+        <p className="mb-3 text-xs text-muted-foreground">
+          {isTeacher
+            ? `${MY_CLASS_LABEL} · 班主任 ${MY_TEACHER} · 共 ${list.length} 条`
+            : "AI 自动按角色分派 · 支持手动调整"}
+        </p>
 
+        {!isTeacher && (
         <div className="mb-3 flex items-center gap-2 rounded-2xl bg-gradient-to-br from-teal/10 to-deep/10 p-3 ring-1 ring-teal/20">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-teal/20 text-base">{<EIcon e="🤖" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" />}</span>
           <div className="min-w-0 flex-1">
@@ -90,6 +95,7 @@ function InTasksPage() {
             toastDescription="按最新负荷完成智能匹配"
           />
         </div>
+        )}
 
         <Link
           to="/school/escalated"
@@ -102,7 +108,8 @@ function InTasksPage() {
           <span className="text-warm">→</span>
         </Link>
 
-        {/* Role tabs */}
+        {/* Role tabs（班主任视角只看自己的任务，无需按角色筛选） */}
+        {!isTeacher && (
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
           {roles.map((r) => (
             <button
@@ -116,6 +123,8 @@ function InTasksPage() {
             </button>
           ))}
         </div>
+        )}
+
         <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
           {filters.map((k) => (
             <button
