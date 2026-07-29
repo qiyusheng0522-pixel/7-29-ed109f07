@@ -100,10 +100,30 @@ const NODES: Node[] = [
       ],
     },
     fields: [
-      { key: "left", label: "左眼", type: "number", source: "auto", ref: "≥ 4.9", min: 4.9 },
+      {
+        key: "left",
+        label: "左眼",
+        type: "number",
+        source: "auto",
+        ref: "≥ 4.9",
+        min: 4.9,
+        crit: {
+          low: 4.0,
+          name: "重度视力低下（裸眼 ≤ 4.0）",
+          level: "预警值",
+          timeLimit: "当日内",
+          plan: [
+            "间隔 5 分钟遮盖单眼复测，排除配合不佳与镜片污损",
+            "加做电脑验光与眼位检查，记录是否有眯眼、歪头",
+            "当日推送家长端预警，建议 1 周内眼科散瞳验光",
+            "登记至视力重点关注名单，安排 3 个月复查",
+          ],
+        },
+      },
       { key: "right", label: "右眼", type: "number", source: "auto", ref: "≥ 4.9", min: 4.9 },
       { key: "visionNote", label: "备注", type: "text", source: "manual" },
     ],
+
   },
   {
     key: "bp",
@@ -168,7 +188,29 @@ const NODES: Node[] = [
           ],
         },
       },
+      {
+        key: "spo2",
+        label: "血氧饱和度",
+        type: "number",
+        unit: "%",
+        source: "auto",
+        ref: "≥ 95",
+        min: 95,
+        crit: {
+          low: 92,
+          name: "低氧血症（SpO₂ ≤ 92%）",
+          level: "危急值",
+          timeLimit: "即刻",
+          plan: [
+            "更换手指、擦净指甲油/污渍后即刻复测，确认波形稳定",
+            "复测仍 ≤92%：就地半卧位吸氧，评估呼吸频率、口唇发绀",
+            "即刻电话通知家长与校医，必要时呼叫 120",
+            "绿色通道转诊儿童呼吸科，危急值登记双签字",
+          ],
+        },
+      },
     ],
+
   },
   {
     key: "oral",
@@ -184,7 +226,28 @@ const NODES: Node[] = [
       ],
     },
     fields: [
-      { key: "caries", label: "龋齿颗数", type: "number", source: "manual", ref: "0–3", min: 0, max: 3 },
+      {
+        key: "caries",
+        label: "龋齿颗数",
+        type: "number",
+        source: "manual",
+        ref: "0–3",
+        min: 0,
+        max: 3,
+        crit: {
+          high: 6,
+          name: "重度龋（≥ 6 颗，含可疑牙髓炎）",
+          level: "预警值",
+          timeLimit: "24 小时内",
+          plan: [
+            "第二名口腔科医师现场双人核对并拍照留痕",
+            "评估是否有自发痛、面部肿胀等急性感染表现",
+            "当日推送家长端预警，建议 1 周内口腔科就诊治疗",
+            "纳入口腔重点关注名单，3 个月复查窝沟封闭情况",
+          ],
+        },
+      },
+
       { key: "oralNote", label: "口腔检查描述", type: "text", source: "manual" },
     ],
   },
@@ -273,24 +336,30 @@ const NODES: Node[] = [
 
 const MOCK_AUTO: Record<string, string> = {
   height: "138",
-  weight: "32.5",
-  bmi: "17.1",
-  left: "4.8",
+  weight: "39.2",
+  bmi: "20.6", // 预警值示例：BMI ≥ 20（同龄 P99）
+  left: "3.9", // 预警值示例：裸眼视力 ≤ 4.0
   right: "4.7",
-  sbp: "108",
-  dbp: "68",
-  hr: "88",
-  glu: "7.4",
-  hb: "128",
+  sbp: "134", // 危急值示例：收缩压 ≥ 130 mmHg
+  dbp: "82",
+  hr: "96",
+  spo2: "97",
+  glu: "7.4", // 危急值示例：空腹血糖 ≥ 7.0 mmol/L
+  hb: "112",
 };
 
 // 复测示例值（第二次测量，用于质控留痕）
 const MOCK_RETEST: Record<string, string> = {
-  bmi: "17.0",
-  left: "4.8",
+  weight: "39.1",
+  bmi: "20.5",
+  left: "3.9",
   right: "4.8",
+  sbp: "131",
+  dbp: "80",
+  hb: "113",
   glu: "7.3",
 };
+
 
 function outOfRange(f: Field, raw?: string) {
   if (f.type !== "number" || !raw) return false;
@@ -627,6 +696,37 @@ function EntryPage() {
               ))}
             </ul>
           </div>
+
+          {/* 本项危机值判定标准（示例参考） */}
+          {active.fields.some((f) => f.crit) && (
+            <div className="mb-4 rounded-xl bg-muted/50 p-3 ring-1 ring-border">
+              <p className="mb-1.5 text-[11.5px] font-semibold text-foreground">
+                <EIcon e="📕" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" /> 本项危机值判定标准（示例）
+              </p>
+              <ul className="space-y-1">
+                {active.fields
+                  .filter((f) => f.crit)
+                  .map((f) => (
+                    <li key={f.key} className="flex items-start gap-2 text-[10.5px] leading-relaxed">
+                      <span
+                        className={`mt-[1px] shrink-0 rounded-full px-1.5 py-0.5 text-[9.5px] font-medium ${
+                          f.crit!.level === "危急值" ? "bg-danger/15 text-danger" : "bg-warm/20 text-warm"
+                        }`}
+                      >
+                        {f.crit!.level}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {f.label}：
+                        {f.crit!.low !== undefined ? `≤ ${f.crit!.low}` : ""}
+                        {f.crit!.low !== undefined && f.crit!.high !== undefined ? " 或 " : ""}
+                        {f.crit!.high !== undefined ? `≥ ${f.crit!.high}` : ""}
+                        {f.unit ? ` ${f.unit}` : ""} · {f.crit!.timeLimit}处置 · 共 {f.crit!.plan.length} 步闭环
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          )}
 
           {/* 危机值总提示 */}
           {critFields.length > 0 && (
