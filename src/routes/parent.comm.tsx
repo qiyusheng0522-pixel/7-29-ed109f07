@@ -506,9 +506,11 @@ function DoctorListPanel({ onAsk }: { onAsk: (q: string) => void }) {
 
 function CommPage() {
   const search = Route.useSearch();
-  const presetQuestion = resolveQuestion(search);
   const doctorMode = search.mode === "doctors";
   const activeDoctor = matchDoctor(search);
+  // 报告页「立即咨询」已带入推荐科室/医生：只置顶挂号卡片，不再自动追加提问
+  const presetQuestion = activeDoctor ? undefined : resolveQuestion(search);
+
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [seed, setSeed] = useState(0);
