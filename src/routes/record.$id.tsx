@@ -169,7 +169,19 @@ function Recorder() {
   }
 
   function submit() {
-    if (retestCount > 0) {
+    if (openCrits.length > 0) {
+      toast.error("存在未闭环的危机值", {
+        description: `${openCrits.map((it) => it.label).join("、")} 的处置步骤未逐条确认，无法提交`,
+      });
+      const idx = EXAM_ITEMS.findIndex((it) => it.id === openCrits[0].id);
+      if (idx >= 0) scrollTo(idx);
+      return;
+    }
+    if (critCount > 0) {
+      toast.success("体检结果已提交", {
+        description: `${critCount} 项危机值已按处置方案闭环并上报台账`,
+      });
+    } else if (retestCount > 0) {
       toast.success("体检结果已提交", {
         description: `${retestCount} 项超范围已回传班主任，通知家长带${user?.name ?? "学生"}返场重测`,
       });
@@ -180,6 +192,7 @@ function Recorder() {
     if (nextUser) navigate({ to: "/record/$id", params: { id: nextUser.id } });
     else navigate({ to: "/doctor/exam" });
   }
+
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-surface-2">
