@@ -11,6 +11,14 @@ export const Route = createFileRoute("/doctor/entry/$id")({
 
 type FieldType = "number" | "text";
 type Source = "auto" | "manual";
+type Crit = {
+  low?: number;
+  high?: number;
+  name: string; // 危机值名称
+  level: "危急值" | "预警值";
+  plan: string[]; // 处理方案步骤
+  timeLimit: string; // 处置时限
+};
 type Field = {
   key: string;
   label: string;
@@ -20,6 +28,7 @@ type Field = {
   ref?: string; // reference range hint
   min?: number; // 质控上下限
   max?: number;
+  crit?: Crit; // 危机值规则
 };
 type Node = {
   key: string;
@@ -53,7 +62,27 @@ const NODES: Node[] = [
     fields: [
       { key: "height", label: "身高", type: "number", unit: "cm", source: "auto", ref: "125–150", min: 125, max: 150 },
       { key: "weight", label: "体重", type: "number", unit: "kg", source: "auto", ref: "24–40", min: 24, max: 40 },
-      { key: "bmi", label: "BMI", type: "number", source: "auto", ref: "14.5–16.8", min: 14.5, max: 16.8 },
+      {
+        key: "bmi",
+        label: "BMI",
+        type: "number",
+        source: "auto",
+        ref: "14.5–16.8",
+        min: 14.5,
+        max: 16.8,
+        crit: {
+          high: 20,
+          name: "重度肥胖（BMI ≥ 20，同龄 P99）",
+          level: "预警值",
+          timeLimit: "24 小时内",
+          plan: [
+            "现场复测身高体重并核对出生日期，排除录入错误",
+            "加测腰围、血压，询问打鼾/嗜睡等合并症",
+            "当日推送家长端预警通知，建议 2 周内内分泌/儿保门诊评估",
+            "登记至重点关注名单，纳入 12 周体重管理随访",
+          ],
+        },
+      },
     ],
   },
   {
@@ -91,9 +120,54 @@ const NODES: Node[] = [
       ],
     },
     fields: [
-      { key: "sbp", label: "收缩压", type: "number", unit: "mmHg", source: "auto", ref: "85–120", min: 85, max: 120 },
+      {
+        key: "sbp",
+        label: "收缩压",
+        type: "number",
+        unit: "mmHg",
+        source: "auto",
+        ref: "85–120",
+        min: 85,
+        max: 120,
+        crit: {
+          high: 130,
+          low: 75,
+          name: "血压危急（收缩压 ≥ 130 或 ≤ 75 mmHg）",
+          level: "危急值",
+          timeLimit: "30 分钟内",
+          plan: [
+            "立即安静休息 5 分钟后换臂复测，确认袖带规格匹配",
+            "复测仍超限：现场心电+症状评估（头痛/视物模糊/心悸）",
+            "30 分钟内电话通知家长与校医，签署知情告知",
+            "启动绿色通道转诊市儿童医院心内科，专人陪同",
+            "填写危急值登记表并上报科室质控组",
+          ],
+        },
+      },
       { key: "dbp", label: "舒张压", type: "number", unit: "mmHg", source: "auto", ref: "50–78", min: 50, max: 78 },
-      { key: "hr", label: "心率", type: "number", unit: "bpm", source: "auto", ref: "70–110", min: 70, max: 110 },
+      {
+        key: "hr",
+        label: "心率",
+        type: "number",
+        unit: "bpm",
+        source: "auto",
+        ref: "70–110",
+        min: 70,
+        max: 110,
+        crit: {
+          high: 140,
+          low: 55,
+          name: "心率危急（≥ 140 或 ≤ 55 bpm）",
+          level: "危急值",
+          timeLimit: "即刻",
+          plan: [
+            "即刻停止其余检查项目，就地平卧、监测指脉氧",
+            "复测心率并加做心电图，记录有无胸闷、晕厥史",
+            "即刻电话通知家长与校医，必要时呼叫 120",
+            "转诊儿童心内科，交接单随行并留痕",
+          ],
+        },
+      },
     ],
   },
   {
@@ -147,8 +221,52 @@ const NODES: Node[] = [
       ],
     },
     fields: [
-      { key: "glu", label: "空腹血糖", type: "number", unit: "mmol/L", source: "auto", ref: "3.9–6.1", min: 3.9, max: 6.1 },
-      { key: "hb", label: "血红蛋白", type: "number", unit: "g/L", source: "auto", ref: "115–150", min: 115, max: 150 },
+      {
+        key: "glu",
+        label: "空腹血糖",
+        type: "number",
+        unit: "mmol/L",
+        source: "auto",
+        ref: "3.9–6.1",
+        min: 3.9,
+        max: 6.1,
+        crit: {
+          high: 7.0,
+          low: 2.8,
+          name: "血糖危急（≥ 7.0 或 ≤ 2.8 mmol/L）",
+          level: "危急值",
+          timeLimit: "15 分钟内",
+          plan: [
+            "即刻用指尖血糖仪复核一次，核对是否真空腹（≥8 小时）",
+            "低血糖（≤2.8）：立即口服 15g 葡萄糖，15 分钟后复测",
+            "高血糖（≥7.0）：加测尿酮体，询问多饮多尿多食、体重下降",
+            "15 分钟内电话通知家长与校医并记录接收人、时间",
+            "绿色通道转诊内分泌科当日就诊，危急值登记表双签字上报",
+          ],
+        },
+      },
+      {
+        key: "hb",
+        label: "血红蛋白",
+        type: "number",
+        unit: "g/L",
+        source: "auto",
+        ref: "115–150",
+        min: 115,
+        max: 150,
+        crit: {
+          low: 90,
+          name: "中重度贫血（Hb ≤ 90 g/L）",
+          level: "危急值",
+          timeLimit: "2 小时内",
+          plan: [
+            "原样本复查一次，排除稀释/凝血等分析前误差",
+            "评估面色、乏力、心率，必要时暂停后续运动类项目",
+            "2 小时内通知家长与校医，建议当日血液科/儿科就诊",
+            "危急值登记并纳入 1 个月复查随访",
+          ],
+        },
+      },
     ],
   },
 ];
@@ -162,7 +280,7 @@ const MOCK_AUTO: Record<string, string> = {
   sbp: "108",
   dbp: "68",
   hr: "88",
-  glu: "6.3",
+  glu: "7.4",
   hb: "128",
 };
 
@@ -171,7 +289,7 @@ const MOCK_RETEST: Record<string, string> = {
   bmi: "17.0",
   left: "4.8",
   right: "4.8",
-  glu: "6.2",
+  glu: "7.3",
 };
 
 function outOfRange(f: Field, raw?: string) {
@@ -180,6 +298,16 @@ function outOfRange(f: Field, raw?: string) {
   if (Number.isNaN(v)) return false;
   if (f.min !== undefined && v < f.min) return true;
   if (f.max !== undefined && v > f.max) return true;
+  return false;
+}
+
+// 危机值判定
+function isCritical(f: Field, raw?: string) {
+  if (!f.crit || f.type !== "number" || !raw) return false;
+  const v = Number(raw);
+  if (Number.isNaN(v)) return false;
+  if (f.crit.high !== undefined && v >= f.crit.high) return true;
+  if (f.crit.low !== undefined && v <= f.crit.low) return true;
   return false;
 }
 
@@ -263,6 +391,9 @@ function EntryPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [retests, setRetests] = useState<Record<string, string>>({});
   const [verified, setVerified] = useState<Record<string, boolean>>({});
+  // 危机值处置：每个字段已完成的处置步骤
+  const [critSteps, setCritSteps] = useState<Record<string, number[]>>({});
+  const [critDone, setCritDone] = useState<Record<string, boolean>>({});
   const [step, setStep] = useState(0); // 只能按项前进，禁止一次滑过多项
   const [submitted, setSubmitted] = useState(false);
   const [logs, setLogs] = useState<QcLog[]>([
@@ -297,6 +428,8 @@ function EntryPage() {
 
   const flagged = active.fields.filter((f) => outOfRange(f, values[f.key]));
   const pendingRetest = flagged.filter((f) => !retests[f.key]);
+  const critFields = active.fields.filter((f) => isCritical(f, values[f.key]));
+  const pendingCrit = critFields.filter((f) => !critDone[f.key]);
 
   const nodeComplete = active.fields.every((f) =>
     f.source === "auto" ? !!values[f.key] : f.type === "text" ? true : !!values[f.key],
@@ -309,6 +442,27 @@ function EntryPage() {
     toast.success(`${f.label} 已完成复测`, { description: `复测值 ${v}${f.unit ? " " + f.unit : ""}` });
   };
 
+  const toggleCritStep = (f: Field, idx: number) => {
+    setCritSteps((p) => {
+      const cur = p[f.key] ?? [];
+      const next = cur.includes(idx) ? cur.filter((i) => i !== idx) : [...cur, idx];
+      return { ...p, [f.key]: next };
+    });
+  };
+
+  const closeCrit = (f: Field) => {
+    const steps = critSteps[f.key] ?? [];
+    if (!f.crit || steps.length < f.crit.plan.length) {
+      toast.error("危机值处置未完成", { description: "请逐条勾选处置措施后再闭环" });
+      return;
+    }
+    setCritDone((p) => ({ ...p, [f.key]: true }));
+    addLog(
+      `⚠ ${f.crit.level}｜${active.name} · ${f.label} ${values[f.key]}${f.unit ? " " + f.unit : ""} 触发「${f.crit.name}」，${f.crit.timeLimit}内完成 ${f.crit.plan.length} 项处置并闭环（报告人 张医生 / 接收人 李医生，家长已电话告知）`,
+    );
+    toast.success(`${f.label} 危机值已闭环`, { description: "已生成危急值登记并推送家长端" });
+  };
+
   const verifyNode = () => {
     if (!nodeComplete) {
       toast.error("请补齐必填项");
@@ -318,6 +472,12 @@ function EntryPage() {
       toast.error("质控未通过", { description: `${pendingRetest.map((f) => f.label).join("、")} 超出范围，需先复测` });
       return;
     }
+    if (pendingCrit.length > 0) {
+      toast.error("危机值未闭环", {
+        description: `${pendingCrit.map((f) => f.label).join("、")} 触发危机值，请先执行处理方案`,
+      });
+      return;
+    }
     setVerified((p) => ({ ...p, [active.key]: true }));
     addLog(
       `${active.name} 质控通过并归档（${active.qc.status}）· 项目 ${step + 1}/${NODES.length} · 核对人 李医生`,
@@ -325,6 +485,7 @@ function EntryPage() {
     toast.success(`${active.name} 质控通过`, { description: `第 ${step + 1}/${NODES.length} 项已归档` });
     if (step < NODES.length - 1) setStep(step + 1);
   };
+
 
   const pullAuto = () => {
     setValues((prev) => {
@@ -467,10 +628,25 @@ function EntryPage() {
             </ul>
           </div>
 
+          {/* 危机值总提示 */}
+          {critFields.length > 0 && (
+            <div className="mb-4 rounded-xl bg-danger/10 p-3 ring-1 ring-danger/40">
+              <p className="text-[12px] font-bold text-danger">
+                <EIcon e="🚨" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" /> 检出危机值 {critFields.length} 项 · 需按处理方案闭环后方可归档
+              </p>
+              <p className="mt-1 text-[10.5px] text-danger/80">
+                {critFields.map((f) => `${f.label} ${values[f.key]}${f.unit ?? ""}`).join("　")}
+              </p>
+            </div>
+          )}
+
           <div className="space-y-3">
             {active.fields.map((f) => {
               const bad = outOfRange(f, values[f.key]);
               const retested = !!retests[f.key];
+              const crit = isCritical(f, values[f.key]) ? f.crit! : null;
+              const steps = critSteps[f.key] ?? [];
+
               return (
                 <div key={f.key}>
                   <div className="mb-1.5 flex items-center justify-between">
@@ -529,9 +705,73 @@ function EntryPage() {
                       )}
                     </div>
                   )}
+
+                  {/* 危机值处理方案 */}
+                  {crit && (
+                    <div className="mt-2 overflow-hidden rounded-xl ring-1 ring-danger/50">
+                      <div className="flex items-center justify-between bg-danger px-3 py-2">
+                        <p className="text-[11.5px] font-bold text-white">
+                          <EIcon e="🚨" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" /> {crit.level}｜{crit.name}
+                        </p>
+                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-medium text-white">
+                          {crit.timeLimit}处置
+                        </span>
+                      </div>
+                      <div className="bg-danger/5 p-3">
+                        <p className="mb-2 text-[10.5px] text-danger">
+                          实测 {values[f.key]}
+                          {f.unit ? ` ${f.unit}` : ""}｜危机阈值{" "}
+                          {crit.low !== undefined ? `≤ ${crit.low}` : ""}
+                          {crit.low !== undefined && crit.high !== undefined ? " 或 " : ""}
+                          {crit.high !== undefined ? `≥ ${crit.high}` : ""}
+                          {f.unit ? ` ${f.unit}` : ""}
+                        </p>
+                        <p className="mb-1.5 text-[11px] font-semibold">处理方案（逐条执行并勾选）</p>
+                        <ul className="space-y-1.5">
+                          {crit.plan.map((s, i) => {
+                            const on = steps.includes(i);
+                            return (
+                              <li key={s}>
+                                <button
+                                  type="button"
+                                  disabled={critDone[f.key]}
+                                  onClick={() => toggleCritStep(f, i)}
+                                  className="flex w-full items-start gap-2 rounded-lg bg-surface p-2 text-left"
+                                >
+                                  <span
+                                    className={`mt-[1px] grid h-4 w-4 shrink-0 place-items-center rounded-full text-[9px] ${
+                                      on ? "bg-success text-white" : "bg-surface-2 text-muted-foreground"
+                                    }`}
+                                  >
+                                    {on ? "✓" : i + 1}
+                                  </span>
+                                  <span className={`text-[10.5px] leading-relaxed ${on ? "text-muted-foreground line-through" : ""}`}>
+                                    {s}
+                                  </span>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        {critDone[f.key] ? (
+                          <p className="mt-2 rounded-lg bg-success/10 px-2 py-1.5 text-[10.5px] text-success">
+                            ✓ 危机值已闭环 · 报告人 张医生 / 接收人 李医生 · 家长与校医已告知 · 已生成危急值登记
+                          </p>
+                        ) : (
+                          <button
+                            onClick={() => closeCrit(f)}
+                            className="mt-2 w-full rounded-lg bg-danger py-2 text-[11px] font-semibold text-white"
+                          >
+                            确认危机值处置完成并闭环（{steps.length}/{crit.plan.length}）
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
+
           </div>
 
           {/* 本项质控结论 */}
@@ -539,7 +779,8 @@ function EntryPage() {
             <p className="text-[11px] font-semibold">本项质控结论</p>
             <p className="mt-1 text-[10.5px] text-muted-foreground">
               必填完整性 {nodeComplete ? "✓ 通过" : "✗ 未通过"} · 阈值校验 {flagged.length === 0 ? "✓ 全部在范围内" : `⚠ ${flagged.length} 项超限`} ·
-              复测闭环 {pendingRetest.length === 0 ? "✓ 已闭环" : `✗ 待复测 ${pendingRetest.length} 项`}
+              复测闭环 {pendingRetest.length === 0 ? "✓ 已闭环" : `✗ 待复测 ${pendingRetest.length} 项`} ·
+              危机值 {critFields.length === 0 ? "✓ 未触发" : pendingCrit.length === 0 ? `✓ ${critFields.length} 项已闭环` : `🚨 ${pendingCrit.length} 项待处置`}
             </p>
           </div>
 
