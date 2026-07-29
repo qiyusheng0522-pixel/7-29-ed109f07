@@ -378,13 +378,6 @@ function ItemCard({
     onChange({ value: nt === "" ? undefined : Number(nt) });
   }
 
-  /** 恢复设备原始读数 —— 纠错误删时一键还原 */
-  function restore() {
-    const seeded = seedValue(item);
-    setSys(seeded.value != null ? String(seeded.value) : "");
-    setDia(seeded.valueDia != null ? String(seeded.valueDia) : "");
-    onChange({ value: seeded.value, valueDia: seeded.valueDia });
-  }
 
   return (
     <section className="flex h-full snap-start flex-col px-4 pb-3 pt-2.5">
@@ -546,15 +539,6 @@ function ItemCard({
           <RotateCcw className="h-3.5 w-3.5" />
           {value?.retest ? "需重测" : "标重测"}
         </button>
-        {item.source === "auto" && (
-          <button
-            onClick={restore}
-            aria-label="恢复设备读数"
-            className="grid h-[42px] w-11 shrink-0 place-items-center rounded-2xl bg-surface text-muted-foreground ring-1 ring-border/60 active:scale-95"
-          >
-            <Zap className="h-4 w-4" />
-          </button>
-        )}
         <button
           onClick={onNext}
           className="flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-2xl bg-deep py-3 text-[13.5px] font-bold text-deep-foreground shadow-sm active:scale-[0.98]"
