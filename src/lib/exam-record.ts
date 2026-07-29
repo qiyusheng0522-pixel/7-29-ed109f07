@@ -28,6 +28,7 @@ export type ExamItem = {
 };
 
 // 9 岁儿童参考范围（示例值，用于原型演示）
+// 采集设备：身高体脂分析仪 / 视力筛查仪 / 腰臀围尺 / 血压测量仪 / 脊柱侧弯测量尺（手工）+ 人工龋齿检查
 export const EXAM_ITEMS: ExamItem[] = [
   {
     id: "height",
@@ -39,7 +40,7 @@ export const EXAM_ITEMS: ExamItem[] = [
     min: 125,
     max: 142,
     value: 133,
-    hint: "身高体重秤自动同步",
+    hint: "身高体脂分析仪自动同步",
   },
   {
     id: "weight",
@@ -51,7 +52,19 @@ export const EXAM_ITEMS: ExamItem[] = [
     min: 24,
     max: 34,
     value: 38.6,
-    hint: "身高体重秤自动同步",
+    hint: "身高体脂分析仪自动同步",
+  },
+  {
+    id: "bodyfat",
+    label: "体脂率",
+    icon: "🧬",
+    source: "auto",
+    kind: "number",
+    unit: "%",
+    min: 12,
+    max: 24,
+    value: 27.5,
+    hint: "身高体脂分析仪自动同步",
   },
   {
     id: "vision-l",
@@ -78,6 +91,30 @@ export const EXAM_ITEMS: ExamItem[] = [
     hint: "视力筛查仪自动同步 · 低于 5.0 需关注",
   },
   {
+    id: "waist",
+    label: "腰围",
+    icon: "📐",
+    source: "auto",
+    kind: "number",
+    unit: "cm",
+    min: 50,
+    max: 63,
+    value: 68,
+    hint: "腰臀围尺测量 · 腰围身高比参考 < 0.48",
+  },
+  {
+    id: "hip",
+    label: "臀围",
+    icon: "📐",
+    source: "auto",
+    kind: "number",
+    unit: "cm",
+    min: 60,
+    max: 76,
+    value: 74,
+    hint: "腰臀围尺测量",
+  },
+  {
     id: "bp",
     label: "血压",
     icon: "🩸",
@@ -88,9 +125,20 @@ export const EXAM_ITEMS: ExamItem[] = [
     max: 115,
     minDia: 55,
     maxDia: 75,
-    value: 108,
-    valueDia: 70,
-    hint: "电子血压计自动同步 · 收缩压 / 舒张压",
+    value: 132,
+    valueDia: 78,
+    hint: "血压测量仪自动同步 · 收缩压 / 舒张压",
+  },
+  {
+    id: "spine",
+    label: "脊柱侧弯（ATR）",
+    icon: "🦴",
+    source: "manual",
+    kind: "number",
+    unit: "°",
+    min: 0,
+    max: 5,
+    hint: "脊柱侧弯测量尺手工录入 · 前屈试验躯干旋转角",
   },
   {
     id: "oral",
@@ -102,17 +150,8 @@ export const EXAM_ITEMS: ExamItem[] = [
     normalOption: "正常",
     hint: "医生目测填写",
   },
-  {
-    id: "internal",
-    label: "内科 · 心肺",
-    icon: "🫁",
-    source: "manual",
-    kind: "choice",
-    options: ["正常", "心律不齐", "呼吸音异常", "其他"],
-    normalOption: "正常",
-    hint: "听诊后填写",
-  },
 ];
+
 
 export type ExamValue = {
   value?: number;
@@ -174,19 +213,23 @@ export type CritRule = {
   plan: string[];
 };
 
-/** 每个体检项目的危机值判定标准（示例数据，用于原型演示） */
+/**
+ * 危机值判定标准（示例数据）
+ * 仅对严重影响儿童健康、需要现场干预的 3 项指标启用：血压、视力、脊柱侧弯。
+ * 其余项目（身高/体重/体脂/腰臀围/龋齿）只做异常提示，不进入危机值闭环。
+ */
 export const CRIT_RULES: Record<string, CritRule[]> = {
-  weight: [
+  bp: [
     {
-      level: "预警值",
-      rule: "体重 ≥ 38 kg（同年龄 P97 以上）",
-      high: 38,
-      timeLimit: "24 小时内",
-      title: "重度超重 / 肥胖预警",
+      level: "危急值",
+      rule: "收缩压 ≥ 130 mmHg",
+      high: 130,
+      timeLimit: "立即（30 分钟内）",
+      title: "儿童高血压危急值",
       plan: [
-        "体检医生现场复测体重并确认 BMI 复核",
-        "体检医生完成饮食/运动/家族史询问并确认",
-        "体检医生确认已加测血压、空腹血糖",
+        "体检医生静坐 5 分钟后换袖带复测并确认均值",
+        "体检医生完成头痛/头晕/视物模糊症状评估",
+        "体检医生确认已通知家长并开具心内科转诊",
       ],
     },
   ],
@@ -218,49 +261,22 @@ export const CRIT_RULES: Record<string, CritRule[]> = {
       ],
     },
   ],
-  bp: [
-    {
-      level: "危急值",
-      rule: "收缩压 ≥ 130 mmHg",
-      high: 130,
-      timeLimit: "立即（30 分钟内）",
-      title: "儿童高血压危急值",
-      plan: [
-        "体检医生静坐 5 分钟后换袖带复测并确认均值",
-        "体检医生完成头痛/头晕/视物模糊症状评估",
-        "体检医生确认已通知家长并开具心内科转诊",
-      ],
-    },
-  ],
-  oral: [
+  spine: [
     {
       level: "预警值",
-      rule: "龋齿 3 颗及以上",
-      choices: ["龋齿 3+ 颗"],
+      rule: "躯干旋转角 ATR ≥ 7°",
+      high: 7,
       timeLimit: "24 小时内",
-      title: "多发龋预警",
+      title: "脊柱侧弯高度可疑",
       plan: [
-        "体检医生复核龋齿颗数并确认拍照留存",
-        "体检医生确认已开具口腔科转诊单",
-        "体检医生确认已告知家长口腔护理要点",
-      ],
-    },
-  ],
-  internal: [
-    {
-      level: "危急值",
-      rule: "心律不齐 / 呼吸音异常",
-      choices: ["心律不齐", "呼吸音异常"],
-      timeLimit: "立即（30 分钟内）",
-      title: "心肺听诊危急值",
-      plan: [
-        "体检医生重新听诊 1 分钟并确认心率记录",
-        "体检医生确认血氧/心率复测结果",
-        "体检医生确认已通知家长并开具心内科转诊",
+        "体检医生前屈试验复测 ATR 并确认角度",
+        "体检医生确认已检查双肩/骨盆对称性与身高变化",
+        "体检医生确认已开具骨科（脊柱专科）转诊并告知家长",
       ],
     },
   ],
 };
+
 
 /** 命中的危机值规则（未录入或正常则返回 null） */
 export function critFor(item: ExamItem, v: ExamValue | undefined): CritRule | null {
