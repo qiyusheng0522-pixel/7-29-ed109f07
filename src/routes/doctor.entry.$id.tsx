@@ -628,10 +628,25 @@ function EntryPage() {
             </ul>
           </div>
 
+          {/* 危机值总提示 */}
+          {critFields.length > 0 && (
+            <div className="mb-4 animate-pulse-none rounded-xl bg-danger/10 p-3 ring-1 ring-danger/40">
+              <p className="text-[12px] font-bold text-danger">
+                <EIcon e="🚨" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" /> 检出危机值 {critFields.length} 项 · 需按处理方案闭环后方可归档
+              </p>
+              <p className="mt-1 text-[10.5px] text-danger/80">
+                {critFields.map((f) => `${f.label} ${values[f.key]}${f.unit ?? ""}`).join("　")}
+              </p>
+            </div>
+          )}
+
           <div className="space-y-3">
             {active.fields.map((f) => {
               const bad = outOfRange(f, values[f.key]);
               const retested = !!retests[f.key];
+              const crit = isCritical(f, values[f.key]) ? f.crit! : null;
+              const steps = critSteps[f.key] ?? [];
+
               return (
                 <div key={f.key}>
                   <div className="mb-1.5 flex items-center justify-between">
