@@ -336,24 +336,30 @@ const NODES: Node[] = [
 
 const MOCK_AUTO: Record<string, string> = {
   height: "138",
-  weight: "32.5",
-  bmi: "17.1",
-  left: "4.8",
+  weight: "39.2",
+  bmi: "20.6", // 预警值示例：BMI ≥ 20（同龄 P99）
+  left: "3.9", // 预警值示例：裸眼视力 ≤ 4.0
   right: "4.7",
-  sbp: "108",
-  dbp: "68",
-  hr: "88",
-  glu: "7.4",
-  hb: "128",
+  sbp: "134", // 危急值示例：收缩压 ≥ 130 mmHg
+  dbp: "82",
+  hr: "96",
+  spo2: "97",
+  glu: "7.4", // 危急值示例：空腹血糖 ≥ 7.0 mmol/L
+  hb: "112",
 };
 
 // 复测示例值（第二次测量，用于质控留痕）
 const MOCK_RETEST: Record<string, string> = {
-  bmi: "17.0",
-  left: "4.8",
+  weight: "39.1",
+  bmi: "20.5",
+  left: "3.9",
   right: "4.8",
+  sbp: "131",
+  dbp: "80",
+  hb: "113",
   glu: "7.3",
 };
+
 
 function outOfRange(f: Field, raw?: string) {
   if (f.type !== "number" || !raw) return false;
