@@ -108,7 +108,8 @@ function StudentsPage() {
         </p>
 
 
-        {/* 一键同步本批次学生清单 */}
+        {/* 一键同步本批次学生清单（仅保健老师） */}
+        {!isTeacher && (
         <ActionSheet
           trigger={
             <button className="mb-3 flex w-full items-center justify-between rounded-2xl bg-gradient-to-br from-teal to-deep p-3 text-white shadow-sm">
@@ -125,6 +126,8 @@ function StudentsPage() {
           toastMessage="同步成功 "
           toastDescription="共更新 486 名学生 · 新增 3 名"
         />
+        )}
+
 
 
         {/* 搜索 */}
