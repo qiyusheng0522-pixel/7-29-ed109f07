@@ -85,6 +85,23 @@ function Recorder() {
     (it) => it.kind === "choice" && !values[it.id]?.choice,
   );
 
+  // 危机值：按项判定，逐条勾选处置步骤后方可闭环
+  const crits = useMemo(() => EXAM_ITEMS.map((it) => critFor(it, values[it.id])), [values]);
+  const [critSteps, setCritSteps] = useState<Record<string, number[]>>({});
+  const openCrits = EXAM_ITEMS.filter((it, i) => {
+    const c = crits[i];
+    return c && (critSteps[it.id]?.length ?? 0) < c.plan.length;
+  });
+  const critCount = crits.filter(Boolean).length;
+  const criticalCount = crits.filter((c) => c?.level === "危急值").length;
+
+  function toggleCritStep(itemId: string, idx: number) {
+    setCritSteps((s) => {
+      const cur = s[itemId] ?? [];
+      return { ...s, [itemId]: cur.includes(idx) ? cur.filter((i) => i !== idx) : [...cur, idx] };
+    });
+  }
+
   function updateValue(itemId: string, patch: Partial<ExamValue>) {
     setValues((s) => {
       const item = EXAM_ITEMS.find((i) => i.id === itemId)!;
@@ -96,6 +113,7 @@ function Recorder() {
   function toggleRetest(itemId: string) {
     setValues((s) => ({ ...s, [itemId]: { ...(s[itemId] ?? {}), retest: !s[itemId]?.retest } }));
   }
+
   /** 未填的医生手动项一键按「正常」填充 —— 入学体检绝大多数为正常 */
   function fillManualNormal() {
     setValues((s) => {
