@@ -521,19 +521,38 @@ function ItemCard({
             </div>
           </div>
 
-          {/* 数字键盘 · 直接录入 */}
-          <div className="mt-2.5 grid min-h-0 flex-1 grid-cols-3 gap-1.5">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].map((k) => (
-              <button
-                key={k}
-                onClick={() => press(k)}
-                aria-label={k === "del" ? "退格" : k}
-                className="grid place-items-center rounded-2xl bg-surface text-[20px] font-semibold text-foreground shadow-sm ring-1 ring-border/60 transition active:scale-95 active:bg-surface-2"
-              >
-                {k === "del" ? <Delete className="h-5 w-5 text-muted-foreground" /> : k}
-              </button>
-            ))}
-          </div>
+          {planOpen ? (
+            <CritPanel
+              crit={crit!}
+              done={critDone}
+              onToggle={onToggleCritStep}
+              onBack={() => setShowPlan(false)}
+            />
+          ) : (
+            <>
+              {crit && (
+                <button
+                  onClick={() => setShowPlan(true)}
+                  className="mt-2 shrink-0 rounded-2xl bg-danger/10 px-3 py-2 text-[11.5px] font-semibold text-danger ring-1 ring-danger/25"
+                >
+                  返回危机值处置方案（{critDone.length}/{crit.plan.length}）
+                </button>
+              )}
+              {/* 数字键盘 · 直接录入 */}
+              <div className="mt-2.5 grid min-h-0 flex-1 grid-cols-3 gap-1.5">
+                {["1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "0", "del"].map((k) => (
+                  <button
+                    key={k}
+                    onClick={() => press(k)}
+                    aria-label={k === "del" ? "退格" : k}
+                    className="grid place-items-center rounded-2xl bg-surface text-[20px] font-semibold text-foreground shadow-sm ring-1 ring-border/60 transition active:scale-95 active:bg-surface-2"
+                  >
+                    {k === "del" ? <Delete className="h-5 w-5 text-muted-foreground" /> : k}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </>
       ) : (
         <div className="mt-3 flex min-h-0 flex-1 flex-col">
@@ -552,7 +571,7 @@ function ItemCard({
           <p className="mt-2 shrink-0 text-center text-[10.5px] text-muted-foreground">
             如有异常，选择下方具体情况
           </p>
-          <div className="no-scrollbar mt-1.5 space-y-1.5 overflow-y-auto">
+          <div className="no-scrollbar mt-1.5 shrink-0 space-y-1.5 overflow-y-auto">
             {item.options!
               .filter((o) => o !== item.normalOption)
               .map((opt) => {
@@ -572,9 +591,14 @@ function ItemCard({
                 );
               })}
           </div>
-          <div className="min-h-0 flex-1" />
+          {crit ? (
+            <CritPanel crit={crit} done={critDone} onToggle={onToggleCritStep} />
+          ) : (
+            <div className="min-h-0 flex-1" />
+          )}
         </div>
       )}
+
 
       {/* 底部操作条 */}
       <div className="mt-2.5 flex shrink-0 items-center gap-2">
