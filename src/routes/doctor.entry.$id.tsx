@@ -280,7 +280,7 @@ const MOCK_AUTO: Record<string, string> = {
   sbp: "108",
   dbp: "68",
   hr: "88",
-  glu: "6.3",
+  glu: "7.4",
   hb: "128",
 };
 
@@ -289,7 +289,7 @@ const MOCK_RETEST: Record<string, string> = {
   bmi: "17.0",
   left: "4.8",
   right: "4.8",
-  glu: "6.2",
+  glu: "7.3",
 };
 
 function outOfRange(f: Field, raw?: string) {
@@ -298,6 +298,16 @@ function outOfRange(f: Field, raw?: string) {
   if (Number.isNaN(v)) return false;
   if (f.min !== undefined && v < f.min) return true;
   if (f.max !== undefined && v > f.max) return true;
+  return false;
+}
+
+// 危机值判定
+function isCritical(f: Field, raw?: string) {
+  if (!f.crit || f.type !== "number" || !raw) return false;
+  const v = Number(raw);
+  if (Number.isNaN(v)) return false;
+  if (f.crit.high !== undefined && v >= f.crit.high) return true;
+  if (f.crit.low !== undefined && v <= f.crit.low) return true;
   return false;
 }
 
