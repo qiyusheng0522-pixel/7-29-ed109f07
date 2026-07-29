@@ -3,6 +3,8 @@ import { StatusBar } from "@/components/MobileFrame";
 import { ActionSheet } from "@/components/ActionSheet";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useSchoolView, MY_CLASS, MY_CLASS_LABEL, MY_TEACHER } from "@/lib/school-role";
+
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/school/students")({
@@ -25,7 +27,13 @@ type Row = {
 
 const rows: Row[] = [
   { name: "王小明", class: "2年2班", grade: "二年级", gender: "男", homeroom: "王老师", doctor: "李医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "未读" },
-  { name: "李小雨", class: "3年3班", grade: "三年级", gender: "女", homeroom: "陈老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "已读" },
+  { name: "李小雨", class: "3年3班", grade: "三年级", gender: "女", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "已读" },
+  { name: "赵一鸣", class: "3年3班", grade: "三年级", gender: "男", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "已完成", report: "未读" },
+  { name: "陈静雅", class: "3年3班", grade: "三年级", gender: "女", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: false, exam: "已完成", report: "未读" },
+  { name: "周子航", class: "3年3班", grade: "三年级", gender: "男", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "缺检", report: "-" },
+  { name: "吴梦洁", class: "3年3班", grade: "三年级", gender: "女", homeroom: "王老师", doctor: "张医生", bind: false, auth: "未授权", quest: false, exam: "缺检", report: "-" },
+  { name: "孙浩然", class: "3年3班", grade: "三年级", gender: "男", homeroom: "王老师", doctor: "张医生", bind: true, auth: "已授权", quest: false, exam: "待检", report: "-" },
+
   { name: "张小乐", class: "1年1班", grade: "一年级", gender: "男", homeroom: "赵老师", doctor: "李医生", bind: true, auth: "已授权", quest: false, exam: "待检", report: "-" },
   { name: "陈小美", class: "4年2班", grade: "四年级", gender: "女", homeroom: "孙老师", doctor: "王医生", bind: true, auth: "未授权", quest: false, exam: "待检", report: "-" },
   { name: "刘小强", class: "5年1班", grade: "五年级", gender: "男", homeroom: "周老师", doctor: "张医生", bind: true, auth: "已授权", quest: true, exam: "缺检", report: "-" },
@@ -54,6 +62,8 @@ const genders = ["全部", "男", "女"] as const;
 const statusFilters = ["全部", "未授权", "未问卷", "缺检", "报告未读"] as const;
 
 function StudentsPage() {
+  const [view] = useSchoolView();
+  const isTeacher = view === "teacher";
   const pv = "all" as (typeof perspectives)[number]["key"];
   const [grade, setGrade] = useState<(typeof grades)[number]>("全部年级");
   const [klass, setKlass] = useState<string>("全部班级");
@@ -72,9 +82,11 @@ function StudentsPage() {
   };
 
   const filtered = rows.filter((r) => {
+    // 班主任视角：只看本班学生
+    if (isTeacher && r.class !== MY_CLASS) return false;
     if (!perspectiveFilter(r)) return false;
-    if (grade !== "全部年级" && r.grade !== grade) return false;
-    if (klass !== "全部班级" && r.class !== klass) return false;
+    if (!isTeacher && grade !== "全部年级" && r.grade !== grade) return false;
+    if (!isTeacher && klass !== "全部班级" && r.class !== klass) return false;
     if (gender !== "全部" && r.gender !== gender) return false;
     if (q && !r.name.includes(q) && !r.class.includes(q)) return false;
     if (f === "未授权") return r.auth === "未授权";
@@ -88,14 +100,18 @@ function StudentsPage() {
 
   return (
     <div>
-      <StatusBar title="学生名单" />
+      <StatusBar title={isTeacher ? "我的班级" : "学生名单"} />
       <div className="px-5 pt-2">
-        <h1 className="text-xl font-bold">学生名单</h1>
+        <h1 className="text-xl font-bold">{isTeacher ? "我的班级学生" : "学生名单"}</h1>
         <p className="mb-3 text-xs text-muted-foreground">
-          {activePv.desc} · 匹配 {filtered.length} 人
+          {isTeacher
+            ? `${MY_CLASS_LABEL} · 班主任 ${MY_TEACHER} · 匹配 ${filtered.length} 人`
+            : `${activePv.desc} · 匹配 ${filtered.length} 人`}
         </p>
 
-        {/* 一键同步本批次学生清单 */}
+
+        {/* 一键同步本批次学生清单（仅保健老师） */}
+        {!isTeacher && (
         <ActionSheet
           trigger={
             <button className="mb-3 flex w-full items-center justify-between rounded-2xl bg-gradient-to-br from-teal to-deep p-3 text-white shadow-sm">
@@ -112,6 +128,8 @@ function StudentsPage() {
           toastMessage="同步成功 "
           toastDescription="共更新 486 名学生 · 新增 3 名"
         />
+        )}
+
 
 
         {/* 搜索 */}
@@ -125,7 +143,9 @@ function StudentsPage() {
           />
         </div>
 
-        {/* 年级 / 性别 */}
+        {/* 年级 / 班级：班主任视角固定本班，不展示 */}
+        {!isTeacher && (
+        <>
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
           {grades.map((g) => (
             <button
@@ -152,6 +172,9 @@ function StudentsPage() {
             </button>
           ))}
         </div>
+        </>
+        )}
+
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
           {genders.map((g) => (
             <button

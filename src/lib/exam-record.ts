@@ -152,3 +152,135 @@ export function rangeLabel(item: ExamItem): string {
   if (item.kind === "number") return `正常 ${item.min}–${item.max}${item.unit ? " " + item.unit : ""}`;
   return `正常：${item.normalOption}`;
 }
+
+/* ===================== 危机值（危急值 / 预警值）判定与处置 ===================== */
+
+export type CritLevel = "危急值" | "预警值";
+
+export type CritRule = {
+  level: CritLevel;
+  /** 触发条件文案（展示用） */
+  rule: string;
+  /** 数值触发阈值 */
+  low?: number;
+  high?: number;
+  /** choice 触发项 */
+  choices?: string[];
+  /** 处置时限 */
+  timeLimit: string;
+  /** 结论摘要 */
+  title: string;
+  /** 处置方案步骤（需逐条勾选闭环） */
+  plan: string[];
+};
+
+/** 每个体检项目的危机值判定标准（示例数据，用于原型演示） */
+export const CRIT_RULES: Record<string, CritRule[]> = {
+  weight: [
+    {
+      level: "预警值",
+      rule: "体重 ≥ 38 kg（同年龄 P97 以上）",
+      high: 38,
+      timeLimit: "24 小时内",
+      title: "重度超重 / 肥胖预警",
+      plan: [
+        "现场复测体重并核对身高，计算 BMI 复核",
+        "追问饮食、运动、睡眠及家族肥胖史",
+        "加测血压、空腹血糖（已联动加项）",
+        "生成体重管理方案并推送家长",
+        "纳入重点儿童名单，1 个月后随访",
+      ],
+    },
+  ],
+  "vision-l": [
+    {
+      level: "预警值",
+      rule: "裸眼视力 ≤ 4.8",
+      low: 4.8,
+      timeLimit: "本次录检内",
+      title: "视力低常预警（左眼）",
+      plan: [
+        "单眼遮盖后重测一次，排除操作误差",
+        "询问是否已配镜、近期用眼时长",
+        "开具眼科专科转诊建议",
+        "通知班主任调整座位并告知家长",
+      ],
+    },
+  ],
+  "vision-r": [
+    {
+      level: "预警值",
+      rule: "裸眼视力 ≤ 4.8",
+      low: 4.8,
+      timeLimit: "本次录检内",
+      title: "视力低常预警（右眼）",
+      plan: [
+        "单眼遮盖后重测一次，排除操作误差",
+        "询问是否已配镜、近期用眼时长",
+        "开具眼科专科转诊建议",
+        "通知班主任调整座位并告知家长",
+      ],
+    },
+  ],
+  bp: [
+    {
+      level: "危急值",
+      rule: "收缩压 ≥ 130 mmHg",
+      high: 130,
+      timeLimit: "立即（30 分钟内）",
+      title: "儿童高血压危急值",
+      plan: [
+        "静坐 5 分钟后换袖带复测 2 次并取均值",
+        "现场询问头痛、头晕、视物模糊等症状",
+        "双人核对读数并签名确认",
+        "电话通知家长，开具心内科绿色通道转诊",
+        "登记危急值上报台账（30 分钟内闭环）",
+      ],
+    },
+  ],
+  oral: [
+    {
+      level: "预警值",
+      rule: "龋齿 3 颗及以上",
+      choices: ["龋齿 3+ 颗"],
+      timeLimit: "24 小时内",
+      title: "多发龋预警",
+      plan: [
+        "复核龋齿颗数并拍照留存",
+        "开具口腔科转诊单",
+        "向家长推送刷牙与窝沟封闭指导",
+      ],
+    },
+  ],
+  internal: [
+    {
+      level: "危急值",
+      rule: "心律不齐 / 呼吸音异常",
+      choices: ["心律不齐", "呼吸音异常"],
+      timeLimit: "立即（30 分钟内）",
+      title: "心肺听诊危急值",
+      plan: [
+        "重新听诊 1 分钟并记录心率",
+        "请第二位医生双人复核确认",
+        "现场测血氧、心率，异常立即联系 120",
+        "电话通知家长并开具心内科绿色通道转诊",
+        "登记危急值上报台账（30 分钟内闭环）",
+      ],
+    },
+  ],
+};
+
+/** 命中的危机值规则（未录入或正常则返回 null） */
+export function critFor(item: ExamItem, v: ExamValue | undefined): CritRule | null {
+  const rules = CRIT_RULES[item.id];
+  if (!rules) return null;
+  const val = v ?? (item.source === "auto" ? seedValue(item) : undefined);
+  if (!val) return null;
+  for (const r of rules) {
+    if (r.choices && val.choice && r.choices.includes(val.choice)) return r;
+    if (r.high != null && val.value != null && val.value >= r.high) return r;
+    if (r.low != null && val.value != null && val.value <= r.low) return r;
+  }
+  return null;
+}
+

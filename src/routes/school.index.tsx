@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { StatusBar } from "@/components/MobileFrame";
 import { schoolStats, classSchedule } from "@/lib/mock-data";
 import { teacherClass, recheckList, liveNotices, escort, type RecheckItem } from "@/lib/teacher-class";
+import { useSchoolView } from "@/lib/school-role";
+
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/school/")({
@@ -50,7 +52,7 @@ const quick = [
 
 function SchoolHome() {
   const pct = Math.round((schoolStats.examined / schoolStats.totalStudents) * 100);
-  const [view, setView] = useState<"health" | "teacher">("health");
+  const [view, setView] = useSchoolView();
   return (
     <div>
       <StatusBar />

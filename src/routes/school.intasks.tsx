@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
 import { ActionSheet } from "@/components/ActionSheet";
 import { useState } from "react";
+import { useSchoolView, MY_CLASS, MY_CLASS_LABEL, MY_TEACHER } from "@/lib/school-role";
+
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/school/intasks")({
@@ -33,6 +35,10 @@ const initialTasks: Task[] = [
   { id: "t5", role: "体育老师", title: "跟进 BMI 偏高学生课后运动打卡", who: "2年2班 · 王小明", due: "本周", status: "处理中", assignee: "杨老师" },
   { id: "t6", role: "校管理者", title: "审核本轮体检执行进度汇总", who: "全校", due: "今日", status: "待处理", assignee: "周主任" },
   { id: "t7", role: "校管理者", title: "确认体检重大异常升级流转", who: "5年1班 · 2人", due: "今日", status: "需升级", assignee: "郑校长" },
+  { id: "t8", role: "体检负责老师", title: "通知家长带赵一鸣返场重测（血压/体重超范围）", who: "3年3班 · 赵一鸣", due: "今日", status: "待处理", assignee: "王老师" },
+  { id: "t9", role: "体检负责老师", title: "组织周子航、吴梦洁缺检补检", who: "3年3班 · 2人", due: "本周", status: "处理中", assignee: "王老师" },
+  { id: "t10", role: "体检负责老师", title: "催办本班 3 位家长完成体检问卷", who: "3年3班 · 3人", due: "今日", status: "待处理", assignee: "王老师" },
+
 ];
 
 const roles = ["全部", "体检负责老师", "体育老师", "校管理者"] as const;
@@ -47,6 +53,8 @@ const statusStyle: Record<Task["status"], string> = {
 };
 
 function InTasksPage() {
+  const [view] = useSchoolView();
+  const isTeacher = view === "teacher";
   const [role, setRole] = useState<(typeof roles)[number]>("全部");
   const [f, setF] = useState<(typeof filters)[number]>("全部");
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -56,20 +64,28 @@ function InTasksPage() {
   };
 
   const list = tasks.filter((t) => {
-    if (role !== "全部" && t.role !== role) return false;
+    // 班主任视角：只看分派给本人或本班的任务
+    if (isTeacher && t.assignee !== MY_TEACHER && !t.who.includes(MY_CLASS)) return false;
+    if (!isTeacher && role !== "全部" && t.role !== role) return false;
     if (f === "今日到期") return t.due === "今日";
     if (f === "超期") return t.status === "已超期";
     if (f === "需升级") return t.status === "需升级";
     return true;
   });
 
+
   return (
     <div>
       <StatusBar title="校内任务" />
       <div className="px-5 pt-2">
-        <h1 className="text-xl font-bold">校内任务</h1>
-        <p className="mb-3 text-xs text-muted-foreground">AI 自动按角色分派 · 支持手动调整</p>
+        <h1 className="text-xl font-bold">{isTeacher ? "我的任务" : "校内任务"}</h1>
+        <p className="mb-3 text-xs text-muted-foreground">
+          {isTeacher
+            ? `${MY_CLASS_LABEL} · 班主任 ${MY_TEACHER} · 共 ${list.length} 条`
+            : "AI 自动按角色分派 · 支持手动调整"}
+        </p>
 
+        {!isTeacher && (
         <div className="mb-3 flex items-center gap-2 rounded-2xl bg-gradient-to-br from-teal/10 to-deep/10 p-3 ring-1 ring-teal/20">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-teal/20 text-base">{<EIcon e="🤖" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" />}</span>
           <div className="min-w-0 flex-1">
@@ -85,6 +101,7 @@ function InTasksPage() {
             toastDescription="按最新负荷完成智能匹配"
           />
         </div>
+        )}
 
         <Link
           to="/school/escalated"
@@ -97,7 +114,8 @@ function InTasksPage() {
           <span className="text-warm">→</span>
         </Link>
 
-        {/* Role tabs */}
+        {/* Role tabs（班主任视角只看自己的任务，无需按角色筛选） */}
+        {!isTeacher && (
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
           {roles.map((r) => (
             <button
@@ -111,6 +129,8 @@ function InTasksPage() {
             </button>
           ))}
         </div>
+        )}
+
         <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
           {filters.map((k) => (
             <button
