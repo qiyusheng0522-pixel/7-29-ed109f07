@@ -383,6 +383,9 @@ function ItemCard({
   total,
   status,
   value,
+  crit,
+  critDone,
+  onToggleCritStep,
   isLast,
   onChange,
   onToggleRetest,
@@ -393,6 +396,9 @@ function ItemCard({
   total: number;
   status: ItemStatus;
   value?: ExamValue;
+  crit: CritRule | null;
+  critDone: number[];
+  onToggleCritStep: (idx: number) => void;
   isLast: boolean;
   onChange: (patch: Partial<ExamValue>) => void;
   onToggleRetest: () => void;
@@ -400,10 +406,15 @@ function ItemCard({
 }) {
   const abnormal = status === "abnormal";
   const isBp = item.kind === "bp";
+  const critClosed = !!crit && critDone.length >= crit.plan.length;
+  // 触发危机值时默认展开处置方案；医生可切回键盘继续改数值
+  const [showPlan, setShowPlan] = useState(true);
+  const planOpen = !!crit && showPlan;
   // 键盘编辑缓冲：直接按数字录入，比 +/- 步进快得多
   const [sys, setSys] = useState(value?.value != null ? String(value.value) : "");
   const [dia, setDia] = useState(value?.valueDia != null ? String(value.valueDia) : "");
   const [field, setField] = useState<"sys" | "dia">("sys");
+
 
   function press(k: string) {
     if (isBp && field === "dia") {
