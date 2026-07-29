@@ -62,7 +62,27 @@ const NODES: Node[] = [
     fields: [
       { key: "height", label: "身高", type: "number", unit: "cm", source: "auto", ref: "125–150", min: 125, max: 150 },
       { key: "weight", label: "体重", type: "number", unit: "kg", source: "auto", ref: "24–40", min: 24, max: 40 },
-      { key: "bmi", label: "BMI", type: "number", source: "auto", ref: "14.5–16.8", min: 14.5, max: 16.8 },
+      {
+        key: "bmi",
+        label: "BMI",
+        type: "number",
+        source: "auto",
+        ref: "14.5–16.8",
+        min: 14.5,
+        max: 16.8,
+        crit: {
+          high: 20,
+          name: "重度肥胖（BMI ≥ 20，同龄 P99）",
+          level: "预警值",
+          timeLimit: "24 小时内",
+          plan: [
+            "现场复测身高体重并核对出生日期，排除录入错误",
+            "加测腰围、血压，询问打鼾/嗜睡等合并症",
+            "当日推送家长端预警通知，建议 2 周内内分泌/儿保门诊评估",
+            "登记至重点关注名单，纳入 12 周体重管理随访",
+          ],
+        },
+      },
     ],
   },
   {
