@@ -428,6 +428,8 @@ function EntryPage() {
 
   const flagged = active.fields.filter((f) => outOfRange(f, values[f.key]));
   const pendingRetest = flagged.filter((f) => !retests[f.key]);
+  const critFields = active.fields.filter((f) => isCritical(f, values[f.key]));
+  const pendingCrit = critFields.filter((f) => !critDone[f.key]);
 
   const nodeComplete = active.fields.every((f) =>
     f.source === "auto" ? !!values[f.key] : f.type === "text" ? true : !!values[f.key],
@@ -440,6 +442,27 @@ function EntryPage() {
     toast.success(`${f.label} 已完成复测`, { description: `复测值 ${v}${f.unit ? " " + f.unit : ""}` });
   };
 
+  const toggleCritStep = (f: Field, idx: number) => {
+    setCritSteps((p) => {
+      const cur = p[f.key] ?? [];
+      const next = cur.includes(idx) ? cur.filter((i) => i !== idx) : [...cur, idx];
+      return { ...p, [f.key]: next };
+    });
+  };
+
+  const closeCrit = (f: Field) => {
+    const steps = critSteps[f.key] ?? [];
+    if (!f.crit || steps.length < f.crit.plan.length) {
+      toast.error("危机值处置未完成", { description: "请逐条勾选处置措施后再闭环" });
+      return;
+    }
+    setCritDone((p) => ({ ...p, [f.key]: true }));
+    addLog(
+      `⚠ ${f.crit.level}｜${active.name} · ${f.label} ${values[f.key]}${f.unit ? " " + f.unit : ""} 触发「${f.crit.name}」，${f.crit.timeLimit}内完成 ${f.crit.plan.length} 项处置并闭环（报告人 张医生 / 接收人 李医生，家长已电话告知）`,
+    );
+    toast.success(`${f.label} 危机值已闭环`, { description: "已生成危急值登记并推送家长端" });
+  };
+
   const verifyNode = () => {
     if (!nodeComplete) {
       toast.error("请补齐必填项");
@@ -449,6 +472,12 @@ function EntryPage() {
       toast.error("质控未通过", { description: `${pendingRetest.map((f) => f.label).join("、")} 超出范围，需先复测` });
       return;
     }
+    if (pendingCrit.length > 0) {
+      toast.error("危机值未闭环", {
+        description: `${pendingCrit.map((f) => f.label).join("、")} 触发危机值，请先执行处理方案`,
+      });
+      return;
+    }
     setVerified((p) => ({ ...p, [active.key]: true }));
     addLog(
       `${active.name} 质控通过并归档（${active.qc.status}）· 项目 ${step + 1}/${NODES.length} · 核对人 李医生`,
@@ -456,6 +485,7 @@ function EntryPage() {
     toast.success(`${active.name} 质控通过`, { description: `第 ${step + 1}/${NODES.length} 项已归档` });
     if (step < NODES.length - 1) setStep(step + 1);
   };
+
 
   const pullAuto = () => {
     setValues((prev) => {
