@@ -456,6 +456,44 @@ function ItemCard({
         </div>
       </div>
 
+      {/* 危机值告警条 */}
+      {crit ? (
+        <div
+          className={`mt-2 flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2 ring-1 ${
+            crit.level === "危急值"
+              ? "bg-danger/12 text-danger ring-danger/30"
+              : "bg-warm/12 text-warm ring-warm/30"
+          }`}
+        >
+          {crit.level === "危急值" ? (
+            <Siren className="h-4 w-4 shrink-0 animate-pulse" />
+          ) : (
+            <ShieldAlert className="h-4 w-4 shrink-0" />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[12px] font-bold">
+              {crit.level} · {crit.title}
+            </p>
+            <p className="truncate text-[10px] opacity-80">
+              {crit.rule} · 处置时限 {crit.timeLimit}
+            </p>
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 text-[9.5px] font-semibold ${
+              critClosed ? "bg-success text-success-foreground" : "bg-surface text-muted-foreground"
+            }`}
+          >
+            {critClosed ? "已闭环" : `${critDone.length}/${crit.plan.length}`}
+          </span>
+        </div>
+      ) : CRIT_RULES[item.id] ? (
+        <p className="mt-2 shrink-0 rounded-2xl bg-surface px-3 py-1.5 text-[10px] text-muted-foreground ring-1 ring-border/60">
+          危机值判定标准（示例）：
+          {CRIT_RULES[item.id].map((r) => `${r.level} ${r.rule}`).join("；")}
+        </p>
+      ) : null}
+
+
       {/* 数值 / 选项 */}
       {item.kind !== "choice" ? (
         <>
