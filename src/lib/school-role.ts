@@ -1,5 +1,5 @@
 // 学校端视角（卫生保健老师 / 班主任）——跨页面共享的轻量状态
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 export type SchoolView = "health" | "teacher";
 
@@ -8,9 +8,9 @@ export const MY_CLASS = "3年3班";
 export const MY_CLASS_LABEL = "三年级 3 班";
 export const MY_TEACHER = "王老师";
 
-let view: SchoolView =
-  (typeof window !== "undefined" && (sessionStorage.getItem("school-view") as SchoolView)) ||
-  "health";
+const KEY = "school-view";
+let view: SchoolView = "health";
+let hydrated = false;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -20,10 +20,28 @@ function emit() {
 export function setSchoolView(v: SchoolView) {
   if (v === view) return;
   view = v;
-  if (typeof window !== "undefined") sessionStorage.setItem("school-view", v);
+  try {
+    sessionStorage.setItem(KEY, v);
+  } catch {
+    /* ignore */
+  }
   emit();
 }
 
+/** 刷新后恢复视角（在 effect 中执行，避免 SSR 水合不一致） */
+function hydrate() {
+  if (hydrated) return;
+  hydrated = true;
+  try {
+    const saved = sessionStorage.getItem(KEY) as SchoolView | null;
+    if (saved && saved !== view) {
+      view = saved;
+      emit();
+    }
+  } catch {
+    /* ignore */
+  }
+}
 
 export function useSchoolView(): [SchoolView, (v: SchoolView) => void] {
   const cur = useSyncExternalStore(
@@ -32,7 +50,9 @@ export function useSchoolView(): [SchoolView, (v: SchoolView) => void] {
       return () => listeners.delete(cb);
     },
     () => view,
-    () => view,
+    () => "health" as SchoolView,
   );
+  useEffect(hydrate, []);
   return [cur, setSchoolView];
 }
+
