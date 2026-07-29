@@ -35,6 +35,10 @@ const initialTasks: Task[] = [
   { id: "t5", role: "体育老师", title: "跟进 BMI 偏高学生课后运动打卡", who: "2年2班 · 王小明", due: "本周", status: "处理中", assignee: "杨老师" },
   { id: "t6", role: "校管理者", title: "审核本轮体检执行进度汇总", who: "全校", due: "今日", status: "待处理", assignee: "周主任" },
   { id: "t7", role: "校管理者", title: "确认体检重大异常升级流转", who: "5年1班 · 2人", due: "今日", status: "需升级", assignee: "郑校长" },
+  { id: "t8", role: "体检负责老师", title: "通知家长带赵一鸣返场重测（血压/体重超范围）", who: "3年3班 · 赵一鸣", due: "今日", status: "待处理", assignee: "王老师" },
+  { id: "t9", role: "体检负责老师", title: "组织周子航、吴梦洁缺检补检", who: "3年3班 · 2人", due: "本周", status: "处理中", assignee: "王老师" },
+  { id: "t10", role: "体检负责老师", title: "催办本班 3 位家长完成体检问卷", who: "3年3班 · 3人", due: "今日", status: "待处理", assignee: "王老师" },
+
 ];
 
 const roles = ["全部", "体检负责老师", "体育老师", "校管理者"] as const;
