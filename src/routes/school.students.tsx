@@ -141,7 +141,9 @@ function StudentsPage() {
           />
         </div>
 
-        {/* 年级 / 性别 */}
+        {/* 年级 / 班级：班主任视角固定本班，不展示 */}
+        {!isTeacher && (
+        <>
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
           {grades.map((g) => (
             <button
@@ -168,6 +170,9 @@ function StudentsPage() {
             </button>
           ))}
         </div>
+        </>
+        )}
+
         <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
           {genders.map((g) => (
             <button
