@@ -11,6 +11,14 @@ export const Route = createFileRoute("/doctor/entry/$id")({
 
 type FieldType = "number" | "text";
 type Source = "auto" | "manual";
+type Crit = {
+  low?: number;
+  high?: number;
+  name: string; // 危机值名称
+  level: "危急值" | "预警值";
+  plan: string[]; // 处理方案步骤
+  timeLimit: string; // 处置时限
+};
 type Field = {
   key: string;
   label: string;
@@ -20,6 +28,7 @@ type Field = {
   ref?: string; // reference range hint
   min?: number; // 质控上下限
   max?: number;
+  crit?: Crit; // 危机值规则
 };
 type Node = {
   key: string;
