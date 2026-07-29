@@ -226,7 +226,28 @@ const NODES: Node[] = [
       ],
     },
     fields: [
-      { key: "caries", label: "龋齿颗数", type: "number", source: "manual", ref: "0–3", min: 0, max: 3 },
+      {
+        key: "caries",
+        label: "龋齿颗数",
+        type: "number",
+        source: "manual",
+        ref: "0–3",
+        min: 0,
+        max: 3,
+        crit: {
+          high: 6,
+          name: "重度龋（≥ 6 颗，含可疑牙髓炎）",
+          level: "预警值",
+          timeLimit: "24 小时内",
+          plan: [
+            "第二名口腔科医师现场双人核对并拍照留痕",
+            "评估是否有自发痛、面部肿胀等急性感染表现",
+            "当日推送家长端预警，建议 1 周内口腔科就诊治疗",
+            "纳入口腔重点关注名单，3 个月复查窝沟封闭情况",
+          ],
+        },
+      },
+
       { key: "oralNote", label: "口腔检查描述", type: "text", source: "manual" },
     ],
   },
