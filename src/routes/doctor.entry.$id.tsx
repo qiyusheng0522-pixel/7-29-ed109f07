@@ -630,7 +630,7 @@ function EntryPage() {
 
           {/* 危机值总提示 */}
           {critFields.length > 0 && (
-            <div className="mb-4 animate-pulse-none rounded-xl bg-danger/10 p-3 ring-1 ring-danger/40">
+            <div className="mb-4 rounded-xl bg-danger/10 p-3 ring-1 ring-danger/40">
               <p className="text-[12px] font-bold text-danger">
                 <EIcon e="🚨" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" /> 检出危机值 {critFields.length} 项 · 需按处理方案闭环后方可归档
               </p>
