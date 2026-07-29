@@ -47,6 +47,8 @@ const statusStyle: Record<Task["status"], string> = {
 };
 
 function InTasksPage() {
+  const [view] = useSchoolView();
+  const isTeacher = view === "teacher";
   const [role, setRole] = useState<(typeof roles)[number]>("全部");
   const [f, setF] = useState<(typeof filters)[number]>("全部");
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
@@ -56,12 +58,15 @@ function InTasksPage() {
   };
 
   const list = tasks.filter((t) => {
-    if (role !== "全部" && t.role !== role) return false;
+    // 班主任视角：只看分派给本人或本班的任务
+    if (isTeacher && t.assignee !== MY_TEACHER && !t.who.includes(MY_CLASS)) return false;
+    if (!isTeacher && role !== "全部" && t.role !== role) return false;
     if (f === "今日到期") return t.due === "今日";
     if (f === "超期") return t.status === "已超期";
     if (f === "需升级") return t.status === "需升级";
     return true;
   });
+
 
   return (
     <div>
