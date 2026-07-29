@@ -265,12 +265,16 @@ function Recorder() {
             total={EXAM_ITEMS.length}
             status={statuses[i]}
             value={values[item.id]}
+            crit={crits[i]}
+            critDone={critSteps[item.id] ?? []}
+            onToggleCritStep={(idx) => toggleCritStep(item.id, idx)}
             isLast={i === EXAM_ITEMS.length - 1}
             onChange={(patch) => updateValue(item.id, patch)}
             onToggleRetest={() => toggleRetest(item.id)}
             onNext={() => scrollTo(i + 1)}
           />
         ))}
+
 
         {/* 复核提交页 */}
         <section className="flex h-full snap-start flex-col px-4 pb-3 pt-3">
