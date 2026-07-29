@@ -60,6 +60,8 @@ const genders = ["全部", "男", "女"] as const;
 const statusFilters = ["全部", "未授权", "未问卷", "缺检", "报告未读"] as const;
 
 function StudentsPage() {
+  const [view] = useSchoolView();
+  const isTeacher = view === "teacher";
   const pv = "all" as (typeof perspectives)[number]["key"];
   const [grade, setGrade] = useState<(typeof grades)[number]>("全部年级");
   const [klass, setKlass] = useState<string>("全部班级");
@@ -78,9 +80,11 @@ function StudentsPage() {
   };
 
   const filtered = rows.filter((r) => {
+    // 班主任视角：只看本班学生
+    if (isTeacher && r.class !== MY_CLASS) return false;
     if (!perspectiveFilter(r)) return false;
-    if (grade !== "全部年级" && r.grade !== grade) return false;
-    if (klass !== "全部班级" && r.class !== klass) return false;
+    if (!isTeacher && grade !== "全部年级" && r.grade !== grade) return false;
+    if (!isTeacher && klass !== "全部班级" && r.class !== klass) return false;
     if (gender !== "全部" && r.gender !== gender) return false;
     if (q && !r.name.includes(q) && !r.class.includes(q)) return false;
     if (f === "未授权") return r.auth === "未授权";
@@ -94,12 +98,15 @@ function StudentsPage() {
 
   return (
     <div>
-      <StatusBar title="学生名单" />
+      <StatusBar title={isTeacher ? "我的班级" : "学生名单"} />
       <div className="px-5 pt-2">
-        <h1 className="text-xl font-bold">学生名单</h1>
+        <h1 className="text-xl font-bold">{isTeacher ? "我的班级学生" : "学生名单"}</h1>
         <p className="mb-3 text-xs text-muted-foreground">
-          {activePv.desc} · 匹配 {filtered.length} 人
+          {isTeacher
+            ? `${MY_CLASS_LABEL} · 班主任 ${MY_TEACHER} · 匹配 ${filtered.length} 人`
+            : `${activePv.desc} · 匹配 ${filtered.length} 人`}
         </p>
+
 
         {/* 一键同步本批次学生清单 */}
         <ActionSheet
