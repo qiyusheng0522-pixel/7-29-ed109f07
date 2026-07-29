@@ -274,8 +274,9 @@ export const CRIT_RULES: Record<string, CritRule[]> = {
         "体检医生确认已开具骨科（脊柱专科）转诊并告知家长",
       ],
     },
-
+  ],
 };
+
 
 /** 命中的危机值规则（未录入或正常则返回 null） */
 export function critFor(item: ExamItem, v: ExamValue | undefined): CritRule | null {
