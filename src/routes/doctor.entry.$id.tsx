@@ -779,7 +779,8 @@ function EntryPage() {
             <p className="text-[11px] font-semibold">本项质控结论</p>
             <p className="mt-1 text-[10.5px] text-muted-foreground">
               必填完整性 {nodeComplete ? "✓ 通过" : "✗ 未通过"} · 阈值校验 {flagged.length === 0 ? "✓ 全部在范围内" : `⚠ ${flagged.length} 项超限`} ·
-              复测闭环 {pendingRetest.length === 0 ? "✓ 已闭环" : `✗ 待复测 ${pendingRetest.length} 项`}
+              复测闭环 {pendingRetest.length === 0 ? "✓ 已闭环" : `✗ 待复测 ${pendingRetest.length} 项`} ·
+              危机值 {critFields.length === 0 ? "✓ 未触发" : pendingCrit.length === 0 ? `✓ ${critFields.length} 项已闭环` : `🚨 ${pendingCrit.length} 项待处置`}
             </p>
           </div>
 
