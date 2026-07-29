@@ -28,6 +28,7 @@ export type ExamItem = {
 };
 
 // 9 岁儿童参考范围（示例值，用于原型演示）
+// 采集设备：身高体脂分析仪 / 视力筛查仪 / 腰臀围尺 / 血压测量仪 / 脊柱侧弯测量尺（手工）+ 人工龋齿检查
 export const EXAM_ITEMS: ExamItem[] = [
   {
     id: "height",
@@ -39,7 +40,7 @@ export const EXAM_ITEMS: ExamItem[] = [
     min: 125,
     max: 142,
     value: 133,
-    hint: "身高体重秤自动同步",
+    hint: "身高体脂分析仪自动同步",
   },
   {
     id: "weight",
@@ -51,7 +52,19 @@ export const EXAM_ITEMS: ExamItem[] = [
     min: 24,
     max: 34,
     value: 38.6,
-    hint: "身高体重秤自动同步",
+    hint: "身高体脂分析仪自动同步",
+  },
+  {
+    id: "bodyfat",
+    label: "体脂率",
+    icon: "🧬",
+    source: "auto",
+    kind: "number",
+    unit: "%",
+    min: 12,
+    max: 24,
+    value: 27.5,
+    hint: "身高体脂分析仪自动同步",
   },
   {
     id: "vision-l",
@@ -78,6 +91,30 @@ export const EXAM_ITEMS: ExamItem[] = [
     hint: "视力筛查仪自动同步 · 低于 5.0 需关注",
   },
   {
+    id: "waist",
+    label: "腰围",
+    icon: "📐",
+    source: "auto",
+    kind: "number",
+    unit: "cm",
+    min: 50,
+    max: 63,
+    value: 68,
+    hint: "腰臀围尺测量 · 腰围身高比参考 < 0.48",
+  },
+  {
+    id: "hip",
+    label: "臀围",
+    icon: "📐",
+    source: "auto",
+    kind: "number",
+    unit: "cm",
+    min: 60,
+    max: 76,
+    value: 74,
+    hint: "腰臀围尺测量",
+  },
+  {
     id: "bp",
     label: "血压",
     icon: "🩸",
@@ -88,9 +125,20 @@ export const EXAM_ITEMS: ExamItem[] = [
     max: 115,
     minDia: 55,
     maxDia: 75,
-    value: 108,
-    valueDia: 70,
-    hint: "电子血压计自动同步 · 收缩压 / 舒张压",
+    value: 132,
+    valueDia: 78,
+    hint: "血压测量仪自动同步 · 收缩压 / 舒张压",
+  },
+  {
+    id: "spine",
+    label: "脊柱侧弯（ATR）",
+    icon: "🦴",
+    source: "manual",
+    kind: "number",
+    unit: "°",
+    min: 0,
+    max: 5,
+    hint: "脊柱侧弯测量尺手工录入 · 前屈试验躯干旋转角",
   },
   {
     id: "oral",
@@ -102,17 +150,8 @@ export const EXAM_ITEMS: ExamItem[] = [
     normalOption: "正常",
     hint: "医生目测填写",
   },
-  {
-    id: "internal",
-    label: "内科 · 心肺",
-    icon: "🫁",
-    source: "manual",
-    kind: "choice",
-    options: ["正常", "心律不齐", "呼吸音异常", "其他"],
-    normalOption: "正常",
-    hint: "听诊后填写",
-  },
 ];
+
 
 export type ExamValue = {
   value?: number;
