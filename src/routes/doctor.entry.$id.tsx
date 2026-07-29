@@ -391,6 +391,9 @@ function EntryPage() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [retests, setRetests] = useState<Record<string, string>>({});
   const [verified, setVerified] = useState<Record<string, boolean>>({});
+  // 危机值处置：每个字段已完成的处置步骤
+  const [critSteps, setCritSteps] = useState<Record<string, number[]>>({});
+  const [critDone, setCritDone] = useState<Record<string, boolean>>({});
   const [step, setStep] = useState(0); // 只能按项前进，禁止一次滑过多项
   const [submitted, setSubmitted] = useState(false);
   const [logs, setLogs] = useState<QcLog[]>([
