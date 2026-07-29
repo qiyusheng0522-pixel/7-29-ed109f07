@@ -506,9 +506,11 @@ function DoctorListPanel({ onAsk }: { onAsk: (q: string) => void }) {
 
 function CommPage() {
   const search = Route.useSearch();
-  const presetQuestion = resolveQuestion(search);
   const doctorMode = search.mode === "doctors";
   const activeDoctor = matchDoctor(search);
+  // 报告页「立即咨询」已带入推荐科室/医生：只置顶挂号卡片，不再自动追加提问
+  const presetQuestion = activeDoctor ? undefined : resolveQuestion(search);
+
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [text, setText] = useState("");
   const [seed, setSeed] = useState(0);
@@ -592,18 +594,21 @@ function CommPage() {
         </div>
       )}
 
+      {/* 置顶：报告页异常项「立即咨询」带入的推荐医生挂号卡片 */}
+      {activeDoctor && !doctorMode && (
+        <div className="shrink-0 px-5 pt-3">
+          <p className="mb-1.5 flex items-center gap-1 px-1 text-[11px] font-medium text-rose">
+            <EIcon e="👨‍⚕️" /> 为你推荐了对应科室医生 · 可直接预约挂号
+          </p>
+          <DoctorCard d={activeDoctor} highlight />
+        </div>
+      )}
+
       {/* Body */}
       <div ref={bodyRef} className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pt-3">
-        {activeDoctor && !doctorMode && (
-          <div className="mb-3">
-            <p className="mb-1.5 flex items-center gap-1 px-1 text-[11px] font-medium text-rose">
-              <EIcon e="👨‍⚕️" /> 为你推荐了对应科室医生 · 可直接预约挂号
-            </p>
-            <DoctorCard d={activeDoctor} highlight onAsk={ask} />
-          </div>
-        )}
         {doctorMode && <DoctorListPanel onAsk={ask} />}
-        {empty && !doctorMode ? (
+        {empty && !doctorMode && !activeDoctor ? (
+
           <div className="rounded-3xl bg-white p-4 shadow-sm ring-1 ring-white/60">
             <div className="mb-3 flex items-center justify-between">
               <div>
