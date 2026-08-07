@@ -158,15 +158,36 @@ function ReportPage() {
         {/* 3D 虚拟儿童形象 + 问题标注 */}
         <section className="mb-3 overflow-hidden rounded-3xl bg-gradient-to-br from-warning/20 via-warm/10 to-rose/15 p-4 ring-1 ring-warning/30">
           <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-warning/40 text-sm">{<EIcon e="🟡" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" />}</span>
-              <div>
-                <p className="text-[10px] leading-none text-muted-foreground">整体风险等级</p>
-                <p className="text-sm font-bold text-warning-foreground">{child.riskLevel} · 需关注 3 项</p>
-              </div>
-            </div>
+            <RiskLevelSheet
+              current={child.riskLevel}
+              trigger={
+                <button type="button" className="flex items-center gap-2 text-left">
+                  <span
+                    className="grid h-7 w-7 place-items-center rounded-full text-sm"
+                    style={{ background: curRisk.dot }}
+                  />
+                  <div>
+                    <p className="text-[10px] leading-none text-muted-foreground">
+                      整体风险等级 · 点击查看等级说明
+                    </p>
+                    <p className="text-sm font-bold text-warning-foreground">
+                      {curRisk.key} · {curRisk.level} · 需关注 3 项
+                      <span className="ml-1 text-[11px] font-normal text-muted-foreground">ⓘ</span>
+                    </p>
+                  </div>
+                </button>
+              }
+            />
             <span className="text-[11px] text-muted-foreground">8 岁 · 男 · 138cm / 32.5kg</span>
           </div>
+
+          <p className="mb-2 rounded-xl bg-surface/70 px-3 py-2 text-[11px] leading-relaxed text-foreground/80">
+            <span className="font-medium">等级注释：</span>
+            {curRisk.note}
+            <span className="block text-muted-foreground">
+              下一步：{curRisk.action} · 责任主体：{curRisk.owner}
+            </span>
+          </p>
 
           <div className="relative mx-auto h-[340px] w-full">
             {/* 风险光晕 - 融入 3D 形象 */}
@@ -185,10 +206,20 @@ function ReportPage() {
 
             {/* 头顶风险徽章 */}
             <div className="absolute left-1/2 top-1 -translate-x-1/2">
-              <span className="rounded-full bg-warning px-3 py-1 text-[11px] font-bold text-warning-foreground shadow-md ring-2 ring-white">
-                 {child.riskLevel}风险
-              </span>
+              <RiskLevelSheet
+                current={child.riskLevel}
+                trigger={
+                  <button
+                    type="button"
+                    className="rounded-full px-3 py-1 text-[11px] font-bold text-white shadow-md ring-2 ring-white"
+                    style={{ background: curRisk.dot }}
+                  >
+                    {curRisk.key} · {curRisk.level} ⓘ
+                  </button>
+                }
+              />
             </div>
+
 
             {/* 左侧标注：视力 / 呼吸 */}
             <div className="absolute left-0 top-16 max-w-[38%]">
