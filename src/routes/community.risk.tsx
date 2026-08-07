@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { StatusBar } from "@/components/MobileFrame";
+import { RiskLevelSheet } from "@/components/RiskLevelSheet";
+import { riskByKey, type RiskKey } from "@/lib/risk-levels";
 
 export const Route = createFileRoute("/community/risk")({
   component: RiskPage,
@@ -14,13 +16,14 @@ type Risk = {
   name: string;
   gender: "男" | "女";
   age: number;
-  level: "高风险" | "较高风险";
+  level: RiskKey;
   dept: Dept;
   summary: string;
   from: string;
   issues: { title: string; value: string; ref: string; note: string }[];
   advice: string;
 };
+
 
 const risks: Risk[] = [
   {
