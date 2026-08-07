@@ -4,6 +4,11 @@ import { child, reviewPlan } from "@/lib/mock-data";
 import { StatusBar } from "@/components/MobileFrame";
 import { ActionSheet } from "@/components/ActionSheet";
 import child3d from "@/assets/child-3d.png";
+import { RiskLevelSheet } from "@/components/RiskLevelSheet";
+import { riskByKey } from "@/lib/risk-levels";
+
+const curRisk = riskByKey(child.riskLevel);
+
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/parent/report")({
