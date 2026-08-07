@@ -125,19 +125,28 @@ function RiskPage() {
                     </p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">{r.from}</p>
                   </div>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] ${
-                      r.level === "高风险" ? "bg-rose/15 text-rose" : "bg-warm/15 text-warm"
-                    }`}
-                  >
-                    {r.level}
-                  </span>
+                  <RiskLevelSheet
+                    current={r.level}
+                    trigger={
+                      <button
+                        type="button"
+                        className="flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] text-white"
+                        style={{ background: riskByKey(r.level).dot }}
+                      >
+                        {r.level} · {riskByKey(r.level).level} ⓘ
+                      </button>
+                    }
+                  />
                 </div>
 
                 <p className="mt-2 rounded-xl bg-surface-2 p-2 text-[12px]">
                   <span className="font-medium">风险问题：</span>
                   {r.summary}
                 </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  等级注释：{riskByKey(r.level).note}
+                </p>
+
 
                 <div className="mt-2 flex items-center justify-between text-[11px]">
                   <span className="text-muted-foreground">建议专科：{r.dept}</span>
