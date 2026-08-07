@@ -199,15 +199,19 @@ function ParentHome() {
           <div className="w-full rounded-3xl bg-surface p-5 shadow-2xl">
             <div className="mb-2 flex items-center gap-2">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-rose/15 text-lg">{<EIcon e="📄" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" />}</span>
-              <h2 className="text-base font-bold">儿童体检数据授权协议</h2>
+              <div className="min-w-0">
+                <h2 className="text-base font-bold">学生健康体检授权协议书</h2>
+                <p className="text-[11px] text-muted-foreground">南京市教育局 · 制式授权协议</p>
+              </div>
             </div>
             <div className="max-h-40 space-y-2 overflow-y-auto rounded-2xl bg-surface-2 p-3 text-[11px] leading-relaxed text-foreground/80">
-              <p>为向您与孩子提供体检报告解读、健康方案与随访服务，本小程序将采集：</p>
-              <p>• 基础信息（姓名 / 年龄 / 学校班级）</p>
-              <p>• 体检数据（身高体重 / 视力 / 血压 / 过敏筛查等）</p>
+              <p>依据南京市教育局关于中小学生健康体检工作的相关要求，经监护人书面授权后开展本次体检并采集：</p>
+              <p>• 基础信息（姓名 / 年龄 / 学校班级 / 学号）</p>
+              <p>• 体检数据（身高体重 / 视力 / 血压 / 脊柱侧弯 / 龋齿等）</p>
               <p>• 家庭健康打卡与咨询记录</p>
-              <p>以上数据���承检机构与合作儿童医院加密存储，仅用于服务您的孩子，不会用于商业用途。您可随时在"我的-授权管理"中撤回。</p>
+              <p>以上数据由教育局指定承检机构与合作儿童医院加密存储，仅用于学生健康管理与服务，不会用于商业用途。您可随时在"我的-授权管理"中撤回。</p>
             </div>
+
             <div className="mt-3">
               <div className="mb-1.5 flex items-center justify-between">
                 <p className="text-[11px] font-medium text-muted-foreground">

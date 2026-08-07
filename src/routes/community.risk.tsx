@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { StatusBar } from "@/components/MobileFrame";
+import { RiskLevelSheet } from "@/components/RiskLevelSheet";
+import { riskByKey, type RiskKey } from "@/lib/risk-levels";
 
 export const Route = createFileRoute("/community/risk")({
   component: RiskPage,
@@ -14,7 +16,7 @@ type Risk = {
   name: string;
   gender: "男" | "女";
   age: number;
-  level: "高风险" | "较高风险";
+  level: RiskKey;
   dept: Dept;
   summary: string;
   from: string;
@@ -22,13 +24,14 @@ type Risk = {
   advice: string;
 };
 
+
 const risks: Risk[] = [
   {
     id: "liu",
     name: "刘小强",
     gender: "男",
     age: 10,
-    level: "高风险",
+    level: "红色",
     dept: "肥胖科",
     summary: "BMI ≥ P95 · 轻度脂肪肝 · 腰围超标",
     from: "服务包随访 04-12 上传体脂秤数据",
@@ -45,7 +48,7 @@ const risks: Risk[] = [
     name: "陈小美",
     gender: "女",
     age: 9,
-    level: "高风险",
+    level: "红色",
     dept: "呼吸科",
     summary: "哮喘部分控制 · FeNO 升高 · 用药依从 65%",
     from: "复诊转入 · 家长端打卡与雾化记录",
@@ -62,7 +65,7 @@ const risks: Risk[] = [
     name: "张小乐",
     gender: "男",
     age: 6,
-    level: "较高风险",
+    level: "橙色",
     dept: "呼吸科",
     summary: "中度过敏性鼻炎 · 扁桃体 II 度 · 依从 48%",
     from: "区妇幼下转 · 祖母代为照护",
@@ -122,19 +125,28 @@ function RiskPage() {
                     </p>
                     <p className="mt-0.5 text-[11px] text-muted-foreground">{r.from}</p>
                   </div>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] ${
-                      r.level === "高风险" ? "bg-rose/15 text-rose" : "bg-warm/15 text-warm"
-                    }`}
-                  >
-                    {r.level}
-                  </span>
+                  <RiskLevelSheet
+                    current={r.level}
+                    trigger={
+                      <button
+                        type="button"
+                        className="flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] text-white"
+                        style={{ background: riskByKey(r.level).dot }}
+                      >
+                        {r.level} · {riskByKey(r.level).level} ⓘ
+                      </button>
+                    }
+                  />
                 </div>
 
                 <p className="mt-2 rounded-xl bg-surface-2 p-2 text-[12px]">
                   <span className="font-medium">风险问题：</span>
                   {r.summary}
                 </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  等级注释：{riskByKey(r.level).note}
+                </p>
+
 
                 <div className="mt-2 flex items-center justify-between text-[11px]">
                   <span className="text-muted-foreground">建议专科：{r.dept}</span>
