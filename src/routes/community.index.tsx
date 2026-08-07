@@ -24,7 +24,7 @@ type Stat = {
   value: number;
   unit: string;
   valueColor: string;
-  to: "/community/patients" | "/community/edu" | "/community/consult";
+  to: "/community/patients" | "/community/edu" | "/community/consult" | "/community/risk";
 };
 
 const stats: Stat[] = [
@@ -39,15 +39,16 @@ const stats: Stat[] = [
     to: "/community/patients",
   },
   {
-    icon: <EIcon e="🔁" />,
-    iconBg: "bg-teal/15 text-teal",
-    label: "医院下传",
-    sub: "医院转介 · 待建档随访",
-    value: 12,
-    unit: "人待接",
-    valueColor: "text-teal",
-    to: "/community/patients",
+    icon: <EIcon e="🚨" />,
+    iconBg: "bg-rose/15 text-rose",
+    label: "风险患儿",
+    sub: "高风险指标 · 可推送儿童医院",
+    value: 3,
+    unit: "人高风险",
+    valueColor: "text-rose",
+    to: "/community/risk",
   },
+
   {
     icon: <EIcon e="📢" />,
     iconBg: "bg-rose/15 text-rose",

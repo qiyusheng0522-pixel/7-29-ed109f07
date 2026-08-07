@@ -58,6 +58,7 @@ import { Route as DoctorExamRouteImport } from './routes/doctor.exam'
 import { Route as DoctorCoordRouteImport } from './routes/doctor.coord'
 import { Route as DoctorCommRouteImport } from './routes/doctor.comm'
 import { Route as DoctorChildRouteImport } from './routes/doctor.child'
+import { Route as CommunityRiskRouteImport } from './routes/community.risk'
 import { Route as CommunityPatientsRouteImport } from './routes/community.patients'
 import { Route as CommunityMeRouteImport } from './routes/community.me'
 import { Route as CommunityEduRouteImport } from './routes/community.edu'
@@ -311,6 +312,11 @@ const DoctorChildRoute = DoctorChildRouteImport.update({
   path: '/child',
   getParentRoute: () => DoctorRoute,
 } as any)
+const CommunityRiskRoute = CommunityRiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
+  getParentRoute: () => CommunityRoute,
+} as any)
 const CommunityPatientsRoute = CommunityPatientsRouteImport.update({
   id: '/patients',
   path: '/patients',
@@ -359,6 +365,7 @@ export interface FileRoutesByFullPath {
   '/community/edu': typeof CommunityEduRoute
   '/community/me': typeof CommunityMeRoute
   '/community/patients': typeof CommunityPatientsRoute
+  '/community/risk': typeof CommunityRiskRoute
   '/doctor/child': typeof DoctorChildRoute
   '/doctor/comm': typeof DoctorCommRoute
   '/doctor/coord': typeof DoctorCoordRoute
@@ -413,6 +420,7 @@ export interface FileRoutesByTo {
   '/community/edu': typeof CommunityEduRoute
   '/community/me': typeof CommunityMeRoute
   '/community/patients': typeof CommunityPatientsRoute
+  '/community/risk': typeof CommunityRiskRoute
   '/doctor/child': typeof DoctorChildRoute
   '/doctor/comm': typeof DoctorCommRoute
   '/doctor/coord': typeof DoctorCoordRoute
@@ -472,6 +480,7 @@ export interface FileRoutesById {
   '/community/edu': typeof CommunityEduRoute
   '/community/me': typeof CommunityMeRoute
   '/community/patients': typeof CommunityPatientsRoute
+  '/community/risk': typeof CommunityRiskRoute
   '/doctor/child': typeof DoctorChildRoute
   '/doctor/comm': typeof DoctorCommRoute
   '/doctor/coord': typeof DoctorCoordRoute
@@ -532,6 +541,7 @@ export interface FileRouteTypes {
     | '/community/edu'
     | '/community/me'
     | '/community/patients'
+    | '/community/risk'
     | '/doctor/child'
     | '/doctor/comm'
     | '/doctor/coord'
@@ -586,6 +596,7 @@ export interface FileRouteTypes {
     | '/community/edu'
     | '/community/me'
     | '/community/patients'
+    | '/community/risk'
     | '/doctor/child'
     | '/doctor/comm'
     | '/doctor/coord'
@@ -644,6 +655,7 @@ export interface FileRouteTypes {
     | '/community/edu'
     | '/community/me'
     | '/community/patients'
+    | '/community/risk'
     | '/doctor/child'
     | '/doctor/comm'
     | '/doctor/coord'
@@ -1047,6 +1059,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorChildRouteImport
       parentRoute: typeof DoctorRoute
     }
+    '/community/risk': {
+      id: '/community/risk'
+      path: '/risk'
+      fullPath: '/community/risk'
+      preLoaderRoute: typeof CommunityRiskRouteImport
+      parentRoute: typeof CommunityRoute
+    }
     '/community/patients': {
       id: '/community/patients'
       path: '/patients'
@@ -1104,6 +1123,7 @@ interface CommunityRouteChildren {
   CommunityEduRoute: typeof CommunityEduRoute
   CommunityMeRoute: typeof CommunityMeRoute
   CommunityPatientsRoute: typeof CommunityPatientsRoute
+  CommunityRiskRoute: typeof CommunityRiskRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   CommunityPatientIdRoute: typeof CommunityPatientIdRoute
 }
@@ -1113,6 +1133,7 @@ const CommunityRouteChildren: CommunityRouteChildren = {
   CommunityEduRoute: CommunityEduRoute,
   CommunityMeRoute: CommunityMeRoute,
   CommunityPatientsRoute: CommunityPatientsRoute,
+  CommunityRiskRoute: CommunityRiskRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   CommunityPatientIdRoute: CommunityPatientIdRoute,
 }
