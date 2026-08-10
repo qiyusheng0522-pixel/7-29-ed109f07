@@ -41,7 +41,7 @@ const stats: Stat[] = [
   {
     icon: <EIcon e="🚨" />,
     iconBg: "bg-rose/15 text-rose",
-    label: "风险患儿",
+    label: "患儿上传",
     sub: "高风险指标 · 可推送儿童医院",
     value: 3,
     unit: "人高风险",
