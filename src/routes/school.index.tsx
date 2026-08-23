@@ -5,6 +5,7 @@ import { StatusBar } from "@/components/MobileFrame";
 import { schoolStats, classSchedule } from "@/lib/mock-data";
 import { teacherClass, recheckList, liveNotices, escort, type RecheckItem } from "@/lib/teacher-class";
 import { useSchoolView } from "@/lib/school-role";
+import { FIT_ITEMS, PE_CLASSES, PE_TEACHER, fitStudents, gradeOf } from "@/lib/fitness";
 
 
 import { EIcon } from "@/components/EIcon";
@@ -63,6 +64,7 @@ function SchoolHome() {
           {([
             { k: "health", label: "保健老师", icon: "🏫" },
             { k: "teacher", label: "班主任", icon: "👩‍🏫" },
+            { k: "pe", label: "体育老师", icon: "🏃" },
           ] as const).map((r) => (
             <button
               key={r.k}
@@ -77,7 +79,9 @@ function SchoolHome() {
         </div>
       </div>
 
-      {view === "teacher" ? (
+      {view === "pe" ? (
+        <PEView />
+      ) : view === "teacher" ? (
         <TeacherView />
       ) : (
       <>
@@ -396,6 +400,102 @@ function TeacherView() {
             提醒我
           </button>
         </div>
+      </section>
+    </div>
+  );
+}
+
+/** 体育老师视角：体质测试组织与体适能成绩录入 */
+function PEView() {
+  const list = fitStudents.filter((s) => (PE_CLASSES as readonly string[]).includes(s.cls));
+  const done = list.filter((s) => s.scores).length;
+  const pct = Math.round((done / list.length) * 100);
+  const weak = list.filter(
+    (s) => s.scores && FIT_ITEMS.some((it) => gradeOf(it, s.gender, s.scores![it.key] ?? "") === "不及格"),
+  );
+
+  return (
+    <div className="px-5 pb-6 pt-3">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-teal to-deep p-4 text-white shadow-lg shadow-teal/20">
+        <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
+        <p className="text-[11px] opacity-90">阳光小学 · 体育老师 {PE_TEACHER}</p>
+        <p className="mt-1 flex items-baseline gap-1 text-[28px] font-extrabold leading-none">
+          {done}
+          <span className="text-[13px] font-medium opacity-80">/ {list.length} 人已录成绩</span>
+        </p>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/25">
+          <div className="h-full rounded-full bg-white transition-all duration-500" style={{ width: `${pct}%` }} />
+        </div>
+        <p className="mt-2 text-[11px] opacity-85">春季体质测试 · 任教班级 {PE_CLASSES.join(" / ")}</p>
+      </div>
+
+      <section className="mt-4">
+        <h2 className="mb-2 text-sm font-semibold">体适能录入</h2>
+        <Link
+          to="/school/fitness"
+          className="flex items-center gap-3 rounded-2xl bg-surface p-3.5 shadow-sm ring-1 ring-border/60 transition active:scale-[0.99]"
+        >
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-teal/15 text-[20px] text-teal">
+            <EIcon e="🏃" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold">按班级录入体适能成绩</p>
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              50 米跑 / 坐位体前屈 / 立定跳远 / 跳绳 / 仰卧起坐 / 肺活量 · 自动评级
+            </p>
+          </div>
+          <span className="shrink-0 text-[11px] text-teal">去录入 →</span>
+        </Link>
+      </section>
+
+      <section className="mt-4">
+        <h2 className="mb-2 text-sm font-semibold">测试项目与标准</h2>
+        <ul className="grid grid-cols-2 gap-2">
+          {FIT_ITEMS.map((it) => (
+            <li key={it.key} className="rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-border/60">
+              <p className="text-[13px] font-semibold">
+                <EIcon e={it.icon} /> {it.label}
+              </p>
+              <p className="mt-0.5 text-[10px] text-muted-foreground">单位 {it.unit} · 男/女分档评级</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-4">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-sm font-semibold">体质薄弱学生</h2>
+          <span className="text-[11px] text-muted-foreground">共 {weak.length} 人</span>
+        </div>
+        <ul className="space-y-2">
+          {weak.map((s) => (
+            <li key={s.id} className="flex items-center gap-2.5 rounded-2xl bg-warning/10 p-3 ring-1 ring-warning/25">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-warning/20 text-sm font-bold text-warning-foreground">
+                {s.name.slice(-1)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-semibold">
+                  {s.name}
+                  <span className="ml-2 text-[11px] font-normal text-muted-foreground">{s.cls}</span>
+                </p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  {FIT_ITEMS.filter((it) => gradeOf(it, s.gender, s.scores?.[it.key] ?? "") === "不及格")
+                    .map((it) => it.label)
+                    .join(" · ")}{" "}
+                  不及格 · 建议纳入课后运动干预
+                </p>
+              </div>
+              <Link to="/school/fitness" className="shrink-0 text-[11px] text-teal">
+                查看
+              </Link>
+            </li>
+          ))}
+          {weak.length === 0 && (
+            <li className="rounded-2xl bg-surface p-4 text-center text-[12px] text-muted-foreground ring-1 ring-border/60">
+              暂无不及格学生
+            </li>
+          )}
+        </ul>
       </section>
     </div>
   );
