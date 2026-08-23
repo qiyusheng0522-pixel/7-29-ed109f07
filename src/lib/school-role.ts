@@ -1,7 +1,7 @@
 // 学校端视角（卫生保健老师 / 班主任）——跨页面共享的轻量状态
 import { useEffect, useSyncExternalStore } from "react";
 
-export type SchoolView = "health" | "teacher";
+export type SchoolView = "health" | "teacher" | "pe";
 
 /** 班主任视角固定为「三年级 3 班 · 王老师」 */
 export const MY_CLASS = "3年3班";
