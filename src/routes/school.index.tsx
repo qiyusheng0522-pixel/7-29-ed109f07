@@ -63,6 +63,7 @@ function SchoolHome() {
           {([
             { k: "health", label: "保健老师", icon: "🏫" },
             { k: "teacher", label: "班主任", icon: "👩‍🏫" },
+            { k: "pe", label: "体育老师", icon: "🏃" },
           ] as const).map((r) => (
             <button
               key={r.k}
