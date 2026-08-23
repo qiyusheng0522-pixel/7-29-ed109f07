@@ -78,7 +78,9 @@ function SchoolHome() {
         </div>
       </div>
 
-      {view === "teacher" ? (
+      {view === "pe" ? (
+        <PEView />
+      ) : view === "teacher" ? (
         <TeacherView />
       ) : (
       <>
