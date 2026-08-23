@@ -10,16 +10,24 @@ export const Route = createFileRoute("/school")({
 
 function SchoolLayout() {
   const [view] = useSchoolView();
-  // 班主任视角不负责组织现场，隐藏「今日体检」
-  const items = [
-    { to: "/school", label: "工作台", icon: <EIcon e="🏫" /> },
-    ...(view === "teacher"
-      ? []
-      : [{ to: "/school/today", label: "今日体检", icon: <EIcon e="📅" /> }]),
-    { to: "/school/students", label: view === "teacher" ? "我的班级" : "学生", icon: <EIcon e="👨‍🎓" /> },
-    { to: "/school/intasks", label: "任务", icon: <EIcon e="✅" /> },
-    { to: "/school/me", label: "我的", icon: <EIcon e="👤" /> },
-  ];
+  // 班主任 / 体育老师视角不负责组织现场，隐藏「今日体检」
+  const items =
+    view === "pe"
+      ? [
+          { to: "/school", label: "工作台", icon: <EIcon e="🏫" /> },
+          { to: "/school/fitness", label: "体适能", icon: <EIcon e="🏃" /> },
+          { to: "/school/students", label: "学生", icon: <EIcon e="👨‍🎓" /> },
+          { to: "/school/me", label: "我的", icon: <EIcon e="👤" /> },
+        ]
+      : [
+          { to: "/school", label: "工作台", icon: <EIcon e="🏫" /> },
+          ...(view === "teacher"
+            ? []
+            : [{ to: "/school/today", label: "今日体检", icon: <EIcon e="📅" /> }]),
+          { to: "/school/students", label: view === "teacher" ? "我的班级" : "学生", icon: <EIcon e="👨‍🎓" /> },
+          { to: "/school/intasks", label: "任务", icon: <EIcon e="✅" /> },
+          { to: "/school/me", label: "我的", icon: <EIcon e="👤" /> },
+        ];
   return (
     <MobileFrame>
       {/* This wrapper owns scrolling (not the phone frame), so BottomNav sits
