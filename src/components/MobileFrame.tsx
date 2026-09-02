@@ -45,7 +45,7 @@ export function MobileFrame({
                   Scrolling belongs to the page wrapper inside each end's layout,
                   so the bottom nav can sit after it in normal flow and never
                   scroll away or overlap content. */}
-              <div className="flex h-[min(1311px,calc(100svh-140px))] flex-col overflow-hidden pt-8">
+              <div className="flex h-[min(874px,calc(100svh-140px))] flex-col overflow-hidden pt-8">
                 <ScreenPortalProvider value={screen}>{children}</ScreenPortalProvider>
               </div>
               {/* Home indicator */}
