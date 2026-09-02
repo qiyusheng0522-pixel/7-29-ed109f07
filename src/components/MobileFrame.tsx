@@ -17,7 +17,7 @@ export function MobileFrame({
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-center bg-[radial-gradient(120%_120%_at_50%_0%,oklch(0.97_0.012_240),oklch(0.9_0.015_235))] px-4 py-6">
       <div className="w-full max-w-[402px]">
-        {/* Phone device frame (iPhone 17 · 402 × 874, preview scaled 1.5×).
+        {/* Phone device frame (iPhone 17 · 402 × 874, true device size).
             The screen height collapses to the viewport on short windows so the
             device never forces the outer page to scroll. */}
         <div className="relative mx-auto w-full max-w-[402px]">
