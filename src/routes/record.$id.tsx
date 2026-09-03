@@ -181,7 +181,17 @@ function Recorder() {
     if (idx !== active) setActive(idx);
   }
 
+  const unverified = items.filter((it) => it.source === "auto" && !verified[it.id]);
+
   function submit() {
+    if (unverified.length > 0) {
+      toast.error("设备读数尚未核对", {
+        description: `${unverified.map((it) => it.label).join("、")} 未确认与设备显示一致`,
+      });
+      const idx = items.findIndex((it) => it.id === unverified[0].id);
+      if (idx >= 0) scrollTo(idx);
+      return;
+    }
     if (openCrits.length > 0) {
       toast.error("存在未闭环的危机值", {
         description: `${openCrits.map((it) => it.label).join("、")} 的处置步骤未逐条确认，无法提交`,
@@ -191,19 +201,18 @@ function Recorder() {
       return;
     }
     if (critCount > 0) {
-      toast.success("体检结果已提交", {
+      toast.success("已提交并同步", {
         description: `${critCount} 项危机值已按处置方案闭环并上报台账`,
       });
     } else if (retestCount > 0) {
-      toast.success("体检结果已提交", {
+      toast.success("已提交并同步", {
         description: `${retestCount} 项超范围已回传班主任，通知家长带${user?.name ?? "学生"}返场重测`,
       });
     } else {
-      toast.success("体检结果已提交", { description: "各项指标正常，已同步至健康档案" });
+      toast.success("已提交并同步", { description: `${station?.name ?? "本工位"} 数据已写入健康档案` });
     }
-    // 现场连续录入：直接进入下一位排队学生，不退回列表
-    if (nextUser) navigate({ to: "/record/$id", params: { id: nextUser.id } });
-    else navigate({ to: "/doctor/exam" });
+    // 本工位一位学生完成 → 回到扫码页，扫下一位
+    navigate({ to: "/doctor/exam", search: { view: "queue" } });
   }
 
 
@@ -213,7 +222,7 @@ function Recorder() {
       <header className="shrink-0 bg-gradient-to-r from-deep to-teal px-4 pb-2.5 pt-2 text-white">
         <div className="flex items-center justify-between gap-2">
           <button
-            onClick={() => navigate({ to: "/doctor/exam" })}
+            onClick={() => navigate({ to: "/doctor/exam", search: { view: "queue" } })}
             aria-label="退出录入"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/20 active:scale-95"
           >
@@ -229,6 +238,13 @@ function Recorder() {
             队列 {queueIdx >= 0 ? queueIdx + 1 : 1}/{queue.length}
           </span>
         </div>
+
+        {station && (
+          <p className="mt-1.5 truncate rounded-full bg-white/15 px-2.5 py-1 text-[10px] text-white/90">
+            {station.account} · {station.name} · 本工位 {items.length} 项（{station.devices.join(" / ")}）
+          </p>
+        )}
+
 
         {/* 分段进度条 */}
         <div className="mt-2.5 flex items-center gap-2">
