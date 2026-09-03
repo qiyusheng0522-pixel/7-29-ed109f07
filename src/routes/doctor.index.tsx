@@ -92,7 +92,7 @@ const todos: Todo[] = [
     id: "E0",
     name: "体检录入",
     tags: [{ text: "体检录入", cls: "bg-teal/15 text-teal" }],
-    desc: `阳光小学 · 三年级 3 班 · ${PENDING_EXAM_COUNT} 人待检 · 点击进入待检清单`,
+    desc: `阳光小学 · 三年级 3 班 · ${PENDING_EXAM_COUNT} 人待检 · 扫码开始录入`,
     to: "/doctor/exam",
     search: { view: "queue" },
   },
