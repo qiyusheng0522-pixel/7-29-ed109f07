@@ -33,7 +33,7 @@ const filters: (Status | "全部")[] = ["全部", "待检", "进行中", "已检
 function UsersPage() {
   const { view } = Route.useSearch();
   const queueView = view === "queue";
-  const [filter, setFilter] = useState<Status | "全部">("全部");
+  const [filter, setFilter] = useState<Status | "全部" | "已检">("全部");
   const [q, setQ] = useState("");
 
   const counts = users.reduce<Record<string, number>>((acc, u) => {
@@ -79,7 +79,7 @@ function UsersPage() {
   const items = stationItems(station);
   const [scanOpen, setScanOpen] = useState(false);
   const navigate = useNavigate();
-  const firstPending = users.find((u) => isPending(u.status));
+  const firstPending = users.find((u) => u.status === "待检" || u.status === "进行中");
 
   return (
     <div>
