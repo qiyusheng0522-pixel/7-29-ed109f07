@@ -276,8 +276,8 @@ function UsersPage() {
             );
             return (
               <li key={u.id}>
-                {u.to ? (
-                  <Link to={u.to} className="block">
+                {isDone(u.status) ? (
+                  <Link to="/doctor/child" search={{ sid: u.id }} className="block">
                     {content}
                   </Link>
                 ) : (

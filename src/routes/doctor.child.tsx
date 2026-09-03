@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
+import { findExamUser } from "@/lib/exam-users";
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/doctor/child")({
+  validateSearch: (search: Record<string, unknown>): { sid?: string } => ({
+    sid: typeof search.sid === "string" ? search.sid : undefined,
+  }),
   component: DoctorChildDataPage,
 });
 
@@ -70,17 +74,41 @@ const trend = [125, 126, 126.5, 127, 127.5, 128];
 const weightTrend = [25.8, 26.2, 26.5, 26.9, 27.2, 27.5];
 
 function DoctorChildDataPage() {
+  const { sid } = Route.useSearch();
+  const stu = sid ? findExamUser(sid) : undefined;
   return (
     <div>
       <StatusBar title="儿童体检结果" />
       <div className="px-5 pb-8 pt-2">
         <header className="mb-3">
-          <h1 className="text-xl font-bold">小阳 的体检结果</h1>
+          {stu && (
+            <Link
+              to="/doctor/exam"
+              search={{ view: "queue" as const }}
+              className="mb-1 inline-block text-[11px] text-muted-foreground"
+            >
+              ‹ 返回体检录入
+            </Link>
+          )}
+          <h1 className="text-xl font-bold">{stu ? stu.name : "小阳"} 的体检结果</h1>
           <p className="text-xs text-muted-foreground">
-            学生编号 S-2026-0318 · 阳光小学 · 三年级 3 班 · 2026-09-18
+            学号 {stu ? stu.id : "S-2026-0318"} · 阳光小学 ·{" "}
+            {stu ? `${stu.grade} · ${stu.age}岁${stu.gender}` : "三年级 3 班"} · 2026-09-18
           </p>
+          {stu && (
+            <p className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
+              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-muted-foreground">
+                {stu.status}
+              </span>
+              {stu.tags?.map((t) => (
+                <span key={t} className="rounded-full bg-warm/10 px-2 py-0.5 text-warm">
+                  {t}
+                </span>
+              ))}
+            </p>
+          )}
           <p className="mt-0.5 text-[11px] text-muted-foreground">
-            医生端：结合本次体检数据与历史趋势，可下发方案或转诊
+            {stu?.note || "医生端：结合本次体检数据与历史趋势，可下发方案或转诊"}
           </p>
         </header>
 
