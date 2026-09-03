@@ -747,6 +747,12 @@ function ItemCard({
         </button>
         <button
           onClick={() => {
+            if (item.source === "auto" && !verified) {
+              toast.error("请先核对设备读数", {
+                description: `确认「${item.label}」本机数据与${device ?? "设备"}显示一致后再进入下一项`,
+              });
+              return;
+            }
             if (crit && !critClosed) {
               setShowPlan(true);
               toast.error(`${crit.level}未闭环`, {
@@ -757,14 +763,21 @@ function ItemCard({
             onNext();
           }}
           className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-2xl py-3 text-[13.5px] font-bold shadow-sm active:scale-[0.98] ${
-            crit && !critClosed
+            (crit && !critClosed) || (item.source === "auto" && !verified)
               ? "bg-surface text-muted-foreground ring-1 ring-border/60"
               : "bg-deep text-deep-foreground"
           }`}
         >
           <ChevronUp className="h-4 w-4" />
-          {crit && !critClosed ? "危机值待闭环" : isLast ? "确认 · 去复核" : "确认 · 下一项"}
+          {item.source === "auto" && !verified
+            ? "待核对设备读数"
+            : crit && !critClosed
+              ? "危机值待闭环"
+              : isLast
+                ? "确认 · 去复核"
+                : "确认 · 下一项"}
         </button>
+
       </div>
     </section>
   );
