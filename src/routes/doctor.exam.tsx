@@ -66,18 +66,97 @@ function UsersPage() {
     { label: "方案确认", value: counts["方案确认"] ?? 0, cls: "text-deep" },
   ];
 
+  const [stationId, setStationId] = useState(CURRENT_STATION_ID);
+  const station = findStation(stationId)!;
+  const items = stationItems(station);
+  const [scanOpen, setScanOpen] = useState(false);
+  const navigate = useNavigate();
+  const firstPending = users.find((u) => isPending(u.status));
+
   return (
     <div>
-      <StatusBar title={queueView ? "待检学生清单" : "用户"} />
+      <StatusBar title={queueView ? "体检录入" : "用户"} />
       <div className="px-5 pb-8 pt-2">
         <div className="mb-3">
-          <h1 className="text-xl font-bold">{queueView ? "待检学生清单" : "用户"}</h1>
+          <h1 className="text-xl font-bold">{queueView ? "体检录入" : "用户"}</h1>
           <p className="text-xs text-muted-foreground">
             {queueView
               ? `阳光小学 · 三年级 3 班 · ${pendingCount} 人待检`
               : `阳光小学 · 三年级 3 班 · 共 ${users.length} 人`}
           </p>
         </div>
+
+        {/* 设备账号 + 扫码入口 */}
+        {queueView && (
+          <div className="mb-3 overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-border/60">
+            <div className="flex items-start gap-2 border-b border-border/60 p-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-deep/10 text-deep">
+                <QrCode className="h-4 w-4" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[13px] font-semibold">
+                  {station.name}
+                  <span className="ml-1.5 rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
+                    {station.account}
+                  </span>
+                </p>
+                <p className="mt-0.5 truncate text-[10.5px] text-muted-foreground">
+                  绑定设备：{station.devices.join(" · ")} · {station.doctor}
+                </p>
+                <div className="mt-1.5 flex flex-wrap gap-1">
+                  {items.map((it) => (
+                    <span
+                      key={it.id}
+                      className="rounded-full bg-teal/12 px-2 py-0.5 text-[10px] text-teal"
+                    >
+                      {it.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3">
+              <button
+                onClick={() => setScanOpen(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-deep py-3.5 text-sm font-bold text-deep-foreground active:scale-[0.98]"
+              >
+                <ScanLine className="h-4.5 w-4.5" />
+                扫码识别学生（二维码 / 条码）
+              </button>
+              <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
+                扫码 → 学生上机采集 → 医生核对设备读数 → 逐项确认 → 提交并同步
+              </p>
+              <div className="mt-2 flex gap-1.5 overflow-x-auto">
+                {EXAM_STATIONS.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => setStationId(s.id)}
+                    className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] ${
+                      s.id === stationId
+                        ? "bg-teal/15 text-teal ring-1 ring-teal/30"
+                        : "bg-surface-2 text-muted-foreground"
+                    }`}
+                  >
+                    切换账号 {s.account}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {scanOpen && (
+          <ScanOverlay
+            stationName={station.name}
+            student={firstPending}
+            onClose={() => setScanOpen(false)}
+            onDone={(uid) =>
+              navigate({ to: "/record/$id", params: { id: uid }, search: { station: stationId } })
+            }
+          />
+        )}
+
 
         {/* 状态概览（完整用户视图） */}
         {!queueView && (
