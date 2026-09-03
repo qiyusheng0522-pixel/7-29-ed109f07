@@ -1,7 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EXAM_USERS as users, type ExamStatus as Status } from "@/lib/exam-users";
+import {
+  CURRENT_STATION_ID,
+  EXAM_STATIONS,
+  findStation,
+  stationItems,
+} from "@/lib/exam-stations";
+import { ScanLine, QrCode } from "lucide-react";
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/doctor/exam")({
@@ -10,6 +17,7 @@ export const Route = createFileRoute("/doctor/exam")({
   }),
   component: UsersPage,
 });
+
 
 const statusStyle: Record<Status, string> = {
   待检: "bg-muted text-muted-foreground",
