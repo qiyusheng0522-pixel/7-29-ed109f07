@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { EXAM_USERS as users, type ExamStatus as Status } from "@/lib/exam-users";
 import {
   CURRENT_STATION_ID,
-  EXAM_STATIONS,
   findStation,
   stationItems,
 } from "@/lib/exam-stations";
@@ -74,7 +73,7 @@ function UsersPage() {
     { label: "方案确认", value: counts["方案确认"] ?? 0, cls: "text-deep" },
   ];
 
-  const [stationId, setStationId] = useState(CURRENT_STATION_ID);
+  const [stationId] = useState(CURRENT_STATION_ID);
   const station = findStation(stationId)!;
   const items = stationItems(station);
   const [scanOpen, setScanOpen] = useState(false);
