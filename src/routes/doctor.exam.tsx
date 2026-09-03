@@ -273,7 +273,9 @@ function UsersPage() {
                   <Link
                     to="/record/$id"
                     params={{ id: u.id }}
+                    search={{ station: stationId }}
                     className="block"
+
                   >
                     {content}
                   </Link>
