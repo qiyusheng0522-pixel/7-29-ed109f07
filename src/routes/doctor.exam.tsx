@@ -209,8 +209,11 @@ function UsersPage() {
               >
                 {f}
                 {f !== "全部" && (
-                  <span className="ml-1 opacity-70">{counts[f] ?? 0}</span>
+                  <span className="ml-1 opacity-70">
+                    {f === "已检" ? doneCount : (counts[f] ?? 0)}
+                  </span>
                 )}
+
               </button>
             );
           })}
