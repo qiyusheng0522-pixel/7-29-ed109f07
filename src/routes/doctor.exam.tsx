@@ -89,7 +89,7 @@ function UsersPage() {
           <h1 className="text-xl font-bold">{queueView ? "体检录入" : "用户"}</h1>
           <p className="text-xs text-muted-foreground">
             {queueView
-              ? `阳光小学 · 三年级 3 班 · ${pendingCount} 人待检`
+              ? `阳光小学 · 三年级 3 班 · ${pendingCount} 人待检 · ${doneCount} 人已检`
               : `阳光小学 · 三年级 3 班 · 共 ${users.length} 人`}
           </p>
         </div>
