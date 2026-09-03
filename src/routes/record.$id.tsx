@@ -624,6 +624,35 @@ function ItemCard({
             </div>
           </div>
 
+          {item.source === "auto" && (
+            <button
+              onClick={onVerify}
+              className={`mt-2 flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2.5 text-left ring-1 transition active:scale-[0.99] ${
+                verified
+                  ? "bg-success/10 ring-success/30"
+                  : "bg-surface ring-warm/40"
+              }`}
+            >
+              <span
+                className={`grid h-5 w-5 shrink-0 place-items-center rounded-md ${
+                  verified ? "bg-success text-success-foreground" : "bg-surface-2 text-transparent"
+                }`}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] font-semibold text-foreground">
+                  {verified ? "已核对：设备读数与本机数据一致" : "请核对设备读数与本机数据是否一致"}
+                </span>
+                <span className="block text-[10px] text-muted-foreground">
+                  {device ? `${device} · ` : ""}学生上机采集完成后由医生逐项核实，未核对不可提交
+                </span>
+              </span>
+            </button>
+          )}
+
+
+
           {planOpen ? (
             <CritPanel
               crit={crit!}
