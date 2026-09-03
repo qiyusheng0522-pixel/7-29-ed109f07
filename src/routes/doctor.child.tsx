@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
+import { findExamUser } from "@/lib/exam-users";
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/doctor/child")({
+  validateSearch: (search: Record<string, unknown>): { sid?: string } => ({
+    sid: typeof search.sid === "string" ? search.sid : undefined,
+  }),
   component: DoctorChildDataPage,
 });
 
