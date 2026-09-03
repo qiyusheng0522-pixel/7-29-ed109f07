@@ -17,6 +17,7 @@ import {
   type ItemStatus,
   type CritRule,
 } from "@/lib/exam-record";
+import { findStation, stationItems } from "@/lib/exam-stations";
 
 
 export const Route = createFileRoute("/record/$id")({
