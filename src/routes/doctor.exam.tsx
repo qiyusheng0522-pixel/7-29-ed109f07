@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { EXAM_USERS as users, type ExamStatus as Status } from "@/lib/exam-users";
 import {
   CURRENT_STATION_ID,
-  EXAM_STATIONS,
   findStation,
   stationItems,
 } from "@/lib/exam-stations";
@@ -74,7 +73,7 @@ function UsersPage() {
     { label: "方案确认", value: counts["方案确认"] ?? 0, cls: "text-deep" },
   ];
 
-  const [stationId, setStationId] = useState(CURRENT_STATION_ID);
+  const [stationId] = useState(CURRENT_STATION_ID);
   const station = findStation(stationId)!;
   const items = stationItems(station);
   const [scanOpen, setScanOpen] = useState(false);
@@ -97,25 +96,22 @@ function UsersPage() {
         {/* 设备账号 + 扫码入口 */}
         {queueView && (
           <div className="mb-3 overflow-hidden rounded-2xl bg-surface shadow-sm ring-1 ring-border/60">
-            <div className="flex items-start gap-2 border-b border-border/60 p-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-deep/10 text-deep">
-                <QrCode className="h-4 w-4" />
+            <div className="flex items-center gap-2.5 border-b border-border/60 p-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-deep/10 text-sm font-bold text-deep">
+                {station.doctor.slice(0, 1)}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-semibold">
-                  {station.name}
-                  <span className="ml-1.5 rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-normal text-muted-foreground">
-                    {station.account}
+                <p className="truncate text-[14px] font-bold">
+                  {station.doctor}
+                  <span className="ml-1.5 text-[11px] font-normal text-muted-foreground">
+                    当前体检医生
                   </span>
-                </p>
-                <p className="mt-0.5 truncate text-[10.5px] text-muted-foreground">
-                  绑定设备：{station.devices.join(" · ")} · {station.doctor}
                 </p>
                 <div className="mt-1.5 flex flex-wrap gap-1">
                   {items.map((it) => (
                     <span
                       key={it.id}
-                      className="rounded-full bg-teal/12 px-2 py-0.5 text-[10px] text-teal"
+                      className="rounded-full bg-teal/12 px-2 py-0.5 text-[10.5px] text-teal"
                     >
                       {it.label}
                     </span>
@@ -135,22 +131,8 @@ function UsersPage() {
               <p className="mt-1.5 text-center text-[10px] text-muted-foreground">
                 扫码 → 学生上机采集 → 医生核对设备读数 → 逐项确认 → 提交并同步
               </p>
-              <div className="mt-2 flex gap-1.5 overflow-x-auto">
-                {EXAM_STATIONS.map((s) => (
-                  <button
-                    key={s.id}
-                    onClick={() => setStationId(s.id)}
-                    className={`shrink-0 rounded-full px-2.5 py-1 text-[10.5px] ${
-                      s.id === stationId
-                        ? "bg-teal/15 text-teal ring-1 ring-teal/30"
-                        : "bg-surface-2 text-muted-foreground"
-                    }`}
-                  >
-                    切换账号 {s.account}
-                  </button>
-                ))}
-              </div>
             </div>
+
           </div>
         )}
 
