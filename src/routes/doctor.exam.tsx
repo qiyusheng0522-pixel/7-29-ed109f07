@@ -43,19 +43,27 @@ function UsersPage() {
 
   // 待检学生清单口径：待检 + 进行中（尚未完成体检）
   const pendingCount = (counts["待检"] ?? 0) + (counts["进行中"] ?? 0);
-  const isPending = (s: Status) => s === "待检" || s === "进行中";
+  const isDone = (s: Status) => s.startsWith("已检") || s === "需复核" || s === "方案确认";
+  const doneCount = users.filter((u) => isDone(u.status)).length;
+
+  const matchQueueFilter = (s: Status) => {
+    if (filter === "全部") return true;
+    if (filter === "已检") return isDone(s);
+    return s === filter;
+  };
 
   const list = users.filter((u) => {
-    if (queueView && !isPending(u.status)) return false;
-    if (filter !== "全部" && u.status !== filter) return false;
+    if (queueView ? !matchQueueFilter(u.status) : filter !== "全部" && u.status !== filter)
+      return false;
     if (q && !(`${u.id}${u.name}`.includes(q))) return false;
     return true;
   });
 
-  // 清单视图只保留与"待检"相关的筛选项
-  const filterTabs: (Status | "全部")[] = queueView
-    ? ["全部", "待检", "进行中"]
+  // 清单视图筛选项：待检 / 进行中 / 已检
+  const filterTabs: (Status | "全部" | "已检")[] = queueView
+    ? ["全部", "待检", "进行中", "已检"]
     : filters;
+
 
   const stats = [
     { label: "待检", value: counts["待检"] ?? 0, cls: "text-muted-foreground" },
