@@ -288,3 +288,74 @@ function UsersPage() {
     </div>
   );
 }
+
+/** 扫码识别学生（原型：模拟摄像头识别过程） */
+function ScanOverlay({
+  stationName,
+  student,
+  onClose,
+  onDone,
+}: {
+  stationName: string;
+  student?: (typeof users)[number];
+  onClose: () => void;
+  onDone: (uid: string) => void;
+}) {
+  const [phase, setPhase] = useState<"scanning" | "hit">("scanning");
+
+  useEffect(() => {
+    const t = setTimeout(() => setPhase("hit"), 1400);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-6">
+      <div className="w-full max-w-[300px] rounded-3xl bg-surface p-4 shadow-2xl">
+        <p className="text-center text-[13px] font-bold">扫码识别学生</p>
+        <p className="mt-0.5 text-center text-[10.5px] text-muted-foreground">
+          {stationName} · 对准学生健康卡二维码 / 条码
+        </p>
+
+        <div className="relative mx-auto mt-3 grid h-40 w-40 place-items-center overflow-hidden rounded-2xl bg-black/85">
+          <QrCode className="h-16 w-16 text-white/25" />
+          {phase === "scanning" ? (
+            <span className="absolute left-0 right-0 top-0 h-0.5 animate-[bounce_1.2s_linear_infinite] bg-teal" />
+          ) : (
+            <span className="absolute inset-0 grid place-items-center bg-success/85 text-[13px] font-bold text-success-foreground">
+              识别成功
+            </span>
+          )}
+        </div>
+
+        <div className="mt-3 rounded-2xl bg-surface-2 p-3 text-center">
+          {phase === "scanning" || !student ? (
+            <p className="text-[12px] text-muted-foreground">正在识别学生信息…</p>
+          ) : (
+            <>
+              <p className="text-[14px] font-bold">{student.name}</p>
+              <p className="mt-0.5 text-[10.5px] text-muted-foreground">
+                {student.grade} · {student.age}岁{student.gender} · 学号 {student.id}
+              </p>
+            </>
+          )}
+        </div>
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          <button
+            onClick={onClose}
+            className="rounded-xl bg-surface-2 py-2.5 text-[12.5px] text-muted-foreground"
+          >
+            取消
+          </button>
+          <button
+            disabled={phase !== "hit" || !student}
+            onClick={() => student && onDone(student.id)}
+            className="rounded-xl bg-teal py-2.5 text-[12.5px] font-bold text-teal-foreground disabled:opacity-40"
+          >
+            开始采集
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
