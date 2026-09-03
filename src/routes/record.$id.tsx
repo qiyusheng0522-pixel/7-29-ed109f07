@@ -20,8 +20,12 @@ import {
 
 
 export const Route = createFileRoute("/record/$id")({
+  validateSearch: (search: Record<string, unknown>): { station?: string } => ({
+    station: typeof search.station === "string" ? search.station : undefined,
+  }),
   component: RecordPage,
 });
+
 
 function fmt(n?: number) {
   if (n == null) return "--";
