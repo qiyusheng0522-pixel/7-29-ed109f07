@@ -68,7 +68,7 @@ function Recorder() {
   // 设备自动项预采集读数直接落库，超范围自动标记需重测
   const [values, setValues] = useState<Record<string, ExamValue>>(() => {
     const init: Record<string, ExamValue> = {};
-    EXAM_ITEMS.forEach((it) => {
+    items.forEach((it) => {
       if (it.source === "auto") {
         const seeded = seedValue(it);
         init[it.id] = { ...seeded, retest: evalItem(it, seeded) === "abnormal" };
@@ -77,18 +77,18 @@ function Recorder() {
     return init;
   });
 
-  const statuses = useMemo(() => EXAM_ITEMS.map((it) => evalItem(it, values[it.id])), [values]);
+  const statuses = useMemo(() => items.map((it) => evalItem(it, values[it.id])), [values]);
   const abnormalCount = statuses.filter((s) => s === "abnormal").length;
-  const retestCount = EXAM_ITEMS.filter((it) => values[it.id]?.retest).length;
+  const retestCount = items.filter((it) => values[it.id]?.retest).length;
   const doneCount = statuses.filter((s) => s !== "empty").length;
-  const emptyManual = EXAM_ITEMS.filter(
+  const emptyManual = items.filter(
     (it) => it.kind === "choice" && !values[it.id]?.choice,
   );
 
   // 危机值：按项判定，逐条勾选处置步骤后方可闭环
-  const crits = useMemo(() => EXAM_ITEMS.map((it) => critFor(it, values[it.id])), [values]);
+  const crits = useMemo(() => items.map((it) => critFor(it, values[it.id])), [values]);
   const [critSteps, setCritSteps] = useState<Record<string, number[]>>({});
-  const openCrits = EXAM_ITEMS.filter((it, i) => {
+  const openCrits = items.filter((it, i) => {
     const c = crits[i];
     return c && (critSteps[it.id]?.length ?? 0) < c.plan.length;
   });
@@ -104,7 +104,7 @@ function Recorder() {
 
   function updateValue(itemId: string, patch: Partial<ExamValue>) {
     setValues((s) => {
-      const item = EXAM_ITEMS.find((i) => i.id === itemId)!;
+      const item = items.find((i) => i.id === itemId)!;
       const merged = { ...(s[itemId] ?? {}), ...patch };
       merged.retest = evalItem(item, merged) === "abnormal";
       return { ...s, [itemId]: merged };
@@ -173,7 +173,7 @@ function Recorder() {
       toast.error("存在未闭环的危机值", {
         description: `${openCrits.map((it) => it.label).join("、")} 的处置步骤未逐条确认，无法提交`,
       });
-      const idx = EXAM_ITEMS.findIndex((it) => it.id === openCrits[0].id);
+      const idx = items.findIndex((it) => it.id === openCrits[0].id);
       if (idx >= 0) scrollTo(idx);
       return;
     }
@@ -220,7 +220,7 @@ function Recorder() {
         {/* 分段进度条 */}
         <div className="mt-2.5 flex items-center gap-2">
           <div className="flex flex-1 gap-1">
-            {EXAM_ITEMS.map((it, i) => {
+            {items.map((it, i) => {
               const st = statuses[i];
               return (
                 <button
@@ -245,7 +245,7 @@ function Recorder() {
             })}
           </div>
           <span className="shrink-0 text-[10px] font-semibold tabular-nums text-white/90">
-            {doneCount}/{EXAM_ITEMS.length}
+            {doneCount}/{items.length}
           </span>
         </div>
       </header>
@@ -257,18 +257,18 @@ function Recorder() {
         style={{ overflowAnchor: "none" }}
         className="no-scrollbar min-h-0 flex-1 snap-y snap-mandatory overflow-y-scroll overscroll-contain"
       >
-        {EXAM_ITEMS.map((item, i) => (
+        {items.map((item, i) => (
           <ItemCard
             key={item.id}
             item={item}
             index={i}
-            total={EXAM_ITEMS.length}
+            total={items.length}
             status={statuses[i]}
             value={values[item.id]}
             crit={crits[i]}
             critDone={critSteps[item.id] ?? []}
             onToggleCritStep={(idx) => toggleCritStep(item.id, idx)}
-            isLast={i === EXAM_ITEMS.length - 1}
+            isLast={i === items.length - 1}
             onChange={(patch) => updateValue(item.id, patch)}
             onToggleRetest={() => toggleRetest(item.id)}
             onNext={() => scrollTo(i + 1)}
@@ -281,7 +281,7 @@ function Recorder() {
           <div className="flex items-baseline justify-between">
             <h2 className="text-[17px] font-bold text-foreground">复核并提交</h2>
             <span className="text-[11px] text-muted-foreground">
-              已录 {doneCount}/{EXAM_ITEMS.length} 项
+              已录 {doneCount}/{items.length} 项
             </span>
           </div>
 
@@ -336,7 +336,7 @@ function Recorder() {
           )}
 
           <ul className="no-scrollbar mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto">
-            {EXAM_ITEMS.map((it, i) => {
+            {items.map((it, i) => {
               const st = statuses[i];
               const v = values[it.id];
               return (
