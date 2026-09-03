@@ -17,7 +17,7 @@ export const Route = createFileRoute("/doctor/")({
   component: DoctorHome,
 });
 
-/** 待检学生 = 尚未完成体检（待检 + 进行中），与待检清单及录入队列口径一致。 */
+/** 体检录入 = 尚未完成体检（待检 + 进行中），与待检清单及录入队列口径一致。 */
 const PENDING_EXAM_COUNT = EXAM_USERS.filter(
   (u) => u.status === "待检" || u.status === "进行中",
 ).length;
@@ -38,7 +38,7 @@ const stats: Stat[] = [
   {
     icon: <EIcon e="👶" />,
     iconBg: "bg-teal/15 text-teal",
-    label: "待检学生",
+    label: "体检录入",
     sub: "阳光小学 · 三年级 3 班",
     value: PENDING_EXAM_COUNT,
     unit: "人待检",
@@ -90,9 +90,9 @@ type Todo = {
 const todos: Todo[] = [
   {
     id: "E0",
-    name: "待检学生",
-    tags: [{ text: "待检学生", cls: "bg-teal/15 text-teal" }],
-    desc: `阳光小学 · 三年级 3 班 · ${PENDING_EXAM_COUNT} 人待检 · 点击进入待检清单`,
+    name: "体检录入",
+    tags: [{ text: "体检录入", cls: "bg-teal/15 text-teal" }],
+    desc: `阳光小学 · 三年级 3 班 · ${PENDING_EXAM_COUNT} 人待检 · 扫码开始录入`,
     to: "/doctor/exam",
     search: { view: "queue" },
   },
@@ -152,7 +152,7 @@ function DoctorHome() {
 
   const filters: { key: string; label: string; match: (t: Todo) => boolean }[] = [
     { key: "all", label: "全部", match: () => true },
-    { key: "exam", label: "待检学生", match: (t) => t.tags.some((x) => x.text === "待检学生") },
+    { key: "exam", label: "体检录入", match: (t) => t.tags.some((x) => x.text === "体检录入") },
     { key: "qc", label: "报告审核", match: (t) => t.tags.some((x) => x.text === "报告审核") },
     { key: "plan", label: "方案确认", match: (t) => t.tags.some((x) => x.text === "方案确认") },
     { key: "reply", label: "待回复", match: (t) => t.tags.some((x) => x.text === "待回复") },

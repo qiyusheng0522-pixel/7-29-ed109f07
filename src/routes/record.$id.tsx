@@ -17,11 +17,16 @@ import {
   type ItemStatus,
   type CritRule,
 } from "@/lib/exam-record";
+import { findStation, stationItems } from "@/lib/exam-stations";
 
 
 export const Route = createFileRoute("/record/$id")({
+  validateSearch: (search: Record<string, unknown>): { station?: string } => ({
+    station: typeof search.station === "string" ? search.station : undefined,
+  }),
   component: RecordPage,
 });
+
 
 function fmt(n?: number) {
   if (n == null) return "--";
@@ -52,10 +57,18 @@ function RecordPage() {
 
 function Recorder() {
   const { id } = Route.useParams();
+  const { station: stationId } = Route.useSearch();
   const navigate = useNavigate();
   const user = findExamUser(id);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+
+  // 设备账号：本工位只负责绑定设备对应的体检项
+  const station = findStation(stationId);
+  const items = useMemo(() => stationItems(station), [stationId]);
+  // 设备读数与小程序数据的人工核对
+  const [verified, setVerified] = useState<Record<string, boolean>>({});
+
 
   // 现场队列：医生在学校连续给一队学生录入
   const queue = useMemo(
@@ -68,7 +81,7 @@ function Recorder() {
   // 设备自动项预采集读数直接落库，超范围自动标记需重测
   const [values, setValues] = useState<Record<string, ExamValue>>(() => {
     const init: Record<string, ExamValue> = {};
-    EXAM_ITEMS.forEach((it) => {
+    items.forEach((it) => {
       if (it.source === "auto") {
         const seeded = seedValue(it);
         init[it.id] = { ...seeded, retest: evalItem(it, seeded) === "abnormal" };
@@ -77,18 +90,18 @@ function Recorder() {
     return init;
   });
 
-  const statuses = useMemo(() => EXAM_ITEMS.map((it) => evalItem(it, values[it.id])), [values]);
+  const statuses = useMemo(() => items.map((it) => evalItem(it, values[it.id])), [values]);
   const abnormalCount = statuses.filter((s) => s === "abnormal").length;
-  const retestCount = EXAM_ITEMS.filter((it) => values[it.id]?.retest).length;
+  const retestCount = items.filter((it) => values[it.id]?.retest).length;
   const doneCount = statuses.filter((s) => s !== "empty").length;
-  const emptyManual = EXAM_ITEMS.filter(
+  const emptyManual = items.filter(
     (it) => it.kind === "choice" && !values[it.id]?.choice,
   );
 
   // 危机值：按项判定，逐条勾选处置步骤后方可闭环
-  const crits = useMemo(() => EXAM_ITEMS.map((it) => critFor(it, values[it.id])), [values]);
+  const crits = useMemo(() => items.map((it) => critFor(it, values[it.id])), [values]);
   const [critSteps, setCritSteps] = useState<Record<string, number[]>>({});
-  const openCrits = EXAM_ITEMS.filter((it, i) => {
+  const openCrits = items.filter((it, i) => {
     const c = crits[i];
     return c && (critSteps[it.id]?.length ?? 0) < c.plan.length;
   });
@@ -104,7 +117,7 @@ function Recorder() {
 
   function updateValue(itemId: string, patch: Partial<ExamValue>) {
     setValues((s) => {
-      const item = EXAM_ITEMS.find((i) => i.id === itemId)!;
+      const item = items.find((i) => i.id === itemId)!;
       const merged = { ...(s[itemId] ?? {}), ...patch };
       merged.retest = evalItem(item, merged) === "abnormal";
       return { ...s, [itemId]: merged };
@@ -168,29 +181,38 @@ function Recorder() {
     if (idx !== active) setActive(idx);
   }
 
+  const unverified = items.filter((it) => it.source === "auto" && !verified[it.id]);
+
   function submit() {
+    if (unverified.length > 0) {
+      toast.error("设备读数尚未核对", {
+        description: `${unverified.map((it) => it.label).join("、")} 未确认与设备显示一致`,
+      });
+      const idx = items.findIndex((it) => it.id === unverified[0].id);
+      if (idx >= 0) scrollTo(idx);
+      return;
+    }
     if (openCrits.length > 0) {
       toast.error("存在未闭环的危机值", {
         description: `${openCrits.map((it) => it.label).join("、")} 的处置步骤未逐条确认，无法提交`,
       });
-      const idx = EXAM_ITEMS.findIndex((it) => it.id === openCrits[0].id);
+      const idx = items.findIndex((it) => it.id === openCrits[0].id);
       if (idx >= 0) scrollTo(idx);
       return;
     }
     if (critCount > 0) {
-      toast.success("体检结果已提交", {
+      toast.success("已提交并同步", {
         description: `${critCount} 项危机值已按处置方案闭环并上报台账`,
       });
     } else if (retestCount > 0) {
-      toast.success("体检结果已提交", {
+      toast.success("已提交并同步", {
         description: `${retestCount} 项超范围已回传班主任，通知家长带${user?.name ?? "学生"}返场重测`,
       });
     } else {
-      toast.success("体检结果已提交", { description: "各项指标正常，已同步至健康档案" });
+      toast.success("已提交并同步", { description: `${station?.name ?? "本工位"} 数据已写入健康档案` });
     }
-    // 现场连续录入：直接进入下一位排队学生，不退回列表
-    if (nextUser) navigate({ to: "/record/$id", params: { id: nextUser.id } });
-    else navigate({ to: "/doctor/exam" });
+    // 本工位一位学生完成 → 回到扫码页，扫下一位
+    navigate({ to: "/doctor/exam", search: { view: "queue" } });
   }
 
 
@@ -200,7 +222,7 @@ function Recorder() {
       <header className="shrink-0 bg-gradient-to-r from-deep to-teal px-4 pb-2.5 pt-2 text-white">
         <div className="flex items-center justify-between gap-2">
           <button
-            onClick={() => navigate({ to: "/doctor/exam" })}
+            onClick={() => navigate({ to: "/doctor/exam", search: { view: "queue" } })}
             aria-label="退出录入"
             className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/20 active:scale-95"
           >
@@ -217,10 +239,17 @@ function Recorder() {
           </span>
         </div>
 
+        {station && (
+          <p className="mt-1.5 truncate rounded-full bg-white/15 px-2.5 py-1 text-[10px] text-white/90">
+            {station.account} · {station.name} · 本工位 {items.length} 项（{station.devices.join(" / ")}）
+          </p>
+        )}
+
+
         {/* 分段进度条 */}
         <div className="mt-2.5 flex items-center gap-2">
           <div className="flex flex-1 gap-1">
-            {EXAM_ITEMS.map((it, i) => {
+            {items.map((it, i) => {
               const st = statuses[i];
               return (
                 <button
@@ -245,7 +274,7 @@ function Recorder() {
             })}
           </div>
           <span className="shrink-0 text-[10px] font-semibold tabular-nums text-white/90">
-            {doneCount}/{EXAM_ITEMS.length}
+            {doneCount}/{items.length}
           </span>
         </div>
       </header>
@@ -257,18 +286,22 @@ function Recorder() {
         style={{ overflowAnchor: "none" }}
         className="no-scrollbar min-h-0 flex-1 snap-y snap-mandatory overflow-y-scroll overscroll-contain"
       >
-        {EXAM_ITEMS.map((item, i) => (
+        {items.map((item, i) => (
           <ItemCard
             key={item.id}
             item={item}
             index={i}
-            total={EXAM_ITEMS.length}
+            total={items.length}
             status={statuses[i]}
             value={values[item.id]}
             crit={crits[i]}
             critDone={critSteps[item.id] ?? []}
+            device={station?.devices[0]}
+            verified={!!verified[item.id]}
+            onVerify={() => setVerified((s) => ({ ...s, [item.id]: !s[item.id] }))}
             onToggleCritStep={(idx) => toggleCritStep(item.id, idx)}
-            isLast={i === EXAM_ITEMS.length - 1}
+
+            isLast={i === items.length - 1}
             onChange={(patch) => updateValue(item.id, patch)}
             onToggleRetest={() => toggleRetest(item.id)}
             onNext={() => scrollTo(i + 1)}
@@ -281,7 +314,7 @@ function Recorder() {
           <div className="flex items-baseline justify-between">
             <h2 className="text-[17px] font-bold text-foreground">复核并提交</h2>
             <span className="text-[11px] text-muted-foreground">
-              已录 {doneCount}/{EXAM_ITEMS.length} 项
+              已录 {doneCount}/{items.length} 项
             </span>
           </div>
 
@@ -336,7 +369,7 @@ function Recorder() {
           )}
 
           <ul className="no-scrollbar mt-2 min-h-0 flex-1 space-y-1.5 overflow-y-auto">
-            {EXAM_ITEMS.map((it, i) => {
+            {items.map((it, i) => {
               const st = statuses[i];
               const v = values[it.id];
               return (
@@ -410,6 +443,9 @@ function ItemCard({
   value,
   crit,
   critDone,
+  device,
+  verified,
+  onVerify,
   onToggleCritStep,
   isLast,
   onChange,
@@ -423,12 +459,16 @@ function ItemCard({
   value?: ExamValue;
   crit: CritRule | null;
   critDone: number[];
+  device?: string;
+  verified: boolean;
+  onVerify: () => void;
   onToggleCritStep: (idx: number) => void;
   isLast: boolean;
   onChange: (patch: Partial<ExamValue>) => void;
   onToggleRetest: () => void;
   onNext: () => void;
 }) {
+
   const abnormal = status === "abnormal";
   const isBp = item.kind === "bp";
   const critClosed = !!crit && critDone.length >= crit.plan.length;
@@ -584,6 +624,35 @@ function ItemCard({
             </div>
           </div>
 
+          {item.source === "auto" && (
+            <button
+              onClick={onVerify}
+              className={`mt-2 flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2.5 text-left ring-1 transition active:scale-[0.99] ${
+                verified
+                  ? "bg-success/10 ring-success/30"
+                  : "bg-surface ring-warm/40"
+              }`}
+            >
+              <span
+                className={`grid h-5 w-5 shrink-0 place-items-center rounded-md ${
+                  verified ? "bg-success text-success-foreground" : "bg-surface-2 text-transparent"
+                }`}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] font-semibold text-foreground">
+                  {verified ? "已核对：设备读数与本机数据一致" : "请核对设备读数与本机数据是否一致"}
+                </span>
+                <span className="block text-[10px] text-muted-foreground">
+                  {device ? `${device} · ` : ""}学生上机采集完成后由医生逐项核实，未核对不可提交
+                </span>
+              </span>
+            </button>
+          )}
+
+
+
           {planOpen ? (
             <CritPanel
               crit={crit!}
@@ -678,6 +747,12 @@ function ItemCard({
         </button>
         <button
           onClick={() => {
+            if (item.source === "auto" && !verified) {
+              toast.error("请先核对设备读数", {
+                description: `确认「${item.label}」本机数据与${device ?? "设备"}显示一致后再进入下一项`,
+              });
+              return;
+            }
             if (crit && !critClosed) {
               setShowPlan(true);
               toast.error(`${crit.level}未闭环`, {
@@ -688,14 +763,21 @@ function ItemCard({
             onNext();
           }}
           className={`flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-2xl py-3 text-[13.5px] font-bold shadow-sm active:scale-[0.98] ${
-            crit && !critClosed
+            (crit && !critClosed) || (item.source === "auto" && !verified)
               ? "bg-surface text-muted-foreground ring-1 ring-border/60"
               : "bg-deep text-deep-foreground"
           }`}
         >
           <ChevronUp className="h-4 w-4" />
-          {crit && !critClosed ? "危机值待闭环" : isLast ? "确认 · 去复核" : "确认 · 下一项"}
+          {item.source === "auto" && !verified
+            ? "待核对设备读数"
+            : crit && !critClosed
+              ? "危机值待闭环"
+              : isLast
+                ? "确认 · 去复核"
+                : "确认 · 下一项"}
         </button>
+
       </div>
     </section>
   );
