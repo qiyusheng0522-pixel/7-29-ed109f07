@@ -56,10 +56,18 @@ function RecordPage() {
 
 function Recorder() {
   const { id } = Route.useParams();
+  const { station: stationId } = Route.useSearch();
   const navigate = useNavigate();
   const user = findExamUser(id);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+
+  // 设备账号：本工位只负责绑定设备对应的体检项
+  const station = findStation(stationId);
+  const items = useMemo(() => stationItems(station), [stationId]);
+  // 设备读数与小程序数据的人工核对
+  const [verified, setVerified] = useState<Record<string, boolean>>({});
+
 
   // 现场队列：医生在学校连续给一队学生录入
   const queue = useMemo(
