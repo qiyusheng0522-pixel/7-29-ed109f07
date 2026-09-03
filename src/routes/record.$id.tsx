@@ -296,7 +296,11 @@ function Recorder() {
             value={values[item.id]}
             crit={crits[i]}
             critDone={critSteps[item.id] ?? []}
+            device={station?.devices[0]}
+            verified={!!verified[item.id]}
+            onVerify={() => setVerified((s) => ({ ...s, [item.id]: !s[item.id] }))}
             onToggleCritStep={(idx) => toggleCritStep(item.id, idx)}
+
             isLast={i === items.length - 1}
             onChange={(patch) => updateValue(item.id, patch)}
             onToggleRetest={() => toggleRetest(item.id)}
