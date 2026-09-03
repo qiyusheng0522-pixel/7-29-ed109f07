@@ -443,6 +443,9 @@ function ItemCard({
   value,
   crit,
   critDone,
+  device,
+  verified,
+  onVerify,
   onToggleCritStep,
   isLast,
   onChange,
@@ -456,12 +459,16 @@ function ItemCard({
   value?: ExamValue;
   crit: CritRule | null;
   critDone: number[];
+  device?: string;
+  verified: boolean;
+  onVerify: () => void;
   onToggleCritStep: (idx: number) => void;
   isLast: boolean;
   onChange: (patch: Partial<ExamValue>) => void;
   onToggleRetest: () => void;
   onNext: () => void;
 }) {
+
   const abnormal = status === "abnormal";
   const isBp = item.kind === "bp";
   const critClosed = !!crit && critDone.length >= crit.plan.length;
