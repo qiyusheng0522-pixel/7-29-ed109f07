@@ -303,7 +303,7 @@
 
 ## 8. 交互与 UI 约定
 
-1. 所有页面在 `MobileFrame` 手机壳内渲染，屏高上限 `min(1311px, 100svh-140px)`（较原始 iPhone 尺寸放大 1.5×）。
+1. 所有页面在 `MobileFrame` 手机壳内渲染，采用真实手机尺寸 402 × 874，屏高上限 `min(874px, calc(100svh - 140px))`。
 2. 颜色一律使用语义 token：`success / warning / danger / teal / deep / warm / rose / surface`；禁止硬编码颜色类。
 3. 底部弹层统一用 `ActionSheet`；风险说明用 `RiskLevelSheet`；打卡用 `CheckinSheets`。
 4. 反馈统一用 `sonner` 的 `toast`，成功/错误均带 `description` 说明后续动作。
