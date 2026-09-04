@@ -320,6 +320,10 @@
 | 五色风险等级 | `src/lib/risk-levels.ts`、`src/components/RiskLevelSheet.tsx` |
 | 体检项 / 危机值规则 | `src/lib/exam-record.ts` |
 | 体检队列用户 | `src/lib/exam-users.ts` |
+| 设备账号 / 工位 | `src/lib/exam-stations.ts` |
+| 体适能测评 | `src/lib/fitness.ts`、`src/routes/school.fitness.tsx` |
+| 体检录入入口（扫码/筛选） | `src/routes/doctor.exam.tsx` |
+| 学生体检详情档案 | `src/routes/doctor.child.tsx`（`?sid=学号`） |
 | 学校端视角状态 | `src/lib/school-role.ts` |
 | 班级数据 | `src/lib/teacher-class.ts` |
 | 打卡记录 | `src/lib/checkin.ts` |
