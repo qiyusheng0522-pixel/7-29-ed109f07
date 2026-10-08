@@ -6,7 +6,17 @@ import { child } from "@/lib/mock-data";
 import { useState } from "react";
 
 import { EIcon } from "@/components/EIcon";
+import { PreExamQuestionnaireSheet } from "@/components/PreExamQuestionnaireSheet";
+import { preExamQuestionnaires, type PreExamQuestionnaireId } from "@/lib/pre-exam-questionnaires";
 export const Route = createFileRoute("/parent/notice")({
+  head: () => ({ meta: [
+    { title: "家长须知与授权 · 儿童健康体检" },
+    { name: "description", content: "查看家长体检须知，填写过敏与心理行为检前问卷及体检授权。" },
+    { property: "og:title", content: "家长须知与授权 · 儿童健康体检" },
+    { property: "og:description", content: "过敏与心理行为检前问卷、体检安排与家长授权。" },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+  ] }),
   component: NoticePage,
 });
 
@@ -19,6 +29,7 @@ type Item = {
   status: "待办" | "已完成" | "已签署" | "已阅读";
   deadline?: string;
   cta?: string;
+  questionnaireId?: PreExamQuestionnaireId;
 };
 
 const grouped: Record<Cat, { label: string; hint: string; items: Item[] }> = {
@@ -27,10 +38,21 @@ const grouped: Record<Cat, { label: string; hint: string; items: Item[] }> = {
     hint: "体检前需要您完成的操作",
     items: [
       {
-        id: "health-form",
+        id: "allergy-form",
+        questionnaireId: "allergy",
         icon: <EIcon e="📝" />,
-        title: "填写健康问卷",
-        desc: "过敏史 / 既往病史 / 用药情况",
+        title: "过敏 · 体检前问卷",
+        desc: "6 道题 · 是 / 否",
+        status: "待办",
+        deadline: "2026-04-13 24:00 前",
+        cta: "去填写",
+      },
+      {
+        id: "psychology-form",
+        questionnaireId: "psychology",
+        icon: <EIcon e="📝" />,
+        title: "心理行为问题筛查",
+        desc: "家长版 | 4-17 岁 · 6 道题",
         status: "待办",
         deadline: "2026-04-13 24:00 前",
         cta: "去填写",
@@ -116,20 +138,22 @@ function NoticePage() {
   const [tab, setTab] = useState<Cat>("todo");
   const [signed, setSigned] = useState(false);
   const [revokeScope, setRevokeScope] = useState<"this" | "all">("this");
-  const [asthma, setAsthma] = useState<Record<string, "是" | "否" | "">>({
-    q1: "", q2: "", q3: "", q4: "", q5: "", q6: "",
-  });
-  const asthmaDone = Object.values(asthma).every((v) => v !== "");
-  const asthmaRisk = Object.values(asthma).filter((v) => v === "是").length;
-  const riskLabel =
-    asthmaRisk >= 3 ? "高风险 · 建议尽早呼吸专科评估" :
-    asthmaRisk >= 1 ? "中风险 · 体检当日增加肺功能筛查" :
-    "低风险 · 未见哮喘线索";
+  const [submittedQuestionnaires, setSubmittedQuestionnaires] = useState<Partial<Record<PreExamQuestionnaireId, boolean>>>({});
+  const effectiveGrouped = {
+    ...grouped,
+    todo: {
+      ...grouped.todo,
+      items: grouped.todo.items.map((item): Item => ({
+        ...item,
+        status: item.questionnaireId && submittedQuestionnaires[item.questionnaireId] ? "已完成" : item.status,
+      })),
+    },
+  };
 
   const totals = cats.map((c) => ({
     c,
-    total: grouped[c].items.length,
-    pending: grouped[c].items.filter((i) => i.status === "待办").length,
+    total: effectiveGrouped[c].items.length,
+    pending: effectiveGrouped[c].items.filter((i) => i.status === "待办").length,
   }));
 
   return (
@@ -191,7 +215,7 @@ function NoticePage() {
 
         {/* Items */}
         <ul className="space-y-2">
-          {grouped[tab].items.map((it) => {
+          {effectiveGrouped[tab].items.map((it) => {
             const isTodo = it.status === "待办";
             const statusClass =
               it.status === "待办"
@@ -212,7 +236,7 @@ function NoticePage() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="truncate text-sm font-semibold">{it.title}</p>
+                      <p className="text-sm font-semibold">{it.title}</p>
                       <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] ${statusClass}`}>
                         {it.status}
                       </span>
@@ -225,7 +249,7 @@ function NoticePage() {
                         ⏰ 截止日期：{it.deadline}
                       </p>
                     )}
-                    {isTodo && it.cta && (
+                    {(isTodo || it.questionnaireId) && it.cta && (
                       <div className="mt-2 flex justify-end">
                         {it.id === "consent" ? (
                           <ActionSheet
@@ -251,70 +275,16 @@ function NoticePage() {
                               {signed ? " 李妈妈 · 2026-04-08 20:14" : "点击此处手写签名"}
                             </div>
                           </ActionSheet>
-                        ) : it.id === "health-form" ? (
-                          <ActionSheet
-                            trigger={
-                              <button className="rounded-full bg-warm px-3 py-1 text-[11px] font-medium text-warm-foreground">
-                                {it.cta}
-                              </button>
-                            }
-                            title="儿童健康问卷 · 哮喘风险筛查"
-                            description="以下 6 道题用于评估孩子是否存在哮喘线索，结果将同步给校医与体检医生。"
-                            confirmText={asthmaDone ? "提交问卷" : "请完成全部题目"}
-                            disabled={!asthmaDone}
-                            toastMessage="问卷已提交"
-                            toastDescription={`${child.name} · ${riskLabel}`}
-                          >
-                            <div className="space-y-3 pb-2">
-                              {[
-                                { k: "q1", q: "近 12 个月内，孩子是否有过反复喘息、胸闷或呼吸急促？" },
-                                { k: "q2", q: "夜间或凌晨是否常因咳嗽、喘息而醒来？" },
-                                { k: "q3", q: "剧烈运动、大笑或哭闹后是否出现咳嗽、气喘？" },
-                                { k: "q4", q: "接触冷空气 / 花粉 / 尘螨 / 宠物后是否诱发咳喘？" },
-                                { k: "q5", q: "既往是否被诊断为哮喘、过敏性鼻炎、湿疹？" },
-                                { k: "q6", q: "父母或兄弟姐妹是否有哮喘或过敏史？" },
-                              ].map((row, idx) => (
-                                <div key={row.k} className="rounded-xl bg-surface-2 p-3">
-                                  <p className="text-[12px] leading-relaxed">
-                                    {idx + 1}. {row.q}
-                                  </p>
-                                  <div className="mt-2 flex gap-2">
-                                    {(["是", "否"] as const).map((v) => {
-                                      const active = asthma[row.k] === v;
-                                      return (
-                                        <button
-                                          key={v}
-                                          type="button"
-                                          onClick={() =>
-                                            setAsthma((s) => ({ ...s, [row.k]: v }))
-                                          }
-                                          className={`flex-1 rounded-full px-3 py-1.5 text-[12px] ring-1 transition ${
-                                            active
-                                              ? v === "是"
-                                                ? "bg-danger/15 text-danger ring-danger/40"
-                                                : "bg-success/15 text-success ring-success/40"
-                                              : "bg-surface text-muted-foreground ring-border"
-                                          }`}
-                                        >
-                                          {v}
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-                              ))}
-                              {asthmaDone && (
-                                <div className="rounded-xl bg-warm/10 p-3 text-[12px] ring-1 ring-warm/30">
-                                  <p className="font-medium text-warm">
-                                    初步评估：{riskLabel}
-                                  </p>
-                                  <p className="mt-1 text-[11px] text-muted-foreground">
-                                    评估依据 GINA 2024 儿童哮喘筛查建议，仅供体检医生参考。
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </ActionSheet>
+                        ) : it.questionnaireId ? (
+                          <PreExamQuestionnaireSheet
+                            questionnaire={preExamQuestionnaires[it.questionnaireId]}
+                            submitted={Boolean(submittedQuestionnaires[it.questionnaireId])}
+                            onSubmit={() => {
+                              const id = it.questionnaireId;
+                              if (!id) return;
+                              setSubmittedQuestionnaires((current) => ({ ...current, [id]: true }));
+                            }}
+                          />
                         ) : (
                           <button
                             onClick={() => toast.success(`已${it.cta}`, { description: it.title })}
