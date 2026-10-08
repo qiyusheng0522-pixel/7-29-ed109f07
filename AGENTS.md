@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep pre-exam questionnaire definitions in a shared browser-safe data module and render them through a reusable sheet; this preserves source wording and per-question scoring without duplicating form logic.
