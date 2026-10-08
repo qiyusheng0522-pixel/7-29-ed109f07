@@ -9,88 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
-import { Route as BigscreenRouteImport } from './routes/bigscreen'
-import { Route as CommunityRouteImport } from './routes/community'
-import { Route as DoctorRouteImport } from './routes/doctor'
-import { Route as ParentRouteImport } from './routes/parent'
 import { Route as SchoolRouteImport } from './routes/school'
-import { Route as CommunityIndexRouteImport } from './routes/community.index'
-import { Route as CommunityConsultRouteImport } from './routes/community.consult'
-import { Route as CommunityEduRouteImport } from './routes/community.edu'
-import { Route as CommunityMeRouteImport } from './routes/community.me'
-import { Route as CommunityPatientsRouteImport } from './routes/community.patients'
-import { Route as CommunityRiskRouteImport } from './routes/community.risk'
-import { Route as DoctorIndexRouteImport } from './routes/doctor.index'
-import { Route as DoctorChildRouteImport } from './routes/doctor.child'
-import { Route as DoctorCommRouteImport } from './routes/doctor.comm'
-import { Route as DoctorCoordRouteImport } from './routes/doctor.coord'
-import { Route as DoctorExamRouteImport } from './routes/doctor.exam'
-import { Route as DoctorFocusRouteImport } from './routes/doctor.focus'
-import { Route as DoctorFollowupRouteImport } from './routes/doctor.followup'
-import { Route as DoctorMeRouteImport } from './routes/doctor.me'
-import { Route as DoctorMessagesRouteImport } from './routes/doctor.messages'
-import { Route as DoctorPlanRouteImport } from './routes/doctor.plan'
-import { Route as DoctorPrepRouteImport } from './routes/doctor.prep'
-import { Route as DoctorQcRouteImport } from './routes/doctor.qc'
-import { Route as DoctorReferralRouteImport } from './routes/doctor.referral'
-import { Route as DoctorReviewRouteImport } from './routes/doctor.review'
-import { Route as DoctorRiskreviewRouteImport } from './routes/doctor.riskreview'
-import { Route as ParentIndexRouteImport } from './routes/parent.index'
-import { Route as ParentBindRouteImport } from './routes/parent.bind'
-import { Route as ParentCareRouteImport } from './routes/parent.care'
-import { Route as ParentCommRouteImport } from './routes/parent.comm'
-import { Route as ParentDustmiteRouteImport } from './routes/parent.dustmite'
-import { Route as ParentHealthPlanRouteImport } from './routes/parent.health-plan'
-import { Route as ParentMeRouteImport } from './routes/parent.me'
-import { Route as ParentMydataRouteImport } from './routes/parent.mydata'
-import { Route as ParentNoticeRouteImport } from './routes/parent.notice'
-import { Route as ParentRecordRouteImport } from './routes/parent.record'
-import { Route as ParentReportRouteImport } from './routes/parent.report'
-import { Route as ParentReviewRouteImport } from './routes/parent.review'
-import { Route as ParentTerminateRouteImport } from './routes/parent.terminate'
-import { Route as RecordIdRouteImport } from './routes/record.$id'
+import { Route as ParentRouteImport } from './routes/parent'
+import { Route as DoctorRouteImport } from './routes/doctor'
+import { Route as CommunityRouteImport } from './routes/community'
+import { Route as BigscreenRouteImport } from './routes/bigscreen'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as SchoolIndexRouteImport } from './routes/school.index'
-import { Route as SchoolAbnormalRouteImport } from './routes/school.abnormal'
-import { Route as SchoolAbsentRouteImport } from './routes/school.absent'
-import { Route as SchoolEscalatedRouteImport } from './routes/school.escalated'
-import { Route as SchoolFitnessRouteImport } from './routes/school.fitness'
-import { Route as SchoolFocusRouteImport } from './routes/school.focus'
-import { Route as SchoolIntasksRouteImport } from './routes/school.intasks'
-import { Route as SchoolMeRouteImport } from './routes/school.me'
-import { Route as SchoolNotifyRouteImport } from './routes/school.notify'
-import { Route as SchoolObserveRouteImport } from './routes/school.observe'
-import { Route as SchoolReportRouteImport } from './routes/school.report'
-import { Route as SchoolStudentsRouteImport } from './routes/school.students'
+import { Route as ParentIndexRouteImport } from './routes/parent.index'
+import { Route as DoctorIndexRouteImport } from './routes/doctor.index'
+import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as SchoolTodayRouteImport } from './routes/school.today'
-import { Route as CommunityPatientIdRouteImport } from './routes/community.patient.$id'
-import { Route as DoctorEntryIdRouteImport } from './routes/doctor.entry.$id'
+import { Route as SchoolStudentsRouteImport } from './routes/school.students'
+import { Route as SchoolReportRouteImport } from './routes/school.report'
+import { Route as SchoolObserveRouteImport } from './routes/school.observe'
+import { Route as SchoolNotifyRouteImport } from './routes/school.notify'
+import { Route as SchoolMeRouteImport } from './routes/school.me'
+import { Route as SchoolIntasksRouteImport } from './routes/school.intasks'
+import { Route as SchoolFocusRouteImport } from './routes/school.focus'
+import { Route as SchoolFitnessRouteImport } from './routes/school.fitness'
+import { Route as SchoolEscalatedRouteImport } from './routes/school.escalated'
+import { Route as SchoolAbsentRouteImport } from './routes/school.absent'
+import { Route as SchoolAbnormalRouteImport } from './routes/school.abnormal'
+import { Route as RecordIdRouteImport } from './routes/record.$id'
+import { Route as ParentTerminateRouteImport } from './routes/parent.terminate'
+import { Route as ParentReviewRouteImport } from './routes/parent.review'
+import { Route as ParentReportRouteImport } from './routes/parent.report'
+import { Route as ParentRecordRouteImport } from './routes/parent.record'
+import { Route as ParentNoticeRouteImport } from './routes/parent.notice'
+import { Route as ParentMydataRouteImport } from './routes/parent.mydata'
+import { Route as ParentMeRouteImport } from './routes/parent.me'
+import { Route as ParentHealthPlanRouteImport } from './routes/parent.health-plan'
+import { Route as ParentDustmiteRouteImport } from './routes/parent.dustmite'
+import { Route as ParentCommRouteImport } from './routes/parent.comm'
+import { Route as ParentCareRouteImport } from './routes/parent.care'
+import { Route as ParentBindRouteImport } from './routes/parent.bind'
+import { Route as DoctorRiskreviewRouteImport } from './routes/doctor.riskreview'
+import { Route as DoctorReviewRouteImport } from './routes/doctor.review'
+import { Route as DoctorReferralRouteImport } from './routes/doctor.referral'
+import { Route as DoctorQcRouteImport } from './routes/doctor.qc'
+import { Route as DoctorPrepRouteImport } from './routes/doctor.prep'
+import { Route as DoctorPlanRouteImport } from './routes/doctor.plan'
+import { Route as DoctorMessagesRouteImport } from './routes/doctor.messages'
+import { Route as DoctorMeRouteImport } from './routes/doctor.me'
+import { Route as DoctorFollowupRouteImport } from './routes/doctor.followup'
+import { Route as DoctorFocusRouteImport } from './routes/doctor.focus'
+import { Route as DoctorExamRouteImport } from './routes/doctor.exam'
+import { Route as DoctorCoordRouteImport } from './routes/doctor.coord'
+import { Route as DoctorCommRouteImport } from './routes/doctor.comm'
+import { Route as DoctorChildRouteImport } from './routes/doctor.child'
+import { Route as CommunityRiskRouteImport } from './routes/community.risk'
+import { Route as CommunityPatientsRouteImport } from './routes/community.patients'
+import { Route as CommunityMeRouteImport } from './routes/community.me'
+import { Route as CommunityEduRouteImport } from './routes/community.edu'
+import { Route as CommunityConsultRouteImport } from './routes/community.consult'
 import { Route as SchoolStudentIdRouteImport } from './routes/school.student.$id'
+import { Route as DoctorEntryIdRouteImport } from './routes/doctor.entry.$id'
+import { Route as CommunityPatientIdRouteImport } from './routes/community.patient.$id'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BigscreenRoute = BigscreenRouteImport.update({
-  id: '/bigscreen',
-  path: '/bigscreen',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CommunityRoute = CommunityRouteImport.update({
-  id: '/community',
-  path: '/community',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DoctorRoute = DoctorRouteImport.update({
-  id: '/doctor',
-  path: '/doctor',
+const SchoolRoute = SchoolRouteImport.update({
+  id: '/school',
+  path: '/school',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParentRoute = ParentRouteImport.update({
@@ -98,184 +78,29 @@ const ParentRoute = ParentRouteImport.update({
   path: '/parent',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SchoolRoute = SchoolRouteImport.update({
-  id: '/school',
-  path: '/school',
+const DoctorRoute = DoctorRouteImport.update({
+  id: '/doctor',
+  path: '/doctor',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CommunityIndexRoute = CommunityIndexRouteImport.update({
+const CommunityRoute = CommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BigscreenRoute = BigscreenRouteImport.update({
+  id: '/bigscreen',
+  path: '/bigscreen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => CommunityRoute,
-} as any)
-const CommunityConsultRoute = CommunityConsultRouteImport.update({
-  id: '/consult',
-  path: '/consult',
-  getParentRoute: () => CommunityRoute,
-} as any)
-const CommunityEduRoute = CommunityEduRouteImport.update({
-  id: '/edu',
-  path: '/edu',
-  getParentRoute: () => CommunityRoute,
-} as any)
-const CommunityMeRoute = CommunityMeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => CommunityRoute,
-} as any)
-const CommunityPatientsRoute = CommunityPatientsRouteImport.update({
-  id: '/patients',
-  path: '/patients',
-  getParentRoute: () => CommunityRoute,
-} as any)
-const CommunityRiskRoute = CommunityRiskRouteImport.update({
-  id: '/risk',
-  path: '/risk',
-  getParentRoute: () => CommunityRoute,
-} as any)
-const DoctorIndexRoute = DoctorIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorChildRoute = DoctorChildRouteImport.update({
-  id: '/child',
-  path: '/child',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorCommRoute = DoctorCommRouteImport.update({
-  id: '/comm',
-  path: '/comm',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorCoordRoute = DoctorCoordRouteImport.update({
-  id: '/coord',
-  path: '/coord',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorExamRoute = DoctorExamRouteImport.update({
-  id: '/exam',
-  path: '/exam',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorFocusRoute = DoctorFocusRouteImport.update({
-  id: '/focus',
-  path: '/focus',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorFollowupRoute = DoctorFollowupRouteImport.update({
-  id: '/followup',
-  path: '/followup',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorMeRoute = DoctorMeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorMessagesRoute = DoctorMessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorPlanRoute = DoctorPlanRouteImport.update({
-  id: '/plan',
-  path: '/plan',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorPrepRoute = DoctorPrepRouteImport.update({
-  id: '/prep',
-  path: '/prep',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorQcRoute = DoctorQcRouteImport.update({
-  id: '/qc',
-  path: '/qc',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorReferralRoute = DoctorReferralRouteImport.update({
-  id: '/referral',
-  path: '/referral',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorReviewRoute = DoctorReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const DoctorRiskreviewRoute = DoctorRiskreviewRouteImport.update({
-  id: '/riskreview',
-  path: '/riskreview',
-  getParentRoute: () => DoctorRoute,
-} as any)
-const ParentIndexRoute = ParentIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentBindRoute = ParentBindRouteImport.update({
-  id: '/bind',
-  path: '/bind',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentCareRoute = ParentCareRouteImport.update({
-  id: '/care',
-  path: '/care',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentCommRoute = ParentCommRouteImport.update({
-  id: '/comm',
-  path: '/comm',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentDustmiteRoute = ParentDustmiteRouteImport.update({
-  id: '/dustmite',
-  path: '/dustmite',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentHealthPlanRoute = ParentHealthPlanRouteImport.update({
-  id: '/health-plan',
-  path: '/health-plan',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentMeRoute = ParentMeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentMydataRoute = ParentMydataRouteImport.update({
-  id: '/mydata',
-  path: '/mydata',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentNoticeRoute = ParentNoticeRouteImport.update({
-  id: '/notice',
-  path: '/notice',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentRecordRoute = ParentRecordRouteImport.update({
-  id: '/record',
-  path: '/record',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentReportRoute = ParentReportRouteImport.update({
-  id: '/report',
-  path: '/report',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentReviewRoute = ParentReviewRouteImport.update({
-  id: '/review',
-  path: '/review',
-  getParentRoute: () => ParentRoute,
-} as any)
-const ParentTerminateRoute = ParentTerminateRouteImport.update({
-  id: '/terminate',
-  path: '/terminate',
-  getParentRoute: () => ParentRoute,
-} as any)
-const RecordIdRoute = RecordIdRouteImport.update({
-  id: '/record/$id',
-  path: '/record/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SchoolIndexRoute = SchoolIndexRouteImport.update({
@@ -283,54 +108,24 @@ const SchoolIndexRoute = SchoolIndexRouteImport.update({
   path: '/',
   getParentRoute: () => SchoolRoute,
 } as any)
-const SchoolAbnormalRoute = SchoolAbnormalRouteImport.update({
-  id: '/abnormal',
-  path: '/abnormal',
-  getParentRoute: () => SchoolRoute,
+const ParentIndexRoute = ParentIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ParentRoute,
 } as any)
-const SchoolAbsentRoute = SchoolAbsentRouteImport.update({
-  id: '/absent',
-  path: '/absent',
-  getParentRoute: () => SchoolRoute,
+const DoctorIndexRoute = DoctorIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DoctorRoute,
 } as any)
-const SchoolEscalatedRoute = SchoolEscalatedRouteImport.update({
-  id: '/escalated',
-  path: '/escalated',
-  getParentRoute: () => SchoolRoute,
+const CommunityIndexRoute = CommunityIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CommunityRoute,
 } as any)
-const SchoolFitnessRoute = SchoolFitnessRouteImport.update({
-  id: '/fitness',
-  path: '/fitness',
-  getParentRoute: () => SchoolRoute,
-} as any)
-const SchoolFocusRoute = SchoolFocusRouteImport.update({
-  id: '/focus',
-  path: '/focus',
-  getParentRoute: () => SchoolRoute,
-} as any)
-const SchoolIntasksRoute = SchoolIntasksRouteImport.update({
-  id: '/intasks',
-  path: '/intasks',
-  getParentRoute: () => SchoolRoute,
-} as any)
-const SchoolMeRoute = SchoolMeRouteImport.update({
-  id: '/me',
-  path: '/me',
-  getParentRoute: () => SchoolRoute,
-} as any)
-const SchoolNotifyRoute = SchoolNotifyRouteImport.update({
-  id: '/notify',
-  path: '/notify',
-  getParentRoute: () => SchoolRoute,
-} as any)
-const SchoolObserveRoute = SchoolObserveRouteImport.update({
-  id: '/observe',
-  path: '/observe',
-  getParentRoute: () => SchoolRoute,
-} as any)
-const SchoolReportRoute = SchoolReportRouteImport.update({
-  id: '/report',
-  path: '/report',
+const SchoolTodayRoute = SchoolTodayRouteImport.update({
+  id: '/today',
+  path: '/today',
   getParentRoute: () => SchoolRoute,
 } as any)
 const SchoolStudentsRoute = SchoolStudentsRouteImport.update({
@@ -338,25 +133,230 @@ const SchoolStudentsRoute = SchoolStudentsRouteImport.update({
   path: '/students',
   getParentRoute: () => SchoolRoute,
 } as any)
-const SchoolTodayRoute = SchoolTodayRouteImport.update({
-  id: '/today',
-  path: '/today',
+const SchoolReportRoute = SchoolReportRouteImport.update({
+  id: '/report',
+  path: '/report',
   getParentRoute: () => SchoolRoute,
 } as any)
-const CommunityPatientIdRoute = CommunityPatientIdRouteImport.update({
-  id: '/patient/$id',
-  path: '/patient/$id',
+const SchoolObserveRoute = SchoolObserveRouteImport.update({
+  id: '/observe',
+  path: '/observe',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolNotifyRoute = SchoolNotifyRouteImport.update({
+  id: '/notify',
+  path: '/notify',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolMeRoute = SchoolMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolIntasksRoute = SchoolIntasksRouteImport.update({
+  id: '/intasks',
+  path: '/intasks',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolFocusRoute = SchoolFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolFitnessRoute = SchoolFitnessRouteImport.update({
+  id: '/fitness',
+  path: '/fitness',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolEscalatedRoute = SchoolEscalatedRouteImport.update({
+  id: '/escalated',
+  path: '/escalated',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolAbsentRoute = SchoolAbsentRouteImport.update({
+  id: '/absent',
+  path: '/absent',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const SchoolAbnormalRoute = SchoolAbnormalRouteImport.update({
+  id: '/abnormal',
+  path: '/abnormal',
+  getParentRoute: () => SchoolRoute,
+} as any)
+const RecordIdRoute = RecordIdRouteImport.update({
+  id: '/record/$id',
+  path: '/record/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ParentTerminateRoute = ParentTerminateRouteImport.update({
+  id: '/terminate',
+  path: '/terminate',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentReviewRoute = ParentReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentReportRoute = ParentReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentRecordRoute = ParentRecordRouteImport.update({
+  id: '/record',
+  path: '/record',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentNoticeRoute = ParentNoticeRouteImport.update({
+  id: '/notice',
+  path: '/notice',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentMydataRoute = ParentMydataRouteImport.update({
+  id: '/mydata',
+  path: '/mydata',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentMeRoute = ParentMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentHealthPlanRoute = ParentHealthPlanRouteImport.update({
+  id: '/health-plan',
+  path: '/health-plan',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentDustmiteRoute = ParentDustmiteRouteImport.update({
+  id: '/dustmite',
+  path: '/dustmite',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentCommRoute = ParentCommRouteImport.update({
+  id: '/comm',
+  path: '/comm',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentCareRoute = ParentCareRouteImport.update({
+  id: '/care',
+  path: '/care',
+  getParentRoute: () => ParentRoute,
+} as any)
+const ParentBindRoute = ParentBindRouteImport.update({
+  id: '/bind',
+  path: '/bind',
+  getParentRoute: () => ParentRoute,
+} as any)
+const DoctorRiskreviewRoute = DoctorRiskreviewRouteImport.update({
+  id: '/riskreview',
+  path: '/riskreview',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorReviewRoute = DoctorReviewRouteImport.update({
+  id: '/review',
+  path: '/review',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorReferralRoute = DoctorReferralRouteImport.update({
+  id: '/referral',
+  path: '/referral',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorQcRoute = DoctorQcRouteImport.update({
+  id: '/qc',
+  path: '/qc',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorPrepRoute = DoctorPrepRouteImport.update({
+  id: '/prep',
+  path: '/prep',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorPlanRoute = DoctorPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorMessagesRoute = DoctorMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorMeRoute = DoctorMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorFollowupRoute = DoctorFollowupRouteImport.update({
+  id: '/followup',
+  path: '/followup',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorFocusRoute = DoctorFocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorExamRoute = DoctorExamRouteImport.update({
+  id: '/exam',
+  path: '/exam',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorCoordRoute = DoctorCoordRouteImport.update({
+  id: '/coord',
+  path: '/coord',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorCommRoute = DoctorCommRouteImport.update({
+  id: '/comm',
+  path: '/comm',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const DoctorChildRoute = DoctorChildRouteImport.update({
+  id: '/child',
+  path: '/child',
+  getParentRoute: () => DoctorRoute,
+} as any)
+const CommunityRiskRoute = CommunityRiskRouteImport.update({
+  id: '/risk',
+  path: '/risk',
   getParentRoute: () => CommunityRoute,
+} as any)
+const CommunityPatientsRoute = CommunityPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => CommunityRoute,
+} as any)
+const CommunityMeRoute = CommunityMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => CommunityRoute,
+} as any)
+const CommunityEduRoute = CommunityEduRouteImport.update({
+  id: '/edu',
+  path: '/edu',
+  getParentRoute: () => CommunityRoute,
+} as any)
+const CommunityConsultRoute = CommunityConsultRouteImport.update({
+  id: '/consult',
+  path: '/consult',
+  getParentRoute: () => CommunityRoute,
+} as any)
+const SchoolStudentIdRoute = SchoolStudentIdRouteImport.update({
+  id: '/student/$id',
+  path: '/student/$id',
+  getParentRoute: () => SchoolRoute,
 } as any)
 const DoctorEntryIdRoute = DoctorEntryIdRouteImport.update({
   id: '/entry/$id',
   path: '/entry/$id',
   getParentRoute: () => DoctorRoute,
 } as any)
-const SchoolStudentIdRoute = SchoolStudentIdRouteImport.update({
-  id: '/student/$id',
-  path: '/student/$id',
-  getParentRoute: () => SchoolRoute,
+const CommunityPatientIdRoute = CommunityPatientIdRouteImport.update({
+  id: '/patient/$id',
+  path: '/patient/$id',
+  getParentRoute: () => CommunityRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -728,39 +728,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bigscreen': {
-      id: '/bigscreen'
-      path: '/bigscreen'
-      fullPath: '/bigscreen'
-      preLoaderRoute: typeof BigscreenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/community': {
-      id: '/community'
-      path: '/community'
-      fullPath: '/community'
-      preLoaderRoute: typeof CommunityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/doctor': {
-      id: '/doctor'
-      path: '/doctor'
-      fullPath: '/doctor'
-      preLoaderRoute: typeof DoctorRouteImport
+    '/school': {
+      id: '/school'
+      path: '/school'
+      fullPath: '/school'
+      preLoaderRoute: typeof SchoolRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parent': {
@@ -770,256 +742,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/school': {
-      id: '/school'
-      path: '/school'
-      fullPath: '/school'
-      preLoaderRoute: typeof SchoolRouteImport
+    '/doctor': {
+      id: '/doctor'
+      path: '/doctor'
+      fullPath: '/doctor'
+      preLoaderRoute: typeof DoctorRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/community/': {
-      id: '/community/'
+    '/community': {
+      id: '/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bigscreen': {
+      id: '/bigscreen'
+      path: '/bigscreen'
+      fullPath: '/bigscreen'
+      preLoaderRoute: typeof BigscreenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
       path: '/'
-      fullPath: '/community/'
-      preLoaderRoute: typeof CommunityIndexRouteImport
-      parentRoute: typeof CommunityRoute
-    }
-    '/community/consult': {
-      id: '/community/consult'
-      path: '/consult'
-      fullPath: '/community/consult'
-      preLoaderRoute: typeof CommunityConsultRouteImport
-      parentRoute: typeof CommunityRoute
-    }
-    '/community/edu': {
-      id: '/community/edu'
-      path: '/edu'
-      fullPath: '/community/edu'
-      preLoaderRoute: typeof CommunityEduRouteImport
-      parentRoute: typeof CommunityRoute
-    }
-    '/community/me': {
-      id: '/community/me'
-      path: '/me'
-      fullPath: '/community/me'
-      preLoaderRoute: typeof CommunityMeRouteImport
-      parentRoute: typeof CommunityRoute
-    }
-    '/community/patients': {
-      id: '/community/patients'
-      path: '/patients'
-      fullPath: '/community/patients'
-      preLoaderRoute: typeof CommunityPatientsRouteImport
-      parentRoute: typeof CommunityRoute
-    }
-    '/community/risk': {
-      id: '/community/risk'
-      path: '/risk'
-      fullPath: '/community/risk'
-      preLoaderRoute: typeof CommunityRiskRouteImport
-      parentRoute: typeof CommunityRoute
-    }
-    '/doctor/': {
-      id: '/doctor/'
-      path: '/'
-      fullPath: '/doctor/'
-      preLoaderRoute: typeof DoctorIndexRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/child': {
-      id: '/doctor/child'
-      path: '/child'
-      fullPath: '/doctor/child'
-      preLoaderRoute: typeof DoctorChildRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/comm': {
-      id: '/doctor/comm'
-      path: '/comm'
-      fullPath: '/doctor/comm'
-      preLoaderRoute: typeof DoctorCommRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/coord': {
-      id: '/doctor/coord'
-      path: '/coord'
-      fullPath: '/doctor/coord'
-      preLoaderRoute: typeof DoctorCoordRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/exam': {
-      id: '/doctor/exam'
-      path: '/exam'
-      fullPath: '/doctor/exam'
-      preLoaderRoute: typeof DoctorExamRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/focus': {
-      id: '/doctor/focus'
-      path: '/focus'
-      fullPath: '/doctor/focus'
-      preLoaderRoute: typeof DoctorFocusRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/followup': {
-      id: '/doctor/followup'
-      path: '/followup'
-      fullPath: '/doctor/followup'
-      preLoaderRoute: typeof DoctorFollowupRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/me': {
-      id: '/doctor/me'
-      path: '/me'
-      fullPath: '/doctor/me'
-      preLoaderRoute: typeof DoctorMeRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/messages': {
-      id: '/doctor/messages'
-      path: '/messages'
-      fullPath: '/doctor/messages'
-      preLoaderRoute: typeof DoctorMessagesRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/plan': {
-      id: '/doctor/plan'
-      path: '/plan'
-      fullPath: '/doctor/plan'
-      preLoaderRoute: typeof DoctorPlanRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/prep': {
-      id: '/doctor/prep'
-      path: '/prep'
-      fullPath: '/doctor/prep'
-      preLoaderRoute: typeof DoctorPrepRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/qc': {
-      id: '/doctor/qc'
-      path: '/qc'
-      fullPath: '/doctor/qc'
-      preLoaderRoute: typeof DoctorQcRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/referral': {
-      id: '/doctor/referral'
-      path: '/referral'
-      fullPath: '/doctor/referral'
-      preLoaderRoute: typeof DoctorReferralRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/review': {
-      id: '/doctor/review'
-      path: '/review'
-      fullPath: '/doctor/review'
-      preLoaderRoute: typeof DoctorReviewRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/doctor/riskreview': {
-      id: '/doctor/riskreview'
-      path: '/riskreview'
-      fullPath: '/doctor/riskreview'
-      preLoaderRoute: typeof DoctorRiskreviewRouteImport
-      parentRoute: typeof DoctorRoute
-    }
-    '/parent/': {
-      id: '/parent/'
-      path: '/'
-      fullPath: '/parent/'
-      preLoaderRoute: typeof ParentIndexRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/bind': {
-      id: '/parent/bind'
-      path: '/bind'
-      fullPath: '/parent/bind'
-      preLoaderRoute: typeof ParentBindRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/care': {
-      id: '/parent/care'
-      path: '/care'
-      fullPath: '/parent/care'
-      preLoaderRoute: typeof ParentCareRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/comm': {
-      id: '/parent/comm'
-      path: '/comm'
-      fullPath: '/parent/comm'
-      preLoaderRoute: typeof ParentCommRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/dustmite': {
-      id: '/parent/dustmite'
-      path: '/dustmite'
-      fullPath: '/parent/dustmite'
-      preLoaderRoute: typeof ParentDustmiteRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/health-plan': {
-      id: '/parent/health-plan'
-      path: '/health-plan'
-      fullPath: '/parent/health-plan'
-      preLoaderRoute: typeof ParentHealthPlanRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/me': {
-      id: '/parent/me'
-      path: '/me'
-      fullPath: '/parent/me'
-      preLoaderRoute: typeof ParentMeRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/mydata': {
-      id: '/parent/mydata'
-      path: '/mydata'
-      fullPath: '/parent/mydata'
-      preLoaderRoute: typeof ParentMydataRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/notice': {
-      id: '/parent/notice'
-      path: '/notice'
-      fullPath: '/parent/notice'
-      preLoaderRoute: typeof ParentNoticeRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/record': {
-      id: '/parent/record'
-      path: '/record'
-      fullPath: '/parent/record'
-      preLoaderRoute: typeof ParentRecordRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/report': {
-      id: '/parent/report'
-      path: '/report'
-      fullPath: '/parent/report'
-      preLoaderRoute: typeof ParentReportRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/review': {
-      id: '/parent/review'
-      path: '/review'
-      fullPath: '/parent/review'
-      preLoaderRoute: typeof ParentReviewRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/parent/terminate': {
-      id: '/parent/terminate'
-      path: '/terminate'
-      fullPath: '/parent/terminate'
-      preLoaderRoute: typeof ParentTerminateRouteImport
-      parentRoute: typeof ParentRoute
-    }
-    '/record/$id': {
-      id: '/record/$id'
-      path: '/record/$id'
-      fullPath: '/record/$id'
-      preLoaderRoute: typeof RecordIdRouteImport
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/school/': {
@@ -1029,74 +784,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolIndexRouteImport
       parentRoute: typeof SchoolRoute
     }
-    '/school/abnormal': {
-      id: '/school/abnormal'
-      path: '/abnormal'
-      fullPath: '/school/abnormal'
-      preLoaderRoute: typeof SchoolAbnormalRouteImport
-      parentRoute: typeof SchoolRoute
+    '/parent/': {
+      id: '/parent/'
+      path: '/'
+      fullPath: '/parent/'
+      preLoaderRoute: typeof ParentIndexRouteImport
+      parentRoute: typeof ParentRoute
     }
-    '/school/absent': {
-      id: '/school/absent'
-      path: '/absent'
-      fullPath: '/school/absent'
-      preLoaderRoute: typeof SchoolAbsentRouteImport
-      parentRoute: typeof SchoolRoute
+    '/doctor/': {
+      id: '/doctor/'
+      path: '/'
+      fullPath: '/doctor/'
+      preLoaderRoute: typeof DoctorIndexRouteImport
+      parentRoute: typeof DoctorRoute
     }
-    '/school/escalated': {
-      id: '/school/escalated'
-      path: '/escalated'
-      fullPath: '/school/escalated'
-      preLoaderRoute: typeof SchoolEscalatedRouteImport
-      parentRoute: typeof SchoolRoute
+    '/community/': {
+      id: '/community/'
+      path: '/'
+      fullPath: '/community/'
+      preLoaderRoute: typeof CommunityIndexRouteImport
+      parentRoute: typeof CommunityRoute
     }
-    '/school/fitness': {
-      id: '/school/fitness'
-      path: '/fitness'
-      fullPath: '/school/fitness'
-      preLoaderRoute: typeof SchoolFitnessRouteImport
-      parentRoute: typeof SchoolRoute
-    }
-    '/school/focus': {
-      id: '/school/focus'
-      path: '/focus'
-      fullPath: '/school/focus'
-      preLoaderRoute: typeof SchoolFocusRouteImport
-      parentRoute: typeof SchoolRoute
-    }
-    '/school/intasks': {
-      id: '/school/intasks'
-      path: '/intasks'
-      fullPath: '/school/intasks'
-      preLoaderRoute: typeof SchoolIntasksRouteImport
-      parentRoute: typeof SchoolRoute
-    }
-    '/school/me': {
-      id: '/school/me'
-      path: '/me'
-      fullPath: '/school/me'
-      preLoaderRoute: typeof SchoolMeRouteImport
-      parentRoute: typeof SchoolRoute
-    }
-    '/school/notify': {
-      id: '/school/notify'
-      path: '/notify'
-      fullPath: '/school/notify'
-      preLoaderRoute: typeof SchoolNotifyRouteImport
-      parentRoute: typeof SchoolRoute
-    }
-    '/school/observe': {
-      id: '/school/observe'
-      path: '/observe'
-      fullPath: '/school/observe'
-      preLoaderRoute: typeof SchoolObserveRouteImport
-      parentRoute: typeof SchoolRoute
-    }
-    '/school/report': {
-      id: '/school/report'
-      path: '/report'
-      fullPath: '/school/report'
-      preLoaderRoute: typeof SchoolReportRouteImport
+    '/school/today': {
+      id: '/school/today'
+      path: '/today'
+      fullPath: '/school/today'
+      preLoaderRoute: typeof SchoolTodayRouteImport
       parentRoute: typeof SchoolRoute
     }
     '/school/students': {
@@ -1106,19 +819,306 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchoolStudentsRouteImport
       parentRoute: typeof SchoolRoute
     }
-    '/school/today': {
-      id: '/school/today'
-      path: '/today'
-      fullPath: '/school/today'
-      preLoaderRoute: typeof SchoolTodayRouteImport
+    '/school/report': {
+      id: '/school/report'
+      path: '/report'
+      fullPath: '/school/report'
+      preLoaderRoute: typeof SchoolReportRouteImport
       parentRoute: typeof SchoolRoute
     }
-    '/community/patient/$id': {
-      id: '/community/patient/$id'
-      path: '/patient/$id'
-      fullPath: '/community/patient/$id'
-      preLoaderRoute: typeof CommunityPatientIdRouteImport
+    '/school/observe': {
+      id: '/school/observe'
+      path: '/observe'
+      fullPath: '/school/observe'
+      preLoaderRoute: typeof SchoolObserveRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/notify': {
+      id: '/school/notify'
+      path: '/notify'
+      fullPath: '/school/notify'
+      preLoaderRoute: typeof SchoolNotifyRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/me': {
+      id: '/school/me'
+      path: '/me'
+      fullPath: '/school/me'
+      preLoaderRoute: typeof SchoolMeRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/intasks': {
+      id: '/school/intasks'
+      path: '/intasks'
+      fullPath: '/school/intasks'
+      preLoaderRoute: typeof SchoolIntasksRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/focus': {
+      id: '/school/focus'
+      path: '/focus'
+      fullPath: '/school/focus'
+      preLoaderRoute: typeof SchoolFocusRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/fitness': {
+      id: '/school/fitness'
+      path: '/fitness'
+      fullPath: '/school/fitness'
+      preLoaderRoute: typeof SchoolFitnessRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/escalated': {
+      id: '/school/escalated'
+      path: '/escalated'
+      fullPath: '/school/escalated'
+      preLoaderRoute: typeof SchoolEscalatedRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/absent': {
+      id: '/school/absent'
+      path: '/absent'
+      fullPath: '/school/absent'
+      preLoaderRoute: typeof SchoolAbsentRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/school/abnormal': {
+      id: '/school/abnormal'
+      path: '/abnormal'
+      fullPath: '/school/abnormal'
+      preLoaderRoute: typeof SchoolAbnormalRouteImport
+      parentRoute: typeof SchoolRoute
+    }
+    '/record/$id': {
+      id: '/record/$id'
+      path: '/record/$id'
+      fullPath: '/record/$id'
+      preLoaderRoute: typeof RecordIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/parent/terminate': {
+      id: '/parent/terminate'
+      path: '/terminate'
+      fullPath: '/parent/terminate'
+      preLoaderRoute: typeof ParentTerminateRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/review': {
+      id: '/parent/review'
+      path: '/review'
+      fullPath: '/parent/review'
+      preLoaderRoute: typeof ParentReviewRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/report': {
+      id: '/parent/report'
+      path: '/report'
+      fullPath: '/parent/report'
+      preLoaderRoute: typeof ParentReportRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/record': {
+      id: '/parent/record'
+      path: '/record'
+      fullPath: '/parent/record'
+      preLoaderRoute: typeof ParentRecordRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/notice': {
+      id: '/parent/notice'
+      path: '/notice'
+      fullPath: '/parent/notice'
+      preLoaderRoute: typeof ParentNoticeRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/mydata': {
+      id: '/parent/mydata'
+      path: '/mydata'
+      fullPath: '/parent/mydata'
+      preLoaderRoute: typeof ParentMydataRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/me': {
+      id: '/parent/me'
+      path: '/me'
+      fullPath: '/parent/me'
+      preLoaderRoute: typeof ParentMeRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/health-plan': {
+      id: '/parent/health-plan'
+      path: '/health-plan'
+      fullPath: '/parent/health-plan'
+      preLoaderRoute: typeof ParentHealthPlanRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/dustmite': {
+      id: '/parent/dustmite'
+      path: '/dustmite'
+      fullPath: '/parent/dustmite'
+      preLoaderRoute: typeof ParentDustmiteRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/comm': {
+      id: '/parent/comm'
+      path: '/comm'
+      fullPath: '/parent/comm'
+      preLoaderRoute: typeof ParentCommRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/care': {
+      id: '/parent/care'
+      path: '/care'
+      fullPath: '/parent/care'
+      preLoaderRoute: typeof ParentCareRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/parent/bind': {
+      id: '/parent/bind'
+      path: '/bind'
+      fullPath: '/parent/bind'
+      preLoaderRoute: typeof ParentBindRouteImport
+      parentRoute: typeof ParentRoute
+    }
+    '/doctor/riskreview': {
+      id: '/doctor/riskreview'
+      path: '/riskreview'
+      fullPath: '/doctor/riskreview'
+      preLoaderRoute: typeof DoctorRiskreviewRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/review': {
+      id: '/doctor/review'
+      path: '/review'
+      fullPath: '/doctor/review'
+      preLoaderRoute: typeof DoctorReviewRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/referral': {
+      id: '/doctor/referral'
+      path: '/referral'
+      fullPath: '/doctor/referral'
+      preLoaderRoute: typeof DoctorReferralRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/qc': {
+      id: '/doctor/qc'
+      path: '/qc'
+      fullPath: '/doctor/qc'
+      preLoaderRoute: typeof DoctorQcRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/prep': {
+      id: '/doctor/prep'
+      path: '/prep'
+      fullPath: '/doctor/prep'
+      preLoaderRoute: typeof DoctorPrepRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/plan': {
+      id: '/doctor/plan'
+      path: '/plan'
+      fullPath: '/doctor/plan'
+      preLoaderRoute: typeof DoctorPlanRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/messages': {
+      id: '/doctor/messages'
+      path: '/messages'
+      fullPath: '/doctor/messages'
+      preLoaderRoute: typeof DoctorMessagesRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/me': {
+      id: '/doctor/me'
+      path: '/me'
+      fullPath: '/doctor/me'
+      preLoaderRoute: typeof DoctorMeRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/followup': {
+      id: '/doctor/followup'
+      path: '/followup'
+      fullPath: '/doctor/followup'
+      preLoaderRoute: typeof DoctorFollowupRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/focus': {
+      id: '/doctor/focus'
+      path: '/focus'
+      fullPath: '/doctor/focus'
+      preLoaderRoute: typeof DoctorFocusRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/exam': {
+      id: '/doctor/exam'
+      path: '/exam'
+      fullPath: '/doctor/exam'
+      preLoaderRoute: typeof DoctorExamRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/coord': {
+      id: '/doctor/coord'
+      path: '/coord'
+      fullPath: '/doctor/coord'
+      preLoaderRoute: typeof DoctorCoordRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/comm': {
+      id: '/doctor/comm'
+      path: '/comm'
+      fullPath: '/doctor/comm'
+      preLoaderRoute: typeof DoctorCommRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/doctor/child': {
+      id: '/doctor/child'
+      path: '/child'
+      fullPath: '/doctor/child'
+      preLoaderRoute: typeof DoctorChildRouteImport
+      parentRoute: typeof DoctorRoute
+    }
+    '/community/risk': {
+      id: '/community/risk'
+      path: '/risk'
+      fullPath: '/community/risk'
+      preLoaderRoute: typeof CommunityRiskRouteImport
       parentRoute: typeof CommunityRoute
+    }
+    '/community/patients': {
+      id: '/community/patients'
+      path: '/patients'
+      fullPath: '/community/patients'
+      preLoaderRoute: typeof CommunityPatientsRouteImport
+      parentRoute: typeof CommunityRoute
+    }
+    '/community/me': {
+      id: '/community/me'
+      path: '/me'
+      fullPath: '/community/me'
+      preLoaderRoute: typeof CommunityMeRouteImport
+      parentRoute: typeof CommunityRoute
+    }
+    '/community/edu': {
+      id: '/community/edu'
+      path: '/edu'
+      fullPath: '/community/edu'
+      preLoaderRoute: typeof CommunityEduRouteImport
+      parentRoute: typeof CommunityRoute
+    }
+    '/community/consult': {
+      id: '/community/consult'
+      path: '/consult'
+      fullPath: '/community/consult'
+      preLoaderRoute: typeof CommunityConsultRouteImport
+      parentRoute: typeof CommunityRoute
+    }
+    '/school/student/$id': {
+      id: '/school/student/$id'
+      path: '/student/$id'
+      fullPath: '/school/student/$id'
+      preLoaderRoute: typeof SchoolStudentIdRouteImport
+      parentRoute: typeof SchoolRoute
     }
     '/doctor/entry/$id': {
       id: '/doctor/entry/$id'
@@ -1127,12 +1127,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DoctorEntryIdRouteImport
       parentRoute: typeof DoctorRoute
     }
-    '/school/student/$id': {
-      id: '/school/student/$id'
-      path: '/student/$id'
-      fullPath: '/school/student/$id'
-      preLoaderRoute: typeof SchoolStudentIdRouteImport
-      parentRoute: typeof SchoolRoute
+    '/community/patient/$id': {
+      id: '/community/patient/$id'
+      path: '/patient/$id'
+      fullPath: '/community/patient/$id'
+      preLoaderRoute: typeof CommunityPatientIdRouteImport
+      parentRoute: typeof CommunityRoute
     }
   }
 }
