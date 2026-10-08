@@ -14,6 +14,7 @@ export function PreExamQuestionnaireSheet({ questionnaire, submitted, onSubmit }
 
   return (
     <ActionSheet
+      fitToFrame
       trigger={<Button size="sm" className="bg-warm text-warm-foreground hover:bg-warm/90">{submitted ? "查看问卷" : "去填写"}</Button>}
       title={questionnaire.title}
       description={questionnaire.subtitle}

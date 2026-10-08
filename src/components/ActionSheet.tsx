@@ -16,6 +16,7 @@ type Props = {
   danger?: boolean;
   onConfirm?: () => void | Promise<void>;
   disabled?: boolean;
+  fitToFrame?: boolean;
 };
 
 export function ActionSheet({
@@ -31,6 +32,7 @@ export function ActionSheet({
   danger,
   onConfirm,
   disabled,
+  fitToFrame,
 }: Props) {
   const [open, setOpen] = React.useState(false);
 
@@ -51,7 +53,7 @@ export function ActionSheet({
       <SheetTrigger asChild>{trigger}</SheetTrigger>
       <SheetContent
         side="bottom"
-        className="mx-auto max-w-md rounded-t-3xl border-0 bg-background p-0 shadow-2xl"
+        className={cn("mx-auto max-w-md rounded-t-3xl border-0 bg-background p-0 shadow-2xl", fitToFrame && "flex max-h-full flex-col")}
       >
         <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-muted" />
         <div className="px-5 pt-3 pb-2">
@@ -64,7 +66,7 @@ export function ActionSheet({
             )}
           </SheetHeader>
         </div>
-        {children && <div className="max-h-[50vh] overflow-y-auto px-5 pb-2">{children}</div>}
+        {children && <div className={cn("max-h-[50vh] overflow-y-auto px-5 pb-2", fitToFrame && "min-h-0 shrink")}>{children}</div>}
         <SheetFooter className="grid grid-cols-2 gap-2 border-t border-border/60 bg-surface p-4">
           <SheetClose asChild>
             <button className="rounded-xl bg-surface-2 py-2.5 text-sm">
