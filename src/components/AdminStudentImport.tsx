@@ -102,7 +102,11 @@ const EXAM_GROUPS: { title: string; cols: [string, keyof Exam][] }[] = [
 ];
 
 export function AdminStudentImport() {
-  const [rows, setRows] = useState<StudentRow[]>([]);
+  // 预置示例数据，便于直接预览回显效果
+  const [rows, setRows] = useState<StudentRow[]>(() => {
+    const used = new Set<string>();
+    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: genUid(b, used), ...mockExam(i, b.birth) }));
+  });
   const [errors, setErrors] = useState<string[]>([]);
   const [view, setView] = useState<"base" | "exam">("base");
   const [q, setQ] = useState("");
