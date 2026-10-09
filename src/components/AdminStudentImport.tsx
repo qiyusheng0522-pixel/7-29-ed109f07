@@ -5,10 +5,23 @@ import { toast } from "sonner";
 export const IMPORT_FIELDS = ["学校", "学号", "姓名", "性别", "出生日期", "年级", "班级"] as const;
 
 type Base = { school: string; sno: string; name: string; gender: string; birth: string; grade: string; cls: string };
+
+// 体检数据回显字段：与历史儿童入学体检数据表字段保持一致
 type Exam = {
   status: "已检" | "待检";
-  height?: number; weight?: number; bodyfat?: number; visionL?: number; visionR?: number;
-  waist?: number; hip?: number; bp?: string; atr?: number; oral?: string; risk?: string;
+  age?: number;
+  height?: number; weight?: number; bmi?: number;
+  bpS?: number; bpD?: number; bpDiff?: number;
+  conjunctiva?: string; cornea?: string; lens?: string; pupil?: string; eyePos?: string; eyeMove?: string;
+  abnormalVision?: string; glasses?: string;
+  visionR?: number; visionL?: number; visionRG?: string; visionLG?: string;
+  sphereR?: string; cylR?: string; axisR?: string; sphereL?: string; cylL?: string; axisL?: string;
+  impression?: string; corneaCurve?: string; axisLen?: string; colorVision?: string;
+  dentition?: string; periodontal?: string;
+  d?: number; D?: number; m?: number; M?: number; f?: number; F?: number; dmft?: number;
+  skin?: string; lymph?: string; head?: string; neck?: string; spine?: string; limbs?: string; chest?: string;
+  symptoms?: string; heartRate?: number; murmur?: string; rhythm?: string; lungRales?: string; liver?: string; spleen?: string;
+  risk?: string;
 };
 export type StudentRow = Base & { uid: string } & Exam;
 
@@ -34,7 +47,7 @@ const SAMPLE_CSV = `学校,学号,姓名,性别,出生日期,年级,班级
 春晖小学,20220102,孙思远,男,2018-05-03,二年级,1班`;
 
 function parseCsv(text: string): Base[] {
-  const lines = text.replace(/^\uFEFF/, "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const lines = text.replace(/^﻿/, "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const head = lines[0].split(/[,，\t]/).map((s) => s.trim());
   const idx = IMPORT_FIELDS.map((f) => head.indexOf(f));
   const missing = IMPORT_FIELDS.filter((_, i) => idx[i] < 0);
@@ -46,16 +59,31 @@ function parseCsv(text: string): Base[] {
   });
 }
 
-// 原型：模拟体检完成后的数据回流
-function mockExam(i: number): Exam {
+// 原型：模拟体检完成后的数据回流，字段对齐历史入学体检数据表
+function mockExam(i: number, birth: string): Exam {
   if (i % 3 === 2) return { status: "待检" };
+  const age = 2026 - Number(birth.slice(0, 4));
   const h = 128 + ((i * 7) % 14), w = 26 + ((i * 5) % 12);
-  const bpS = i === 0 ? 132 : 100 + ((i * 3) % 14);
+  const bpS = i === 0 ? 132 : 100 + ((i * 3) % 14), bpD = 62 + (i % 10);
+  const d = i % 2 ? 2 : 0, D = i === 4 ? 1 : 0, m = 0, M = 0, f = i % 2 ? 1 : 0, F = 0;
   return {
-    status: "已检", height: h, weight: w, bodyfat: 15 + ((i * 3) % 10),
-    visionL: i === 1 ? 4.7 : 5.0, visionR: 5.0 + (i % 2) / 10,
-    waist: 54 + (i % 8), hip: 64 + (i % 9), bp: `${bpS}/${62 + (i % 10)}`,
-    atr: i === 3 ? 8 : i % 4, oral: i % 2 ? "龋齿 1-2 颗" : "正常",
+    status: "已检", age,
+    height: h, weight: w, bmi: +(w / ((h / 100) ** 2)).toFixed(1),
+    bpS, bpD, bpDiff: bpS - bpD,
+    conjunctiva: "正常", cornea: "透明", lens: "透明", pupil: "等大等圆", eyePos: "正位", eyeMove: "正常",
+    abnormalVision: i === 1 ? "眯眼视物" : "无", glasses: i === 1 ? "框架眼镜" : "未戴镜",
+    visionR: 5.0 + (i % 2) / 10, visionL: i === 1 ? 4.7 : 5.0,
+    visionRG: i === 1 ? "5.0" : "—", visionLG: i === 1 ? "5.0" : "—",
+    sphereR: i === 1 ? "-1.00" : "0.00", cylR: "0.00", axisR: "—",
+    sphereL: i === 1 ? "-1.50" : "0.00", cylL: i === 1 ? "-0.50" : "0.00", axisL: i === 1 ? "180" : "—",
+    impression: i === 1 ? "屈光不正（近视）" : "未见明显异常",
+    corneaCurve: "7.8mm", axisLen: "23.1mm", colorVision: "正常",
+    dentition: "整齐", periodontal: "正常",
+    d, D, m, M, f, F, dmft: d + D + m + M + f + F,
+    skin: "正常", lymph: "未触及肿大", head: "正常", neck: "正常",
+    spine: i === 3 ? "侧弯可疑 ATR 8°" : "正常", limbs: "正常", chest: "正常",
+    symptoms: i === 0 ? "近期晨起头晕" : "无",
+    heartRate: 82 + (i % 12), murmur: "无", rhythm: "齐", lungRales: "无", liver: "未触及", spleen: "未触及",
     risk: i === 0 ? "红色" : i === 1 || i === 3 ? "橙色" : i % 2 ? "蓝色" : "绿色",
   };
 }
@@ -64,6 +92,14 @@ const RISK_CLS: Record<string, string> = {
   绿色: "bg-success/15 text-success", 蓝色: "bg-teal/15 text-teal", 黄色: "bg-warning/15 text-warning",
   橙色: "bg-warm/20 text-warm", 红色: "bg-danger/15 text-danger",
 };
+
+// 回显分组：与历史体检表字段顺序一致
+const EXAM_GROUPS: { title: string; cols: [string, keyof Exam][] }[] = [
+  { title: "一般检查", cols: [["年龄", "age"], ["身高cm", "height"], ["体重kg", "weight"], ["BMI", "bmi"], ["收缩压", "bpS"], ["舒张压", "bpD"], ["压差", "bpDiff"]] },
+  { title: "眼科", cols: [["结膜", "conjunctiva"], ["角膜", "cornea"], ["晶体", "lens"], ["瞳孔", "pupil"], ["眼位", "eyePos"], ["眼球运动", "eyeMove"], ["异常视觉行为", "abnormalVision"], ["戴镜情况", "glasses"], ["裸眼视力(右)", "visionR"], ["裸眼视力(左)", "visionL"], ["右眼戴镜视力", "visionRG"], ["左眼戴镜视力", "visionLG"], ["右眼球镜", "sphereR"], ["右眼柱镜", "cylR"], ["右眼轴向", "axisR"], ["左眼球镜", "sphereL"], ["左眼柱镜", "cylL"], ["左眼轴向", "axisL"], ["临床印象", "impression"], ["角膜曲率半径", "corneaCurve"], ["眼轴长度", "axisLen"], ["色觉", "colorVision"]] },
+  { title: "口腔", cols: [["齿列", "dentition"], ["牙周", "periodontal"], ["乳龋患d", "d"], ["恒龋患D", "D"], ["乳龋失m", "m"], ["恒龋失M", "M"], ["乳龋补f", "f"], ["恒龋补F", "F"], ["龋失补总齿数", "dmft"]] },
+  { title: "内外科", cols: [["皮肤", "skin"], ["淋巴结", "lymph"], ["头部", "head"], ["颈部", "neck"], ["脊柱", "spine"], ["四肢", "limbs"], ["胸部", "chest"], ["近期不适症状", "symptoms"], ["心率", "heartRate"], ["心脏杂音", "murmur"], ["心律", "rhythm"], ["肺部罗音", "lungRales"], ["肝", "liver"], ["脾", "spleen"]] },
+];
 
 export function AdminStudentImport() {
   const [rows, setRows] = useState<StudentRow[]>([]);
@@ -86,7 +122,7 @@ export function AdminStudentImport() {
         if (!["男", "女"].includes(b.gender)) return errs.push(`第 ${line} 行：性别应为 男/女`);
         if (snos.has(b.school + b.sno)) return errs.push(`第 ${line} 行：学号 ${b.sno} 已存在`);
         snos.add(b.school + b.sno);
-        added.push({ ...b, uid: genUid(b, used), ...mockExam(rows.length + added.length) });
+        added.push({ ...b, uid: genUid(b, used), ...mockExam(rows.length + added.length, b.birth) });
       });
       setRows((r) => [...r, ...added]);
       setErrors(errs);
@@ -105,7 +141,7 @@ export function AdminStudentImport() {
   };
 
   const downloadTpl = () => {
-    const blob = new Blob(["\uFEFF" + IMPORT_FIELDS.join(",") + "\n"], { type: "text/csv" });
+    const blob = new Blob(["﻿" + IMPORT_FIELDS.join(",") + "\n"], { type: "text/csv" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "学生基本信息导入模板.csv";
@@ -161,38 +197,78 @@ export function AdminStudentImport() {
         </div>
         {rows.length === 0 ? (
           <p className="py-10 text-center text-xs text-slate-400">暂无学生数据，请先导入学生基本信息</p>
-        ) : (
+        ) : view === "base" ? (
           <div className="overflow-x-auto">
             <table className="w-full whitespace-nowrap text-xs">
               <thead className="text-slate-500">
                 <tr className="border-b border-slate-100 text-left">
                   <th className="py-2 pr-3 font-normal">唯一标识编码</th>
-                  {view === "base"
-                    ? IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)
-                    : ["姓名", "学号", "状态", "身高cm", "体重kg", "体脂%", "视力左", "视力右", "腰围cm", "臀围cm", "血压mmHg", "脊柱ATR°", "口腔", "风险等级"].map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
+                  {IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
                 </tr>
               </thead>
               <tbody>
                 {shown.map((r) => (
                   <tr key={r.uid} className="border-b border-slate-50">
                     <td className="py-2 pr-3 font-mono text-slate-600">{r.uid}</td>
-                    {view === "base" ? (
-                      [r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)
-                    ) : (
-                      <>
-                        <td className="pr-3 font-medium">{r.name}</td>
-                        <td className="pr-3">{r.sno}</td>
-                        <td className="pr-3"><span className={`rounded px-1.5 py-0.5 ${r.status === "已检" ? "bg-success/15 text-success" : "bg-slate-100 text-slate-500"}`}>{r.status}</span></td>
-                        {[r.height, r.weight, r.bodyfat, r.visionL, r.visionR, r.waist, r.hip, r.bp, r.atr, r.oral].map((v, i) => (
-                          <td key={i} className="pr-3">{v ?? "—"}</td>
-                        ))}
-                        <td className="pr-3">{r.risk ? <span className={`rounded px-1.5 py-0.5 ${RISK_CLS[r.risk]}`}>{r.risk}</span> : "—"}</td>
-                      </>
-                    )}
+                    {[r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-[11px] text-slate-400">字段与历史儿童入学体检数据表一致；横向滚动可查看全部字段。</p>
+            {EXAM_GROUPS.map((g) => (
+              <div key={g.title}>
+                <p className="mb-1.5 text-xs font-semibold text-slate-700">{g.title}</p>
+                <div className="overflow-x-auto rounded-lg border border-slate-100">
+                  <table className="w-full whitespace-nowrap text-xs">
+                    <thead className="bg-slate-50 text-slate-500">
+                      <tr className="text-left">
+                        <th className="py-2 pl-3 pr-3 font-normal">学生编码</th>
+                        <th className="pr-3 font-normal">姓名</th>
+                        <th className="pr-3 font-normal">状态</th>
+                        {g.cols.map(([l]) => <th key={l} className="pr-3 font-normal">{l}</th>)}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {shown.map((r) => (
+                        <tr key={r.uid} className="border-t border-slate-50">
+                          <td className="py-2 pl-3 pr-3 font-mono text-slate-600">{r.uid}</td>
+                          <td className="pr-3 font-medium">{r.name}</td>
+                          <td className="pr-3"><span className={`rounded px-1.5 py-0.5 ${r.status === "已检" ? "bg-success/15 text-success" : "bg-slate-100 text-slate-500"}`}>{r.status}</span></td>
+                          {g.cols.map(([l, k]) => <td key={l} className="pr-3">{r.status === "已检" ? (r[k] ?? "—") : "—"}</td>)}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+            <div>
+              <p className="mb-1.5 text-xs font-semibold text-slate-700">综合评估</p>
+              <div className="overflow-x-auto rounded-lg border border-slate-100">
+                <table className="w-full whitespace-nowrap text-xs">
+                  <thead className="bg-slate-50 text-slate-500">
+                    <tr className="text-left">
+                      <th className="py-2 pl-3 pr-3 font-normal">学生编码</th>
+                      <th className="pr-3 font-normal">姓名</th>
+                      <th className="pr-3 font-normal">风险等级</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {shown.map((r) => (
+                      <tr key={r.uid} className="border-t border-slate-50">
+                        <td className="py-2 pl-3 pr-3 font-mono text-slate-600">{r.uid}</td>
+                        <td className="pr-3 font-medium">{r.name}</td>
+                        <td className="pr-3">{r.risk ? <span className={`rounded px-1.5 py-0.5 ${RISK_CLS[r.risk]}`}>{r.risk}</span> : "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </div>
