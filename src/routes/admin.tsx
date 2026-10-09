@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EIcon } from "@/components/EIcon";
+import { AdminStudentImport } from "@/components/AdminStudentImport";
 
 export const Route = createFileRoute("/admin")({
   component: AdminConsole,
@@ -86,7 +87,7 @@ function AdminConsole() {
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "overview", label: "总览", icon: "📊" },
-    { id: "students", label: "学校 / 学生同步", icon: "🏫" },
+    { id: "students", label: "学生信息导入", icon: "🏫" },
     { id: "plan", label: "班级安排 / 统筹", icon: "🗓️" },
     { id: "stats", label: "数据回流 / 统计", icon: "📈" },
   ];
@@ -234,82 +235,7 @@ function Overview() {
 }
 
 function Students() {
-  return (
-    <div className="space-y-4">
-      <Card>
-        <div className="mb-3 flex items-center justify-between">
-          <div>
-            <p className="text-sm font-semibold">学校学生同步</p>
-            <p className="text-[11px] text-slate-500">
-              对接教育局学籍系统 / 手动导入 Excel，同步在册学生名单
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => toast("请选择要导入的 Excel 文件", { description: "支持教育局学籍系统导出的名单格式" })}
-              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs hover:bg-slate-50"
-            >
-              导入 Excel
-            </button>
-            <button
-              onClick={() => toast.success("已发起学籍同步", { description: "正在对接教育局系统，预计 1 分钟完成" })}
-              className="rounded-lg bg-teal px-3 py-1.5 text-xs text-white hover:opacity-90"
-            >
-              一键同步学籍
-            </button>
-          </div>
-        </div>
-        <table className="w-full text-sm">
-          <thead className="text-xs text-slate-500">
-            <tr className="border-b border-slate-100">
-              <th className="py-2 text-left font-normal">学校</th>
-              <th className="text-left font-normal">在册学生</th>
-              <th className="text-left font-normal">最近同步</th>
-              <th className="text-left font-normal">状态</th>
-              <th className="text-left font-normal">操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            {schools.map((s) => (
-              <tr key={s.name} className="border-b border-slate-50">
-                <td className="py-2 font-medium">{s.name}</td>
-                <td>{s.students.toLocaleString()}</td>
-                <td className="text-slate-500">{s.synced}</td>
-                <td>
-                  <StatusBadge s={s.status} />
-                </td>
-                <td>
-                  <button
-                    onClick={() => toast.success(`已同步 ${s.name}`, { description: `在册学生 ${s.students.toLocaleString()} 人` })}
-                    className="text-xs text-teal hover:underline"
-                  >
-                    同步 ›
-                  </button>
-                  <button
-                    onClick={() => toast(`${s.name} · 在册名单`, { description: `共 ${s.students.toLocaleString()} 名学生` })}
-                    className="ml-3 text-xs text-slate-500 hover:underline"
-                  >
-                    查看名单
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </Card>
-
-      <Card>
-        <p className="mb-2 text-sm font-semibold">同步字段映射</p>
-        <div className="grid grid-cols-4 gap-2 text-[11px]">
-          {["学号", "姓名", "性别", "出生日期", "年级", "班级", "监护人手机", "家庭住址"].map((f) => (
-            <div key={f} className="rounded-lg bg-slate-50 px-3 py-2 text-slate-600">
-              {f}
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
+  return <AdminStudentImport />;
 }
 
 // 阳光小学 · 各班级体检安排
