@@ -93,13 +93,37 @@ const RISK_CLS: Record<string, string> = {
   橙色: "bg-warm/20 text-warm", 红色: "bg-danger/15 text-danger",
 };
 
-// 回显分组：与历史体检表字段顺序一致
-const EXAM_GROUPS: { title: string; cols: [string, keyof Exam][] }[] = [
-  { title: "一般检查", cols: [["年龄", "age"], ["身高cm", "height"], ["体重kg", "weight"], ["BMI", "bmi"], ["收缩压", "bpS"], ["舒张压", "bpD"], ["压差", "bpDiff"]] },
-  { title: "眼科", cols: [["结膜", "conjunctiva"], ["角膜", "cornea"], ["晶体", "lens"], ["瞳孔", "pupil"], ["眼位", "eyePos"], ["眼球运动", "eyeMove"], ["异常视觉行为", "abnormalVision"], ["戴镜情况", "glasses"], ["裸眼视力(右)", "visionR"], ["裸眼视力(左)", "visionL"], ["右眼戴镜视力", "visionRG"], ["左眼戴镜视力", "visionLG"], ["右眼球镜", "sphereR"], ["右眼柱镜", "cylR"], ["右眼轴向", "axisR"], ["左眼球镜", "sphereL"], ["左眼柱镜", "cylL"], ["左眼轴向", "axisL"], ["临床印象", "impression"], ["角膜曲率半径", "corneaCurve"], ["眼轴长度", "axisLen"], ["色觉", "colorVision"]] },
-  { title: "口腔", cols: [["齿列", "dentition"], ["牙周", "periodontal"], ["乳龋患d", "d"], ["恒龋患D", "D"], ["乳龋失m", "m"], ["恒龋失M", "M"], ["乳龋补f", "f"], ["恒龋补F", "F"], ["龋失补总齿数", "dmft"]] },
-  { title: "内外科", cols: [["皮肤", "skin"], ["淋巴结", "lymph"], ["头部", "head"], ["颈部", "neck"], ["脊柱", "spine"], ["四肢", "limbs"], ["胸部", "chest"], ["近期不适症状", "symptoms"], ["心率", "heartRate"], ["心脏杂音", "murmur"], ["心律", "rhythm"], ["肺部罗音", "lungRales"], ["肝", "liver"], ["脾", "spleen"]] },
+// 回显列：与历史儿童入学体检数据表字段顺序完全一致
+type Col = { label: string; key: keyof Exam; group: string };
+const EXAM_COLS: Col[] = [
+  { label: "年龄", key: "age", group: "基本信息" },
+  { label: "身高", key: "height", group: "一般检查" }, { label: "体重", key: "weight", group: "一般检查" }, { label: "BMI", key: "bmi", group: "一般检查" },
+  { label: "收缩压", key: "bpS", group: "一般检查" }, { label: "舒张压", key: "bpD", group: "一般检查" }, { label: "压差", key: "bpDiff", group: "一般检查" },
+  { label: "结膜", key: "conjunctiva", group: "眼科" }, { label: "角膜", key: "cornea", group: "眼科" }, { label: "晶体", key: "lens", group: "眼科" },
+  { label: "瞳孔", key: "pupil", group: "眼科" }, { label: "眼位", key: "eyePos", group: "眼科" }, { label: "眼球运动", key: "eyeMove", group: "眼科" },
+  { label: "异常视觉行为", key: "abnormalVision", group: "眼科" }, { label: "戴镜情况", key: "glasses", group: "眼科" },
+  { label: "裸眼视力（右）", key: "visionR", group: "眼科" }, { label: "裸眼视力（左）", key: "visionL", group: "眼科" },
+  { label: "右眼戴镜视力", key: "visionRG", group: "眼科" }, { label: "左眼戴镜视力", key: "visionLG", group: "眼科" },
+  { label: "右眼球镜", key: "sphereR", group: "眼科" }, { label: "右眼柱镜", key: "cylR", group: "眼科" }, { label: "右眼轴向值", key: "axisR", group: "眼科" },
+  { label: "左眼球镜", key: "sphereL", group: "眼科" }, { label: "左眼柱镜", key: "cylL", group: "眼科" }, { label: "左眼轴向值", key: "axisL", group: "眼科" },
+  { label: "临床印象", key: "impression", group: "眼科" }, { label: "角膜曲率半径", key: "corneaCurve", group: "眼科" },
+  { label: "眼轴长度", key: "axisLen", group: "眼科" }, { label: "色觉", key: "colorVision", group: "眼科" },
+  { label: "齿列", key: "dentition", group: "口腔" }, { label: "牙周", key: "periodontal", group: "口腔" },
+  { label: "乳龋患（d）", key: "d", group: "口腔" }, { label: "恒龋患（D）", key: "D", group: "口腔" },
+  { label: "乳龋失（m）", key: "m", group: "口腔" }, { label: "恒龋失（M）", key: "M", group: "口腔" },
+  { label: "乳龋补（f）", key: "f", group: "口腔" }, { label: "恒龋补（F）", key: "F", group: "口腔" },
+  { label: "龋失补总齿数", key: "dmft", group: "口腔" },
+  { label: "皮肤", key: "skin", group: "内外科" }, { label: "淋巴结", key: "lymph", group: "内外科" }, { label: "头部", key: "head", group: "内外科" },
+  { label: "颈部", key: "neck", group: "内外科" }, { label: "脊柱", key: "spine", group: "内外科" }, { label: "四肢", key: "limbs", group: "内外科" },
+  { label: "胸部", key: "chest", group: "内外科" }, { label: "近期不适症状", key: "symptoms", group: "内外科" },
+  { label: "心率", key: "heartRate", group: "内外科" }, { label: "心脏杂音", key: "murmur", group: "内外科" }, { label: "心律", key: "rhythm", group: "内外科" },
+  { label: "肺部罗音", key: "lungRales", group: "内外科" }, { label: "肝", key: "liver", group: "内外科" }, { label: "脾", key: "spleen", group: "内外科" },
 ];
+const GROUPS = ["基本信息", "一般检查", "眼科", "口腔", "内外科"];
+const GROUP_CLS: Record<string, string> = {
+  基本信息: "bg-slate-100 text-slate-600", 一般检查: "bg-teal/10 text-teal", 眼科: "bg-blue-50 text-blue-600",
+  口腔: "bg-amber-50 text-amber-600", 内外科: "bg-emerald-50 text-emerald-600",
+};
 
 export function AdminStudentImport() {
   // 预置示例数据，便于直接预览回显效果
@@ -221,57 +245,48 @@ export function AdminStudentImport() {
             </table>
           </div>
         ) : (
-          <div className="space-y-4">
-            <p className="text-[11px] text-slate-400">字段与历史儿童入学体检数据表一致；横向滚动可查看全部字段。</p>
-            {EXAM_GROUPS.map((g) => (
-              <div key={g.title}>
-                <p className="mb-1.5 text-xs font-semibold text-slate-700">{g.title}</p>
-                <div className="overflow-x-auto rounded-lg border border-slate-100">
-                  <table className="w-full whitespace-nowrap text-xs">
-                    <thead className="bg-slate-50 text-slate-500">
-                      <tr className="text-left">
-                        <th className="py-2 pl-3 pr-3 font-normal">学生编码</th>
-                        <th className="pr-3 font-normal">姓名</th>
-                        <th className="pr-3 font-normal">状态</th>
-                        {g.cols.map(([l]) => <th key={l} className="pr-3 font-normal">{l}</th>)}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {shown.map((r) => (
-                        <tr key={r.uid} className="border-t border-slate-50">
-                          <td className="py-2 pl-3 pr-3 font-mono text-slate-600">{r.uid}</td>
-                          <td className="pr-3 font-medium">{r.name}</td>
-                          <td className="pr-3"><span className={`rounded px-1.5 py-0.5 ${r.status === "已检" ? "bg-success/15 text-success" : "bg-slate-100 text-slate-500"}`}>{r.status}</span></td>
-                          {g.cols.map(([l, k]) => <td key={l} className="pr-3">{r.status === "已检" ? (r[k] ?? "—") : "—"}</td>)}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-            <div>
-              <p className="mb-1.5 text-xs font-semibold text-slate-700">综合评估</p>
-              <div className="overflow-x-auto rounded-lg border border-slate-100">
-                <table className="w-full whitespace-nowrap text-xs">
-                  <thead className="bg-slate-50 text-slate-500">
-                    <tr className="text-left">
-                      <th className="py-2 pl-3 pr-3 font-normal">学生编码</th>
-                      <th className="pr-3 font-normal">姓名</th>
-                      <th className="pr-3 font-normal">风险等级</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shown.map((r) => (
-                      <tr key={r.uid} className="border-t border-slate-50">
-                        <td className="py-2 pl-3 pr-3 font-mono text-slate-600">{r.uid}</td>
-                        <td className="pr-3 font-medium">{r.name}</td>
-                        <td className="pr-3">{r.risk ? <span className={`rounded px-1.5 py-0.5 ${RISK_CLS[r.risk]}`}>{r.risk}</span> : "—"}</td>
-                      </tr>
+          <div>
+            <p className="mb-2 text-[11px] text-slate-400">字段与历史儿童入学体检数据表一致，共 {EXAM_COLS.length + 7} 列；左侧学生信息冻结，横向滚动查看全部指标。</p>
+            <div className="max-h-[560px] overflow-auto rounded-lg border border-slate-200">
+              <table className="border-collapse whitespace-nowrap text-xs">
+                <thead className="sticky top-0 z-10">
+                  <tr className="text-left">
+                    <th rowSpan={2} className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">学生编码</th>
+                    <th rowSpan={2} className="sticky left-[150px] z-20 border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">学生姓名</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">学生性别</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">出生日期</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">年级名称</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">班级名称</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">体检状态</th>
+                    {GROUPS.map((g) => (
+                      <th key={g} colSpan={EXAM_COLS.filter((c) => c.group === g).length} className={`border-b border-r border-slate-200 px-3 py-1.5 text-center font-medium ${GROUP_CLS[g]}`}>{g}</th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                    <th rowSpan={2} className="border-b border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">风险等级</th>
+                  </tr>
+                  <tr className="text-left text-slate-500">
+                    {EXAM_COLS.map((c) => (
+                      <th key={c.label} className={`border-b border-r border-slate-200 px-3 py-1.5 font-normal ${GROUP_CLS[c.group]}`}>{c.label}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map((r) => (
+                    <tr key={r.uid} className="hover:bg-slate-50">
+                      <td className="sticky left-0 border-r border-slate-100 bg-white px-3 py-2 font-mono text-slate-600">{r.uid}</td>
+                      <td className="sticky left-[150px] border-r border-slate-100 bg-white px-3 py-2 font-medium">{r.name}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.gender}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.birth}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.grade}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.cls}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">
+                        <span className={`rounded px-1.5 py-0.5 ${r.status === "已检" ? "bg-success/15 text-success" : "bg-slate-100 text-slate-500"}`}>{r.status}</span>
+                      </td>
+                      {EXAM_COLS.map((c) => <td key={c.label} className="border-r border-slate-100 px-3 py-2">{r.status === "已检" ? (r[c.key] ?? "—") : "—"}</td>)}
+                      <td className="px-3 py-2">{r.risk ? <span className={`rounded px-1.5 py-0.5 ${RISK_CLS[r.risk]}`}>{r.risk}</span> : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
