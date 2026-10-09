@@ -245,57 +245,48 @@ export function AdminStudentImport() {
             </table>
           </div>
         ) : (
-          <div className="space-y-4">
-            <p className="text-[11px] text-slate-400">字段与历史儿童入学体检数据表一致；横向滚动可查看全部字段。</p>
-            {EXAM_GROUPS.map((g) => (
-              <div key={g.title}>
-                <p className="mb-1.5 text-xs font-semibold text-slate-700">{g.title}</p>
-                <div className="overflow-x-auto rounded-lg border border-slate-100">
-                  <table className="w-full whitespace-nowrap text-xs">
-                    <thead className="bg-slate-50 text-slate-500">
-                      <tr className="text-left">
-                        <th className="py-2 pl-3 pr-3 font-normal">学生编码</th>
-                        <th className="pr-3 font-normal">姓名</th>
-                        <th className="pr-3 font-normal">状态</th>
-                        {g.cols.map(([l]) => <th key={l} className="pr-3 font-normal">{l}</th>)}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {shown.map((r) => (
-                        <tr key={r.uid} className="border-t border-slate-50">
-                          <td className="py-2 pl-3 pr-3 font-mono text-slate-600">{r.uid}</td>
-                          <td className="pr-3 font-medium">{r.name}</td>
-                          <td className="pr-3"><span className={`rounded px-1.5 py-0.5 ${r.status === "已检" ? "bg-success/15 text-success" : "bg-slate-100 text-slate-500"}`}>{r.status}</span></td>
-                          {g.cols.map(([l, k]) => <td key={l} className="pr-3">{r.status === "已检" ? (r[k] ?? "—") : "—"}</td>)}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-            <div>
-              <p className="mb-1.5 text-xs font-semibold text-slate-700">综合评估</p>
-              <div className="overflow-x-auto rounded-lg border border-slate-100">
-                <table className="w-full whitespace-nowrap text-xs">
-                  <thead className="bg-slate-50 text-slate-500">
-                    <tr className="text-left">
-                      <th className="py-2 pl-3 pr-3 font-normal">学生编码</th>
-                      <th className="pr-3 font-normal">姓名</th>
-                      <th className="pr-3 font-normal">风险等级</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {shown.map((r) => (
-                      <tr key={r.uid} className="border-t border-slate-50">
-                        <td className="py-2 pl-3 pr-3 font-mono text-slate-600">{r.uid}</td>
-                        <td className="pr-3 font-medium">{r.name}</td>
-                        <td className="pr-3">{r.risk ? <span className={`rounded px-1.5 py-0.5 ${RISK_CLS[r.risk]}`}>{r.risk}</span> : "—"}</td>
-                      </tr>
+          <div>
+            <p className="mb-2 text-[11px] text-slate-400">字段与历史儿童入学体检数据表一致，共 {EXAM_COLS.length + 7} 列；左侧学生信息冻结，横向滚动查看全部指标。</p>
+            <div className="max-h-[560px] overflow-auto rounded-lg border border-slate-200">
+              <table className="border-collapse whitespace-nowrap text-xs">
+                <thead className="sticky top-0 z-10">
+                  <tr className="text-left">
+                    <th rowSpan={2} className="sticky left-0 z-20 border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">学生编码</th>
+                    <th rowSpan={2} className="sticky left-[150px] z-20 border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">学生姓名</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">学生性别</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">出生日期</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">年级名称</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">班级名称</th>
+                    <th rowSpan={2} className="border-b border-r border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">体检状态</th>
+                    {GROUPS.map((g) => (
+                      <th key={g} colSpan={EXAM_COLS.filter((c) => c.group === g).length} className={`border-b border-r border-slate-200 px-3 py-1.5 text-center font-medium ${GROUP_CLS[g]}`}>{g}</th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                    <th rowSpan={2} className="border-b border-slate-200 bg-slate-100 px-3 py-2 font-medium text-slate-600">风险等级</th>
+                  </tr>
+                  <tr className="text-left text-slate-500">
+                    {EXAM_COLS.map((c) => (
+                      <th key={c.label} className={`border-b border-r border-slate-200 px-3 py-1.5 font-normal ${GROUP_CLS[c.group]}`}>{c.label}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map((r) => (
+                    <tr key={r.uid} className="hover:bg-slate-50">
+                      <td className="sticky left-0 border-r border-slate-100 bg-white px-3 py-2 font-mono text-slate-600">{r.uid}</td>
+                      <td className="sticky left-[150px] border-r border-slate-100 bg-white px-3 py-2 font-medium">{r.name}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.gender}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.birth}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.grade}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.cls}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">
+                        <span className={`rounded px-1.5 py-0.5 ${r.status === "已检" ? "bg-success/15 text-success" : "bg-slate-100 text-slate-500"}`}>{r.status}</span>
+                      </td>
+                      {EXAM_COLS.map((c) => <td key={c.label} className="border-r border-slate-100 px-3 py-2">{r.status === "已检" ? (r[c.key] ?? "—") : "—"}</td>)}
+                      <td className="px-3 py-2">{r.risk ? <span className={`rounded px-1.5 py-0.5 ${RISK_CLS[r.risk]}`}>{r.risk}</span> : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         )}
