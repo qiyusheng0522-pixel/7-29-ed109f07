@@ -193,12 +193,13 @@ export function AdminStudentImport() {
         if (!["男", "女"].includes(b.gender)) return errs.push(`第 ${line} 行：性别应为 男/女`);
         if (snos.has(b.school + b.sno)) return errs.push(`第 ${line} 行：学号 ${b.sno} 已存在`);
         snos.add(b.school + b.sno);
-        added.push({ ...b, uid: genUid(b, used), ...mockExam(rows.length + added.length, b.birth) });
+        added.push({ ...b, uid: "", ...mockExam(rows.length + added.length, b.birth) });
       });
+      void used;
       setRows((r) => [...r, ...added]);
       setErrors(errs);
       toast.success(`${source}导入完成：成功 ${added.length} 条`, {
-        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "已为每名学生生成 18 位唯一标识编码",
+        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "请点击「生成ID」为学生生成唯一编码及条码/二维码",
       });
     } catch (e) {
       toast.error("导入失败", { description: (e as Error).message });
@@ -269,23 +270,66 @@ export function AdminStudentImport() {
         {rows.length === 0 ? (
           <p className="py-10 text-center text-xs text-slate-400">暂无学生数据，请先导入学生基本信息</p>
         ) : view === "base" ? (
-          <div className="overflow-x-auto">
-            <table className="w-full whitespace-nowrap text-xs">
-              <thead className="text-slate-500">
-                <tr className="border-b border-slate-100 text-left">
-                  <th className="py-2 pr-3 font-normal">唯一标识编码</th>
-                  {IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((r) => (
-                  <tr key={r.uid} className="border-b border-slate-50">
-                    <td className="py-2 pr-3 font-mono text-slate-600">{r.uid}</td>
-                    {[r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
-                  </tr>
+          <div>
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs">
+              <span className="text-slate-500">体检单标签：</span>
+              <div className="flex gap-1 rounded-md bg-white p-0.5">
+                {([["barcode", "条码"], ["qr", "二维码"]] as const).map(([k, l]) => (
+                  <button key={k} onClick={() => setKind(k)} className={`rounded px-2.5 py-1 ${kind === k ? "bg-teal text-white" : "text-slate-500"}`}>{l}</button>
                 ))}
-              </tbody>
-            </table>
+              </div>
+              <span className="text-slate-400">已选 {sel.size} 人 · 未生成 {rows.filter((r) => !r.uid).length} 人</span>
+              <div className="ml-auto flex gap-2">
+                <button onClick={() => generate(sel.size ? sel : undefined)} className="rounded-lg border border-teal px-3 py-1.5 text-teal hover:bg-teal/10">
+                  {sel.size ? "为所选生成ID" : "一键生成全部ID"}
+                </button>
+                <button onClick={downloadBatch} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">
+                  批量下载{sel.size ? "所选" : "全部"}（ZIP）
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full whitespace-nowrap text-xs">
+                <thead className="text-slate-500">
+                  <tr className="border-b border-slate-100 text-left">
+                    <th className="py-2 pr-2">
+                      <input type="checkbox" checked={shown.length > 0 && shown.every((r) => sel.has(keyOf(r)))}
+                        onChange={(e) => setSel(e.target.checked ? new Set(shown.map(keyOf)) : new Set())} />
+                    </th>
+                    <th className="pr-3 font-normal">唯一标识编码</th>
+                    {IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
+                    <th className="pr-3 font-normal">标签预览（体检单右上角）</th>
+                    <th className="font-normal">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map((r) => {
+                    const k = keyOf(r);
+                    return (
+                      <tr key={k} className="border-b border-slate-50">
+                        <td className="py-2 pr-2">
+                          <input type="checkbox" checked={sel.has(k)} onChange={(e) => {
+                            const s = new Set(sel); e.target.checked ? s.add(k) : s.delete(k); setSel(s);
+                          }} />
+                        </td>
+                        <td className="pr-3 font-mono text-slate-600">{r.uid || <span className="text-slate-400">未生成</span>}</td>
+                        {[r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
+                        <td className="pr-3">
+                          {r.uid && preview[k] ? <img src={preview[k]} alt={`${r.name}标签`} className={`rounded border border-slate-200 ${kind === "qr" ? "h-16" : "h-12"}`} /> : <span className="text-slate-300">—</span>}
+                        </td>
+                        <td>
+                          {r.uid ? (
+                            <button onClick={() => downloadOne(r)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">下载</button>
+                          ) : (
+                            <button onClick={() => generate(new Set([k]))} className="rounded bg-teal/10 px-2 py-1 text-teal">生成ID</button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           <div>
