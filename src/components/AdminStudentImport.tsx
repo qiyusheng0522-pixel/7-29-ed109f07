@@ -171,7 +171,7 @@ export function AdminStudentImport() {
 
   const ingest = (text: string, source: string, schoolName?: string) => {
     try {
-      const list = parseCsv(text).map((b) => (schoolName ? { ...b, school: schoolName } : b));
+      const list = parseCsv(text).map((b) => ({ ...b, school: b.school || schoolName || "" }));
       const existing = new Map(rows.map((r) => [keyOf(r), r]));
       const used = new Set(rows.map((r) => r.uid));
       const seen = new Set<string>();
@@ -214,12 +214,7 @@ export function AdminStudentImport() {
       text = await f.text();
     }
     if (fileRef.current) fileRef.current.value = "";
-    try {
-      const count = parseCsv(text).length;
-      setPending({ fileName: f.name, text, school: schoolFromFileName(f.name), count });
-    } catch (e) {
-      toast.error("导入失败", { description: (e as Error).message });
-    }
+    ingest(text, f.name + " ", schoolFromFileName(f.name) || undefined);
   };
   const confirmImport = () => {
     if (!pending) return;
@@ -269,7 +264,8 @@ export function AdminStudentImport() {
     try {
       const blob = await buildExamSheets(examTemplate.url, list, kind);
       const url = URL.createObjectURL(blob);
-      downloadUrl(url, `体检档案_${list.length}人.pdf`);
+      const sch = [...new Set(list.map((r) => r.school))].join("、");
+      downloadUrl(url, `${sch}_${list.length}人.pdf`);
       toast.success(`已生成 ${list.length} 份体检档案`, { description: "已按学号顺序排列，可直接打印" });
     } catch (e) {
       toast.error("生成失败", { description: (e as Error).message });
