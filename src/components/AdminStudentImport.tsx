@@ -214,12 +214,7 @@ export function AdminStudentImport() {
       text = await f.text();
     }
     if (fileRef.current) fileRef.current.value = "";
-    try {
-      const count = parseCsv(text).length;
-      setPending({ fileName: f.name, text, school: schoolFromFileName(f.name), count });
-    } catch (e) {
-      toast.error("导入失败", { description: (e as Error).message });
-    }
+    ingest(text, f.name + " ", schoolFromFileName(f.name) || undefined);
   };
   const confirmImport = () => {
     if (!pending) return;
