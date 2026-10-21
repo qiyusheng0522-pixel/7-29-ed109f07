@@ -264,13 +264,13 @@ export function AdminStudentImport() {
     try {
       const blob = await buildExamSheets(examTemplate.url, list, kind);
       const url = URL.createObjectURL(blob);
-      downloadUrl(url, `体检档案_${list.length}人.pdf`);
+      const sch = [...new Set(list.map((r) => r.school))].join("、");
+      downloadUrl(url, `${sch}_${list.length}人.pdf`);
       toast.success(`已生成 ${list.length} 份体检档案`, { description: "已按学号顺序排列，可直接打印" });
     } catch (e) {
       toast.error("生成失败", { description: (e as Error).message });
     } finally {
-      const sch = [...new Set(list.map((r) => r.school))].join("、");
-      downloadUrl(url, `${sch}_${list.length}人.pdf`);
+      setPrinting(false);
     }
   };
 
