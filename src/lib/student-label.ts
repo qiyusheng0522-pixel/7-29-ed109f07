@@ -64,7 +64,8 @@ export async function buildExamSheets(
   const { PDFDocument } = await import("pdf-lib");
   const tplBytes = await (await fetch(templateUrl)).arrayBuffer();
   const out = await PDFDocument.create();
-  const tplPages = await out.embedPdf(tplBytes);
+  const tpl = await PDFDocument.load(tplBytes);
+  const tplPages = await out.embedPdf(tpl, tpl.getPageIndices());
   const SCALE = 0.9;
   for (const s of list) {
     tplPages.forEach((tp) => {
