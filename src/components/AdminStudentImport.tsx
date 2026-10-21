@@ -149,16 +149,15 @@ export function AdminStudentImport() {
   }, [rows, kind]);
 
   const generate = (keys?: Set<string>) => {
+    const used = new Set(rows.map((r) => r.uid).filter(Boolean));
     let n = 0;
-    setRows((rs) => {
-      const used = new Set(rs.map((r) => r.uid).filter(Boolean));
-      return rs.map((r) => {
-        if (r.uid || (keys && !keys.has(keyOf(r)))) return r;
-        n++;
-        return { ...r, uid: genUid(r, used) };
-      });
+    const next = rows.map((r) => {
+      if (r.uid || (keys && !keys.has(keyOf(r)))) return r;
+      n++;
+      return { ...r, uid: genUid(r, used) };
     });
-    setTimeout(() => toast.success(n ? `已生成 ${n} 个唯一ID及${kind === "qr" ? "二维码" : "条码"}` : "所选学生均已生成ID"));
+    setRows(next);
+    toast.success(n ? `已生成 ${n} 个唯一ID及${kind === "qr" ? "二维码" : "条码"}` : "所选学生均已生成ID");
   };
 
   const downloadOne = async (r: StudentRow) => {
