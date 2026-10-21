@@ -205,7 +205,14 @@ export function AdminStudentImport() {
   const [pending, setPending] = useState<{ fileName: string; text: string; school: string; count: number } | null>(null);
   const onFile = async (f?: File) => {
     if (!f) return;
-    const text = await f.text();
+    let text: string;
+    if (/\.(xlsx|xls|xlsm|ods)$/i.test(f.name)) {
+      const XLSX = await import("xlsx");
+      const wb = XLSX.read(await f.arrayBuffer(), { type: "array" });
+      text = XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]], { blankrows: false });
+    } else {
+      text = await f.text();
+    }
     if (fileRef.current) fileRef.current.value = "";
     try {
       const count = parseCsv(text).length;
