@@ -47,11 +47,19 @@ const SAMPLE_CSV = `学校,学号,姓名,性别,出生日期,年级,班级
 春晖小学,20220101,赵一诺,女,2018-02-14,二年级,1班
 春晖小学,20220102,孙思远,男,2018-05-03,二年级,1班`;
 
+/** 从文件名识别学校：如「阳光小学_三年级学生名单.csv」→「阳光小学」 */
+export function schoolFromFileName(name: string): string {
+  const base = name.replace(/\.[^.]+$/, "").trim();
+  const m = base.match(/[\u4e00-\u9fa5A-Za-z0-9（）()]+?(小学|中学|学校|幼儿园|学院|分校|校区)/);
+  return m ? m[0] : base.split(/[_\-\s·]/)[0] || base;
+}
+
 function parseCsv(text: string): Base[] {
   const lines = text.replace(/^﻿/, "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const head = lines[0].split(/[,，\t]/).map((s) => s.trim());
   const idx = IMPORT_FIELDS.map((f) => head.indexOf(f));
-  const missing = IMPORT_FIELDS.filter((_, i) => idx[i] < 0);
+  // 学校列可省略：由文件名识别 / 用户编辑的学校名称统一填充
+  const missing = IMPORT_FIELDS.filter((f, i) => idx[i] < 0 && f !== "学校");
   if (missing.length) throw new Error(`缺少字段：${missing.join("、")}`);
   return lines.slice(1).map((l) => {
     const c = l.split(/[,，\t]/).map((s) => s.trim());
@@ -178,10 +186,9 @@ export function AdminStudentImport() {
     toast.success(`已打包下载 ${list.length} 张标签`);
   };
 
-  const ingest = (text: string, source: string) => {
+  const ingest = (text: string, source: string, schoolName?: string) => {
     try {
-      const list = parseCsv(text);
-      const used = new Set(rows.map((r) => r.uid));
+      const list = parseCsv(text).map((b) => (schoolName ? { ...b, school: schoolName } : b));
       const snos = new Set(rows.map((r) => r.school + r.sno));
       const errs: string[] = [];
       const added: StudentRow[] = [];
@@ -194,21 +201,36 @@ export function AdminStudentImport() {
         snos.add(b.school + b.sno);
         added.push({ ...b, uid: "", ...mockExam(rows.length + added.length, b.birth) });
       });
-      void used;
       setRows((r) => [...r, ...added]);
       setErrors(errs);
       toast.success(`${source}导入完成：成功 ${added.length} 条`, {
         description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "请点击「生成ID」为学生生成唯一编码及条码/二维码",
       });
+      return true;
+    } catch (e) {
+      toast.error("导入失败", { description: (e as Error).message });
+      return false;
+    }
+  };
+
+  // 选择文件后先识别学校名称，用户确认/编辑后再导入
+  const [pending, setPending] = useState<{ fileName: string; text: string; school: string; count: number } | null>(null);
+  const onFile = async (f?: File) => {
+    if (!f) return;
+    const text = await f.text();
+    if (fileRef.current) fileRef.current.value = "";
+    try {
+      const count = parseCsv(text).length;
+      setPending({ fileName: f.name, text, school: schoolFromFileName(f.name), count });
     } catch (e) {
       toast.error("导入失败", { description: (e as Error).message });
     }
   };
-
-  const onFile = async (f?: File) => {
-    if (!f) return;
-    ingest(await f.text(), f.name + " ");
-    if (fileRef.current) fileRef.current.value = "";
+  const confirmImport = () => {
+    if (!pending) return;
+    const school = pending.school.trim();
+    if (!school) return toast.error("请填写学校名称");
+    if (ingest(pending.text, pending.fileName + " ", school)) setPending(null);
   };
 
   const downloadTpl = () => {
