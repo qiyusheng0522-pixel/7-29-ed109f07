@@ -31,7 +31,31 @@ export function downloadUrl(url: string, filename: string) {
   a.href = url; a.download = filename; a.click();
 }
 
-/** 按顺序为每位学生套打体检档案模板：第 1 页右上角印条码/二维码 + 姓名 + 学号，合并为一个 PDF */
+/** 体检单专用标签：条码铺满宽度，下方一行「姓名  学号：xxx」 */
+async function renderSheetLabel(uid: string, name: string, sno: string, kind: CodeKind): Promise<string> {
+  const c = document.createElement("canvas");
+  const ctx = c.getContext("2d")!;
+  const code = document.createElement("canvas");
+  if (kind === "barcode") {
+    const JsBarcode = (await import("jsbarcode")).default;
+    JsBarcode(code, uid, { format: "CODE128", width: 4, height: 220, displayValue: false, margin: 0 });
+    c.width = code.width + 40; c.height = 220 + 110;
+  } else {
+    const QR = await import("qrcode");
+    await QR.toCanvas(code, uid, { width: 360, margin: 0 });
+    c.width = 560; c.height = 360 + 110;
+  }
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(code, (c.width - code.width) / 2, 10);
+  ctx.fillStyle = "#000"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  const text = `${name}  学号：${sno}`;
+  let size = 72;
+  do { ctx.font = `bold ${size}px sans-serif`; size -= 2; } while (ctx.measureText(text).width > c.width - 30 && size > 20);
+  ctx.fillText(text, c.width / 2, code.height + 10 + 50);
+  return c.toDataURL("image/png");
+}
+
+/** 按顺序为每位学生套打体检档案模板：模板整体缩放下移留出顶部空白，第 1 页右上角印条码 + 姓名 + 学号，合并为一个 PDF */
 export async function buildExamSheets(
   templateUrl: string,
   list: { uid: string; name: string; sno: string }[],
@@ -39,17 +63,24 @@ export async function buildExamSheets(
 ): Promise<Blob> {
   const { PDFDocument } = await import("pdf-lib");
   const tplBytes = await (await fetch(templateUrl)).arrayBuffer();
-  const tpl = await PDFDocument.load(tplBytes);
   const out = await PDFDocument.create();
+  const tplPages = await out.embedPdf(tplBytes);
+  const SCALE = 0.9;
   for (const s of list) {
-    const pages = await out.copyPages(tpl, tpl.getPageIndices());
-    pages.forEach((p) => out.addPage(p));
-    const first = pages[0];
+    tplPages.forEach((tp) => {
+      const { width, height } = tp;
+      const page = out.addPage([width, height]);
+      const w = width * SCALE, h = height * SCALE;
+      page.drawPage(tp, { x: (width - w) / 2, y: 6, width: w, height: h });
+    });
+    const first = out.getPage(out.getPageCount() - tplPages.length);
     const { width, height } = first.getSize();
-    const png = await out.embedPng(await renderLabel(s.uid, s.name, s.sno, kind));
-    const w = kind === "qr" ? 80 : 95;
-    const h = (png.height / png.width) * w;
-    first.drawImage(png, { x: width - w - 8, y: height - h - 4, width: w, height: h });
+    const png = await out.embedPng(await renderSheetLabel(s.uid, s.name, s.sno, kind));
+    const topSpace = height * (1 - SCALE) - 10;
+    const lh = topSpace - 6;
+    const lw = Math.min((png.width / png.height) * lh, 190);
+    const fh = (png.height / png.width) * lw;
+    first.drawImage(png, { x: width - lw - 18, y: height - fh - 6, width: lw, height: fh });
   }
   return new Blob([(await out.save()) as Uint8Array<ArrayBuffer>], { type: "application/pdf" });
 }
