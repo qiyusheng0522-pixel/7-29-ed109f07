@@ -30,3 +30,26 @@ export function downloadUrl(url: string, filename: string) {
   const a = document.createElement("a");
   a.href = url; a.download = filename; a.click();
 }
+
+/** 按顺序为每位学生套打体检档案模板：第 1 页右上角印条码/二维码 + 姓名 + 学号，合并为一个 PDF */
+export async function buildExamSheets(
+  templateUrl: string,
+  list: { uid: string; name: string; sno: string }[],
+  kind: CodeKind,
+): Promise<Blob> {
+  const { PDFDocument } = await import("pdf-lib");
+  const tplBytes = await (await fetch(templateUrl)).arrayBuffer();
+  const tpl = await PDFDocument.load(tplBytes);
+  const out = await PDFDocument.create();
+  for (const s of list) {
+    const pages = await out.copyPages(tpl, tpl.getPageIndices());
+    pages.forEach((p) => out.addPage(p));
+    const first = pages[0];
+    const { width, height } = first.getSize();
+    const png = await out.embedPng(await renderLabel(s.uid, s.name, s.sno, kind));
+    const w = kind === "qr" ? 80 : 95;
+    const h = (png.height / png.width) * w;
+    first.drawImage(png, { x: width - w - 8, y: height - h - 4, width: w, height: h });
+  }
+  return new Blob([await out.save()], { type: "application/pdf" });
+}
