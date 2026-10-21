@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { renderLabel, downloadUrl, type CodeKind } from "@/lib/student-label";
 
 // 后台唯一入口：仅支持通过数据导入学生基本信息
 export const IMPORT_FIELDS = ["学校", "学号", "姓名", "性别", "出生日期", "年级", "班级"] as const;
@@ -126,15 +127,57 @@ const GROUP_CLS: Record<string, string> = {
 };
 
 export function AdminStudentImport() {
-  // 预置示例数据，便于直接预览回显效果
+  // 预置示例数据：前 5 人已生成 ID，后 2 人待手动生成
   const [rows, setRows] = useState<StudentRow[]>(() => {
     const used = new Set<string>();
-    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: genUid(b, used), ...mockExam(i, b.birth) }));
+    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: i < 5 ? genUid(b, used) : "", ...mockExam(i, b.birth) }));
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [view, setView] = useState<"base" | "exam">("base");
   const [q, setQ] = useState("");
+  const [kind, setKind] = useState<CodeKind>("barcode");
+  const [sel, setSel] = useState<Set<string>>(new Set());
+  const [preview, setPreview] = useState<Record<string, string>>({});
   const fileRef = useRef<HTMLInputElement>(null);
+  const keyOf = (r: StudentRow) => r.school + r.sno;
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all(rows.filter((r) => r.uid).map(async (r) => [keyOf(r), await renderLabel(r.uid, r.name, r.sno, kind)] as const))
+      .then((list) => alive && setPreview(Object.fromEntries(list)));
+    return () => { alive = false; };
+  }, [rows, kind]);
+
+  const generate = (keys?: Set<string>) => {
+    let n = 0;
+    setRows((rs) => {
+      const used = new Set(rs.map((r) => r.uid).filter(Boolean));
+      return rs.map((r) => {
+        if (r.uid || (keys && !keys.has(keyOf(r)))) return r;
+        n++;
+        return { ...r, uid: genUid(r, used) };
+      });
+    });
+    setTimeout(() => toast.success(n ? `已生成 ${n} 个唯一ID及${kind === "qr" ? "二维码" : "条码"}` : "所选学生均已生成ID"));
+  };
+
+  const downloadOne = async (r: StudentRow) => {
+    downloadUrl(await renderLabel(r.uid, r.name, r.sno, kind), `${r.name}_${r.sno}_${kind === "qr" ? "二维码" : "条码"}.png`);
+  };
+
+  const downloadBatch = async () => {
+    const list = rows.filter((r) => r.uid && (sel.size === 0 || sel.has(keyOf(r))));
+    if (!list.length) return toast.error("没有可下载的学生", { description: "请先生成唯一ID" });
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+    for (const r of list) {
+      const url = await renderLabel(r.uid, r.name, r.sno, kind);
+      zip.file(`${r.grade}${r.cls}_${r.name}_${r.sno}.png`, url.split(",")[1], { base64: true });
+    }
+    const blob = await zip.generateAsync({ type: "blob" });
+    downloadUrl(URL.createObjectURL(blob), `学生${kind === "qr" ? "二维码" : "条码"}_${list.length}人.zip`);
+    toast.success(`已打包下载 ${list.length} 张标签`);
+  };
 
   const ingest = (text: string, source: string) => {
     try {
