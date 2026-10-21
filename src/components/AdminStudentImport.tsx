@@ -297,7 +297,7 @@ export function AdminStudentImport() {
                     </th>
                     <th className="pr-3 font-normal">唯一标识编码</th>
                     {IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
-                    <th className="pr-3 font-normal">标签预览（体检单右上角）</th>
+                    <th className="pr-3 font-normal">条码/二维码</th>
                     <th className="font-normal">操作</th>
                   </tr>
                 </thead>
@@ -314,7 +314,7 @@ export function AdminStudentImport() {
                         <td className="pr-3 font-mono text-slate-600">{r.uid || <span className="text-slate-400">未生成</span>}</td>
                         {[r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
                         <td className="pr-3">
-                          {r.uid && preview[k] ? <img src={preview[k]} alt={`${r.name}标签`} className={`rounded border border-slate-200 ${kind === "qr" ? "h-16" : "h-12"}`} /> : <span className="text-slate-300">—</span>}
+                          {r.uid ? <span className="text-emerald-600">已生成</span> : <span className="text-slate-300">—</span>}
                         </td>
                         <td>
                           {r.uid ? (
