@@ -3,7 +3,9 @@ import { toast } from "sonner";
 import { renderLabel, downloadUrl, type CodeKind } from "@/lib/student-label";
 
 // 后台唯一入口：仅支持通过数据导入学生基本信息
-export const IMPORT_FIELDS = ["学校", "学号", "姓名", "性别", "出生日期", "年级", "班级"] as const;
+export const IMPORT_FIELDS = ["学校", "学生编号", "学生姓名", "学生性别", "所属年级", "所属班级"] as const;
+// 兼容旧表头
+const ALIASES: Record<string, string[]> = { 学生编号: ["学号"], 学生姓名: ["姓名"], 学生性别: ["性别"], 所属年级: ["年级"], 所属班级: ["班级"] };
 
 type Base = { school: string; sno: string; name: string; gender: string; birth: string; grade: string; cls: string };
 
@@ -28,24 +30,28 @@ export type StudentRow = Base & { uid: string } & Exam;
 
 const SCHOOL_CODE: Record<string, string> = { 阳光小学: "01", 春晖小学: "02", 育英小学: "03" };
 
-/** 18 位唯一标识：区划码6 + 学校码2 + 出生日期8 + 顺序号2，全局去重 */
+const GRADE_NO: Record<string, number> = { 一年级: 1, 二年级: 2, 三年级: 3, 四年级: 4, 五年级: 5, 六年级: 6, 初一: 7, 初二: 8, 初三: 9 };
+const num = (s: string, n: number) => (s.replace(/\D/g, "") || "0").padStart(n, "0").slice(-n);
+
+/** 18 位唯一标识：区划码6 + 学校码2 + 年级2 + 班级2 + 学生编号后4位 + 性别1 + 顺序号1，全局去重 */
 export function genUid(b: Base, used: Set<string>): string {
-  const prefix = "320102" + (SCHOOL_CODE[b.school] ?? "09") + b.birth.replace(/\D/g, "").padEnd(8, "0").slice(0, 8);
-  for (let i = 0; i < 100; i++) {
-    const uid = prefix + String(i).padStart(2, "0");
+  const grade = String(GRADE_NO[b.grade.replace(/\s/g, "")] ?? num(b.grade, 2)).padStart(2, "0");
+  const prefix = "320102" + (SCHOOL_CODE[b.school] ?? "09") + grade + num(b.cls, 2) + num(b.sno, 4) + (b.gender === "女" ? "2" : "1");
+  for (let i = 0; i < 10; i++) {
+    const uid = prefix + String(i);
     if (!used.has(uid)) { used.add(uid); return uid; }
   }
   throw new Error("唯一编码已用尽");
 }
 
-const SAMPLE_CSV = `学校,学号,姓名,性别,出生日期,年级,班级
-阳光小学,20230301,李小阳,男,2017-03-12,三年级,3班
-阳光小学,20230302,王小雨,女,2017-06-08,三年级,3班
-阳光小学,20230303,张子涵,男,2017-01-25,三年级,3班
-阳光小学,20230304,陈可欣,女,2016-11-30,三年级,3班
-阳光小学,20230305,刘浩然,男,2017-08-19,三年级,3班
-春晖小学,20220101,赵一诺,女,2018-02-14,二年级,1班
-春晖小学,20220102,孙思远,男,2018-05-03,二年级,1班`;
+const SAMPLE_CSV = `学校,学生编号,学生姓名,学生性别,所属年级,所属班级
+阳光小学,20230301,李小阳,男,三年级,3班
+阳光小学,20230302,王小雨,女,三年级,3班
+阳光小学,20230303,张子涵,男,三年级,3班
+阳光小学,20230304,陈可欣,女,三年级,3班
+阳光小学,20230305,刘浩然,男,三年级,3班
+春晖小学,20220101,赵一诺,女,二年级,1班
+春晖小学,20220102,孙思远,男,二年级,1班`;
 
 /** 从文件名识别学校：如「阳光小学_三年级学生名单.csv」→「阳光小学」 */
 export function schoolFromFileName(name: string): string {
@@ -57,21 +63,21 @@ export function schoolFromFileName(name: string): string {
 function parseCsv(text: string): Base[] {
   const lines = text.replace(/^﻿/, "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const head = lines[0].split(/[,，\t]/).map((s) => s.trim());
-  const idx = IMPORT_FIELDS.map((f) => head.indexOf(f));
+  const idx = IMPORT_FIELDS.map((f) => [f, ...(ALIASES[f] ?? [])].map((h) => head.indexOf(h)).find((i) => i >= 0) ?? -1);
   // 学校列可省略：由文件名识别 / 用户编辑的学校名称统一填充
   const missing = IMPORT_FIELDS.filter((f, i) => idx[i] < 0 && f !== "学校");
   if (missing.length) throw new Error(`缺少字段：${missing.join("、")}`);
   return lines.slice(1).map((l) => {
     const c = l.split(/[,，\t]/).map((s) => s.trim());
-    const [school, sno, name, gender, birth, grade, cls] = idx.map((i) => c[i] ?? "");
-    return { school, sno, name, gender, birth, grade, cls };
+    const [school, sno, name, gender, grade, cls] = idx.map((i) => c[i] ?? "");
+    return { school, sno, name, gender, birth: "", grade, cls };
   });
 }
 
 // 原型：模拟体检完成后的数据回流，字段对齐历史入学体检数据表
-function mockExam(i: number, birth: string): Exam {
+function mockExam(i: number, grade: string): Exam {
   if (i % 3 === 2) return { status: "待检" };
-  const age = 2026 - Number(birth.slice(0, 4));
+  const age = 5 + (GRADE_NO[grade] ?? 3);
   const h = 128 + ((i * 7) % 14), w = 26 + ((i * 5) % 12);
   const bpS = i === 0 ? 132 : 100 + ((i * 3) % 14), bpD = 62 + (i % 10);
   const d = i % 2 ? 2 : 0, D = i === 4 ? 1 : 0, m = 0, M = 0, f = i % 2 ? 1 : 0, F = 0;
@@ -138,7 +144,7 @@ export function AdminStudentImport() {
   // 预置示例数据：前 5 人已生成 ID，后 2 人待手动生成
   const [rows, setRows] = useState<StudentRow[]>(() => {
     const used = new Set<string>();
-    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: i < 5 ? genUid(b, used) : "", ...mockExam(i, b.birth) }));
+    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: i < 5 ? genUid(b, used) : "", ...mockExam(i, b.grade) }));
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [view, setView] = useState<"base" | "exam">("base");
@@ -194,12 +200,11 @@ export function AdminStudentImport() {
       const added: StudentRow[] = [];
       list.forEach((b, i) => {
         const line = i + 2;
-        if (IMPORT_FIELDS.some((_, k) => !Object.values(b)[k])) return errs.push(`第 ${line} 行：字段不完整`);
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(b.birth)) return errs.push(`第 ${line} 行：出生日期格式应为 YYYY-MM-DD`);
-        if (!["男", "女"].includes(b.gender)) return errs.push(`第 ${line} 行：性别应为 男/女`);
-        if (snos.has(b.school + b.sno)) return errs.push(`第 ${line} 行：学号 ${b.sno} 已存在`);
+        if ([b.school, b.sno, b.name, b.gender, b.grade, b.cls].some((v) => !v)) return errs.push(`第 ${line} 行：字段不完整`);
+        if (!["男", "女"].includes(b.gender)) return errs.push(`第 ${line} 行：性别（学生性别）应为 男/女`);
+        if (snos.has(b.school + b.sno)) return errs.push(`第 ${line} 行：学生编号 ${b.sno} 已存在`);
         snos.add(b.school + b.sno);
-        added.push({ ...b, uid: "", ...mockExam(rows.length + added.length, b.birth) });
+        added.push({ ...b, uid: "", ...mockExam(rows.length + added.length, b.grade) });
       });
       setRows((r) => [...r, ...added]);
       setErrors(errs);
@@ -264,13 +269,13 @@ export function AdminStudentImport() {
             <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           </div>
         </div>
-        <div className="grid grid-cols-8 gap-2 text-[11px]">
+        <div className="grid grid-cols-7 gap-2 text-[11px]">
           {IMPORT_FIELDS.map((f) => (
             <div key={f} className="rounded-lg bg-slate-50 px-3 py-2 text-center text-slate-600">{f}<span className="text-danger"> *</span></div>
           ))}
           <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一ID · 手动生成</div>
         </div>
-        <p className="mt-2 text-[11px] text-slate-400">编码规则：区划码 6 位 + 学校码 2 位 + 出生日期 8 位 + 顺序号 2 位，全库唯一、不可修改。</p>
+        <p className="mt-2 text-[11px] text-slate-400">编码规则：区划码 6 位 + 学校码 2 位 + 年级 2 位 + 班级 2 位 + 学生编号后 4 位 + 性别 1 位（男1/女2）+ 顺序号 1 位，共 18 位，全库唯一、不可修改。</p>
         {pending && (
           <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-teal/30 bg-teal/5 p-3 text-xs">
             <span className="text-slate-600">文件「{pending.fileName}」共 {pending.count} 名学生，导入学校：</span>
@@ -350,7 +355,7 @@ export function AdminStudentImport() {
                           }} />
                         </td>
                         <td className="pr-3 font-mono text-slate-600">{r.uid || <span className="text-slate-400">未生成</span>}</td>
-                        {[r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
+                        {[r.school, r.sno, r.name, r.gender, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
                         <td className="pr-3">
                           {r.uid ? <span className="text-emerald-600">已生成</span> : <span className="text-slate-300">—</span>}
                         </td>
@@ -399,7 +404,7 @@ export function AdminStudentImport() {
                       <td className="sticky left-0 border-r border-slate-100 bg-white px-3 py-2 font-mono text-slate-600">{r.uid || "未生成"}</td>
                       <td className="sticky left-[150px] border-r border-slate-100 bg-white px-3 py-2 font-medium">{r.name}</td>
                       <td className="border-r border-slate-100 px-3 py-2">{r.gender}</td>
-                      <td className="border-r border-slate-100 px-3 py-2">{r.birth}</td>
+                      <td className="border-r border-slate-100 px-3 py-2">{r.birth || "—"}</td>
                       <td className="border-r border-slate-100 px-3 py-2">{r.grade}</td>
                       <td className="border-r border-slate-100 px-3 py-2">{r.cls}</td>
                       <td className="border-r border-slate-100 px-3 py-2">
