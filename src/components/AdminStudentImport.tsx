@@ -293,7 +293,7 @@ export function AdminStudentImport() {
           <div className="flex gap-2 text-xs">
             <button onClick={downloadTpl} className="rounded-lg border border-slate-200 px-3 py-1.5 hover:bg-slate-50">下载模板</button>
             <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">导入学生</button>
-            <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+            <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx,.xls,.xlsm,.ods,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           </div>
         </div>
         <p className="mb-3 text-[11px] text-slate-400">导入字段：{IMPORT_FIELDS.join("、")}。导入后自动生成 18 位唯一ID；同一学校同一学生编号重复导入只更新信息，不改变唯一ID。</p>
