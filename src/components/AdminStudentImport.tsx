@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { renderLabel, downloadUrl, type CodeKind } from "@/lib/student-label";
+import { renderLabel, downloadUrl, buildExamSheets, type CodeKind } from "@/lib/student-label";
+import examTemplate from "@/assets/health-exam-template.pdf.asset.json";
 
 // 后台唯一入口：仅支持通过数据导入学生基本信息
 export const IMPORT_FIELDS = ["学校", "学生编号", "学生姓名", "学生性别", "所属年级", "所属班级"] as const;
@@ -250,6 +251,26 @@ export function AdminStudentImport() {
     toast.success(`已批量导出 ${list.length} 张标签`);
   };
 
+  // 按 学校→年级→班级→学号 顺序套打《江苏省中小学健康体检档案》，每人一份（2 页），右上角印条码
+  const [printing, setPrinting] = useState(false);
+  const printSheets = async () => {
+    const list = shown
+      .filter((r) => sel.size === 0 || sel.has(keyOf(r)))
+      .sort((a, b) => [a.school, a.grade, a.cls, a.sno].join("|").localeCompare([b.school, b.grade, b.cls, b.sno].join("|"), "zh"));
+    if (!list.length) return toast.error("当前筛选条件下没有学生");
+    setPrinting(true);
+    try {
+      const blob = await buildExamSheets(examTemplate.url, list, kind);
+      const url = URL.createObjectURL(blob);
+      downloadUrl(url, `体检档案_${list.length}人.pdf`);
+      toast.success(`已生成 ${list.length} 份体检档案`, { description: "已按学号顺序排列，可直接打印" });
+    } catch (e) {
+      toast.error("生成失败", { description: (e as Error).message });
+    } finally {
+      setPrinting(false);
+    }
+  };
+
   const inputCls = "w-36 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs";
 
   return (
@@ -304,6 +325,9 @@ export function AdminStudentImport() {
               </div>
               <button onClick={downloadBatch} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">
                 批量导出{sel.size ? `所选 ${sel.size} 人` : `筛选结果 ${shown.length} 人`}（ZIP）
+              </button>
+              <button onClick={printSheets} disabled={printing} className="rounded-lg bg-deep px-3 py-1.5 text-white hover:opacity-90 disabled:opacity-60">
+                {printing ? "生成中…" : "打印体检档案（PDF）"}
               </button>
             </div>
           )}
