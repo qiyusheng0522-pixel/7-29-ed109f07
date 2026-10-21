@@ -158,7 +158,7 @@ export function AdminStudentImport() {
   const keyOf = (r: StudentRow) => r.school + r.sno;
 
   const downloadOne = async (r: StudentRow) => {
-    downloadUrl(await renderLabel(r.uid, r.name, r.sno, kind), `${r.name}_${r.sno}_${kind === "qr" ? "二维码" : "条码"}.png`);
+    downloadUrl(await renderLabel(r.uid, r.name, r.sno, kind), `${r.uid}_${r.name}_${r.sno}.png`);
   };
 
   const remove = (r: StudentRow) => {
@@ -243,7 +243,7 @@ export function AdminStudentImport() {
     const zip = new JSZip();
     for (const r of list) {
       const url = await renderLabel(r.uid, r.name, r.sno, kind);
-      zip.file(`${r.school}_${r.grade}${r.cls}_${r.name}_${r.sno}.png`, url.split(",")[1], { base64: true });
+      zip.file(`${r.uid}_${r.name}_${r.sno}.png`, url.split(",")[1], { base64: true });
     }
     const blob = await zip.generateAsync({ type: "blob" });
     downloadUrl(URL.createObjectURL(blob), `学生${kind === "qr" ? "二维码" : "条码"}_${list.length}人.zip`);
