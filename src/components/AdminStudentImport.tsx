@@ -271,6 +271,22 @@ export function AdminStudentImport() {
           <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一ID · 手动生成</div>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">编码规则：区划码 6 位 + 学校码 2 位 + 出生日期 8 位 + 顺序号 2 位，全库唯一、不可修改。</p>
+        {pending && (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-teal/30 bg-teal/5 p-3 text-xs">
+            <span className="text-slate-600">文件「{pending.fileName}」共 {pending.count} 名学生，导入学校：</span>
+            <input
+              value={pending.school}
+              onChange={(e) => setPending({ ...pending, school: e.target.value })}
+              placeholder="请输入学校名称"
+              className="w-48 rounded-lg border border-slate-200 bg-white px-3 py-1.5"
+            />
+            <span className="text-[11px] text-slate-400">已根据文件名自动识别，可修改；本次导入学生的学校将统一为此名称</span>
+            <div className="ml-auto flex gap-2">
+              <button onClick={() => setPending(null)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">取消</button>
+              <button onClick={confirmImport} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">确认导入</button>
+            </div>
+          </div>
+        )}
         {errors.length > 0 && (
           <div className="mt-3 rounded-lg bg-danger/10 p-3 text-[11px] text-danger">
             {errors.map((e) => <p key={e}>{e}</p>)}
