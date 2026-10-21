@@ -141,75 +141,57 @@ const GROUP_CLS: Record<string, string> = {
 };
 
 export function AdminStudentImport() {
-  // 预置示例数据：前 5 人已生成 ID，后 2 人待手动生成
+  // 导入即自动生成唯一ID；列表只保存已有唯一ID的学生
   const [rows, setRows] = useState<StudentRow[]>(() => {
     const used = new Set<string>();
-    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: i < 5 ? genUid(b, used) : "", ...mockExam(i, b.grade) }));
+    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: genUid(b, used), ...mockExam(i, b.grade) }));
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [view, setView] = useState<"base" | "exam">("base");
-  const [q, setQ] = useState("");
+  const [fName, setFName] = useState("");
+  const [fSno, setFSno] = useState("");
+  const [fSchool, setFSchool] = useState("");
+  const q = "";
   const [kind, setKind] = useState<CodeKind>("barcode");
   const [sel, setSel] = useState<Set<string>>(new Set());
-  const [preview, setPreview] = useState<Record<string, string>>({});
   const fileRef = useRef<HTMLInputElement>(null);
   const keyOf = (r: StudentRow) => r.school + r.sno;
-
-  useEffect(() => {
-    let alive = true;
-    Promise.all(rows.filter((r) => r.uid).map(async (r) => [keyOf(r), await renderLabel(r.uid, r.name, r.sno, kind)] as const))
-      .then((list) => alive && setPreview(Object.fromEntries(list)));
-    return () => { alive = false; };
-  }, [rows, kind]);
-
-  const generate = (keys?: Set<string>) => {
-    const used = new Set(rows.map((r) => r.uid).filter(Boolean));
-    let n = 0;
-    const next = rows.map((r) => {
-      if (r.uid || (keys && !keys.has(keyOf(r)))) return r;
-      n++;
-      return { ...r, uid: genUid(r, used) };
-    });
-    setRows(next);
-    toast.success(n ? `已生成 ${n} 个唯一ID及${kind === "qr" ? "二维码" : "条码"}` : "所选学生均已生成ID");
-  };
 
   const downloadOne = async (r: StudentRow) => {
     downloadUrl(await renderLabel(r.uid, r.name, r.sno, kind), `${r.name}_${r.sno}_${kind === "qr" ? "二维码" : "条码"}.png`);
   };
 
-  const downloadBatch = async () => {
-    const list = rows.filter((r) => r.uid && (sel.size === 0 || sel.has(keyOf(r))));
-    if (!list.length) return toast.error("没有可下载的学生", { description: "请先生成唯一ID" });
-    const JSZip = (await import("jszip")).default;
-    const zip = new JSZip();
-    for (const r of list) {
-      const url = await renderLabel(r.uid, r.name, r.sno, kind);
-      zip.file(`${r.grade}${r.cls}_${r.name}_${r.sno}.png`, url.split(",")[1], { base64: true });
-    }
-    const blob = await zip.generateAsync({ type: "blob" });
-    downloadUrl(URL.createObjectURL(blob), `学生${kind === "qr" ? "二维码" : "条码"}_${list.length}人.zip`);
-    toast.success(`已打包下载 ${list.length} 张标签`);
+  const remove = (r: StudentRow) => {
+    if (!confirm(`确认删除学生「${r.name}（${r.sno}）」？`)) return;
+    setRows((list) => list.filter((x) => keyOf(x) !== keyOf(r)));
+    setSel((s) => { const n = new Set(s); n.delete(keyOf(r)); return n; });
+    toast.success(`已删除 ${r.name}`);
   };
 
   const ingest = (text: string, source: string, schoolName?: string) => {
     try {
       const list = parseCsv(text).map((b) => (schoolName ? { ...b, school: schoolName } : b));
-      const snos = new Set(rows.map((r) => r.school + r.sno));
+      const existing = new Map(rows.map((r) => [keyOf(r), r]));
+      const used = new Set(rows.map((r) => r.uid));
+      const seen = new Set<string>();
       const errs: string[] = [];
       const added: StudentRow[] = [];
+      let updated = 0;
       list.forEach((b, i) => {
         const line = i + 2;
         if ([b.school, b.sno, b.name, b.gender, b.grade, b.cls].some((v) => !v)) return errs.push(`第 ${line} 行：字段不完整`);
-        if (!["男", "女"].includes(b.gender)) return errs.push(`第 ${line} 行：性别（学生性别）应为 男/女`);
-        if (snos.has(b.school + b.sno)) return errs.push(`第 ${line} 行：学生编号 ${b.sno} 已存在`);
-        snos.add(b.school + b.sno);
-        added.push({ ...b, uid: "", ...mockExam(rows.length + added.length, b.grade) });
+        if (!["男", "女"].includes(b.gender)) return errs.push(`第 ${line} 行：学生性别应为 男/女`);
+        const k = b.school + b.sno;
+        if (seen.has(k)) return errs.push(`第 ${line} 行：学生编号 ${b.sno} 在文件中重复`);
+        seen.add(k);
+        const old = existing.get(k);
+        if (old) { existing.set(k, { ...old, ...b, birth: old.birth, uid: old.uid }); updated++; return; }
+        added.push({ ...b, uid: genUid(b, used), ...mockExam(rows.length + added.length, b.grade) });
       });
-      setRows((r) => [...r, ...added]);
+      setRows([...existing.values(), ...added]);
       setErrors(errs);
-      toast.success(`${source}导入完成：成功 ${added.length} 条`, {
-        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "请点击「生成ID」为学生生成唯一编码及条码/二维码",
+      toast.success(`${source}导入完成：新增 ${added.length} 人，更新 ${updated} 人`, {
+        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "新增学生已自动生成唯一ID；重复导入的学生保留原ID",
       });
       return true;
     } catch (e) {
@@ -246,46 +228,52 @@ export function AdminStudentImport() {
     a.click();
   };
 
+  const schools = useMemo(() => [...new Set(rows.map((r) => r.school))], [rows]);
   const shown = useMemo(
-    () => rows.filter((r) => !q || [r.name, r.sno, r.uid, r.school].some((v) => v.includes(q))),
-    [rows, q],
+    () => rows.filter((r) => r.uid && (!fName || r.name.includes(fName)) && (!fSno || r.sno.includes(fSno)) && (!fSchool || r.school === fSchool)),
+    [rows, fName, fSno, fSchool],
   );
-  const done = rows.filter((r) => r.status === "已检").length;
+  void q;
+  const done = shown.filter((r) => r.status === "已检").length;
+
+  const downloadBatch = async () => {
+    const list = shown.filter((r) => sel.size === 0 || sel.has(keyOf(r)));
+    if (!list.length) return toast.error("当前筛选条件下没有学生");
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+    for (const r of list) {
+      const url = await renderLabel(r.uid, r.name, r.sno, kind);
+      zip.file(`${r.school}_${r.grade}${r.cls}_${r.name}_${r.sno}.png`, url.split(",")[1], { base64: true });
+    }
+    const blob = await zip.generateAsync({ type: "blob" });
+    downloadUrl(URL.createObjectURL(blob), `学生${kind === "qr" ? "二维码" : "条码"}_${list.length}人.zip`);
+    toast.success(`已批量导出 ${list.length} 张标签`);
+  };
+
+  const inputCls = "w-36 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs";
 
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <div className="mb-3 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold">学生基本信息导入</p>
-            <p className="text-[11px] text-slate-500">
-              学生信息仅支持后台数据导入（CSV，Excel 另存为 CSV 即可），导入后可手动生成 18 位唯一ID及条码/二维码，支持单个或批量下载
-            </p>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex gap-1 rounded-lg bg-slate-100 p-1 text-xs">
+            {([["base", "学生列表"], ["exam", "体检数据回显"]] as const).map(([k, l]) => (
+              <button key={k} onClick={() => setView(k)} className={`rounded-md px-3 py-1 ${view === k ? "bg-white font-semibold shadow-sm" : "text-slate-500"}`}>{l}</button>
+            ))}
           </div>
-          <div className="flex shrink-0 gap-2">
-            <button onClick={downloadTpl} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs hover:bg-slate-50">下载模板</button>
-            <button onClick={() => ingest(SAMPLE_CSV, "示例数据")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs hover:bg-slate-50">导入示例数据</button>
-            <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-teal px-3 py-1.5 text-xs text-white hover:opacity-90">选择文件导入</button>
+          <p className="text-xs text-slate-500">共 {shown.length} 人 · 已检 {done} · 待检 {shown.length - done}</p>
+          <div className="flex gap-2 text-xs">
+            <button onClick={downloadTpl} className="rounded-lg border border-slate-200 px-3 py-1.5 hover:bg-slate-50">下载模板</button>
+            <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">导入学生</button>
             <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           </div>
         </div>
-        <div className="grid grid-cols-7 gap-2 text-[11px]">
-          {IMPORT_FIELDS.map((f) => (
-            <div key={f} className="rounded-lg bg-slate-50 px-3 py-2 text-center text-slate-600">{f}<span className="text-danger"> *</span></div>
-          ))}
-          <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一ID · 手动生成</div>
-        </div>
-        <p className="mt-2 text-[11px] text-slate-400">编码规则：区划码 6 位 + 学校码 2 位 + 年级 2 位 + 班级 2 位 + 学生编号后 4 位 + 性别 1 位（男1/女2）+ 顺序号 1 位，共 18 位，全库唯一、不可修改。</p>
+        <p className="mb-3 text-[11px] text-slate-400">导入字段：{IMPORT_FIELDS.join("、")}。导入后自动生成 18 位唯一ID；同一学校同一学生编号重复导入只更新信息，不改变唯一ID。</p>
         {pending && (
-          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-teal/30 bg-teal/5 p-3 text-xs">
+          <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-teal/30 bg-teal/5 p-3 text-xs">
             <span className="text-slate-600">文件「{pending.fileName}」共 {pending.count} 名学生，导入学校：</span>
-            <input
-              value={pending.school}
-              onChange={(e) => setPending({ ...pending, school: e.target.value })}
-              placeholder="请输入学校名称"
-              className="w-48 rounded-lg border border-slate-200 bg-white px-3 py-1.5"
-            />
-            <span className="text-[11px] text-slate-400">已根据文件名自动识别，可修改；本次导入学生的学校将统一为此名称</span>
+            <input value={pending.school} onChange={(e) => setPending({ ...pending, school: e.target.value })} placeholder="请输入学校名称" className="w-48 rounded-lg border border-slate-200 bg-white px-3 py-1.5" />
+            <span className="text-[11px] text-slate-400">已根据文件名自动识别，可修改</span>
             <div className="ml-auto flex gap-2">
               <button onClick={() => setPending(null)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">取消</button>
               <button onClick={confirmImport} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">确认导入</button>
@@ -293,43 +281,37 @@ export function AdminStudentImport() {
           </div>
         )}
         {errors.length > 0 && (
-          <div className="mt-3 rounded-lg bg-danger/10 p-3 text-[11px] text-danger">
+          <div className="mb-3 rounded-lg bg-danger/10 p-3 text-[11px] text-danger">
             {errors.map((e) => <p key={e}>{e}</p>)}
           </div>
         )}
-      </div>
-
-      <div className="rounded-xl border border-slate-200 bg-white p-4">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="flex gap-1 rounded-lg bg-slate-100 p-1 text-xs">
-            {([["base", "基本信息"], ["exam", "体检数据回显"]] as const).map(([k, l]) => (
-              <button key={k} onClick={() => setView(k)} className={`rounded-md px-3 py-1 ${view === k ? "bg-white font-semibold shadow-sm" : "text-slate-500"}`}>{l}</button>
-            ))}
-          </div>
-          <p className="text-xs text-slate-500">共 {rows.length} 人 · 已检 {done} · 待检 {rows.length - done}</p>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="搜索姓名 / 学号 / 编码" className="w-56 rounded-lg border border-slate-200 px-3 py-1.5 text-xs" />
-        </div>
-        {rows.length === 0 ? (
-          <p className="py-10 text-center text-xs text-slate-400">暂无学生数据，请先导入学生基本信息</p>
-        ) : view === "base" ? (
-          <div>
-            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs">
-              <span className="text-slate-500">体检单标签：</span>
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs">
+          <input value={fName} onChange={(e) => setFName(e.target.value)} placeholder="学生姓名" className={inputCls} />
+          <input value={fSno} onChange={(e) => setFSno(e.target.value)} placeholder="学号" className={inputCls} />
+          <select value={fSchool} onChange={(e) => setFSchool(e.target.value)} className={inputCls}>
+            <option value="">全部学校</option>
+            {schools.map((s) => <option key={s}>{s}</option>)}
+          </select>
+          {(fName || fSno || fSchool) && (
+            <button onClick={() => { setFName(""); setFSno(""); setFSchool(""); }} className="text-slate-500 hover:underline">重置</button>
+          )}
+          {view === "base" && (
+            <div className="ml-auto flex items-center gap-2">
               <div className="flex gap-1 rounded-md bg-white p-0.5">
                 {([["barcode", "条码"], ["qr", "二维码"]] as const).map(([k, l]) => (
                   <button key={k} onClick={() => setKind(k)} className={`rounded px-2.5 py-1 ${kind === k ? "bg-teal text-white" : "text-slate-500"}`}>{l}</button>
                 ))}
               </div>
-              <span className="text-slate-400">已选 {sel.size} 人 · 未生成 {rows.filter((r) => !r.uid).length} 人</span>
-              <div className="ml-auto flex gap-2">
-                <button onClick={() => generate(sel.size ? sel : undefined)} className="rounded-lg border border-teal px-3 py-1.5 text-teal hover:bg-teal/10">
-                  {sel.size ? "为所选生成ID" : "一键生成全部ID"}
-                </button>
-                <button onClick={downloadBatch} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">
-                  批量下载{sel.size ? "所选" : "全部"}（ZIP）
-                </button>
-              </div>
+              <button onClick={downloadBatch} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">
+                批量导出{sel.size ? `所选 ${sel.size} 人` : `筛选结果 ${shown.length} 人`}（ZIP）
+              </button>
             </div>
+          )}
+        </div>
+        {shown.length === 0 ? (
+          <p className="py-10 text-center text-xs text-slate-400">{rows.length ? "没有符合筛选条件的学生" : "暂无学生，请先导入学生信息"}</p>
+        ) : view === "base" ? (
+          <div>
             <div className="overflow-x-auto">
               <table className="w-full whitespace-nowrap text-xs">
                 <thead className="text-slate-500">
@@ -340,7 +322,6 @@ export function AdminStudentImport() {
                     </th>
                     <th className="pr-3 font-normal">唯一标识编码</th>
                     {IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
-                    <th className="pr-3 font-normal">条码/二维码</th>
                     <th className="font-normal">操作</th>
                   </tr>
                 </thead>
@@ -354,17 +335,11 @@ export function AdminStudentImport() {
                             const s = new Set(sel); e.target.checked ? s.add(k) : s.delete(k); setSel(s);
                           }} />
                         </td>
-                        <td className="pr-3 font-mono text-slate-600">{r.uid || <span className="text-slate-400">未生成</span>}</td>
+                        <td className="pr-3 font-mono text-slate-600">{r.uid}</td>
                         {[r.school, r.sno, r.name, r.gender, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
-                        <td className="pr-3">
-                          {r.uid ? <span className="text-emerald-600">已生成</span> : <span className="text-slate-300">—</span>}
-                        </td>
-                        <td>
-                          {r.uid ? (
-                            <button onClick={() => downloadOne(r)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">下载</button>
-                          ) : (
-                            <button onClick={() => generate(new Set([k]))} className="rounded bg-teal/10 px-2 py-1 text-teal">生成ID</button>
-                          )}
+                        <td className="space-x-2">
+                          <button onClick={() => downloadOne(r)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">下载{kind === "qr" ? "二维码" : "条码"}</button>
+                          <button onClick={() => remove(r)} className="rounded border border-danger/30 px-2 py-1 text-danger hover:bg-danger/10">删除</button>
                         </td>
                       </tr>
                     );
