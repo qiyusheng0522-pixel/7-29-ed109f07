@@ -233,7 +233,7 @@ export function AdminStudentImport() {
           <div>
             <p className="text-sm font-semibold">学生基本信息导入</p>
             <p className="text-[11px] text-slate-500">
-              学生信息仅支持后台数据导入（CSV，Excel 另存为 CSV 即可），导入后系统自动生成 18 位唯一标识编码
+              学生信息仅支持后台数据导入（CSV，Excel 另存为 CSV 即可），导入后可手动生成 18 位唯一ID及条码/二维码，支持单个或批量下载
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -247,7 +247,7 @@ export function AdminStudentImport() {
           {IMPORT_FIELDS.map((f) => (
             <div key={f} className="rounded-lg bg-slate-50 px-3 py-2 text-center text-slate-600">{f}<span className="text-danger"> *</span></div>
           ))}
-          <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一编码 · 自动</div>
+          <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一ID · 手动生成</div>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">编码规则：区划码 6 位 + 学校码 2 位 + 出生日期 8 位 + 顺序号 2 位，全库唯一、不可修改。</p>
         {errors.length > 0 && (
@@ -358,8 +358,8 @@ export function AdminStudentImport() {
                 </thead>
                 <tbody>
                   {shown.map((r) => (
-                    <tr key={r.uid} className="hover:bg-slate-50">
-                      <td className="sticky left-0 border-r border-slate-100 bg-white px-3 py-2 font-mono text-slate-600">{r.uid}</td>
+                    <tr key={r.school + r.sno} className="hover:bg-slate-50">
+                      <td className="sticky left-0 border-r border-slate-100 bg-white px-3 py-2 font-mono text-slate-600">{r.uid || "未生成"}</td>
                       <td className="sticky left-[150px] border-r border-slate-100 bg-white px-3 py-2 font-medium">{r.name}</td>
                       <td className="border-r border-slate-100 px-3 py-2">{r.gender}</td>
                       <td className="border-r border-slate-100 px-3 py-2">{r.birth}</td>
