@@ -47,11 +47,19 @@ const SAMPLE_CSV = `学校,学号,姓名,性别,出生日期,年级,班级
 春晖小学,20220101,赵一诺,女,2018-02-14,二年级,1班
 春晖小学,20220102,孙思远,男,2018-05-03,二年级,1班`;
 
+/** 从文件名识别学校：如「阳光小学_三年级学生名单.csv」→「阳光小学」 */
+export function schoolFromFileName(name: string): string {
+  const base = name.replace(/\.[^.]+$/, "").trim();
+  const m = base.match(/[\u4e00-\u9fa5A-Za-z0-9（）()]+?(小学|中学|学校|幼儿园|学院|分校|校区)/);
+  return m ? m[0] : base.split(/[_\-\s·]/)[0] || base;
+}
+
 function parseCsv(text: string): Base[] {
   const lines = text.replace(/^﻿/, "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   const head = lines[0].split(/[,，\t]/).map((s) => s.trim());
   const idx = IMPORT_FIELDS.map((f) => head.indexOf(f));
-  const missing = IMPORT_FIELDS.filter((_, i) => idx[i] < 0);
+  // 学校列可省略：由文件名识别 / 用户编辑的学校名称统一填充
+  const missing = IMPORT_FIELDS.filter((f, i) => idx[i] < 0 && f !== "学校");
   if (missing.length) throw new Error(`缺少字段：${missing.join("、")}`);
   return lines.slice(1).map((l) => {
     const c = l.split(/[,，\t]/).map((s) => s.trim());
@@ -178,10 +186,9 @@ export function AdminStudentImport() {
     toast.success(`已打包下载 ${list.length} 张标签`);
   };
 
-  const ingest = (text: string, source: string) => {
+  const ingest = (text: string, source: string, schoolName?: string) => {
     try {
-      const list = parseCsv(text);
-      const used = new Set(rows.map((r) => r.uid));
+      const list = parseCsv(text).map((b) => (schoolName ? { ...b, school: schoolName } : b));
       const snos = new Set(rows.map((r) => r.school + r.sno));
       const errs: string[] = [];
       const added: StudentRow[] = [];
@@ -194,21 +201,36 @@ export function AdminStudentImport() {
         snos.add(b.school + b.sno);
         added.push({ ...b, uid: "", ...mockExam(rows.length + added.length, b.birth) });
       });
-      void used;
       setRows((r) => [...r, ...added]);
       setErrors(errs);
       toast.success(`${source}导入完成：成功 ${added.length} 条`, {
         description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "请点击「生成ID」为学生生成唯一编码及条码/二维码",
       });
+      return true;
+    } catch (e) {
+      toast.error("导入失败", { description: (e as Error).message });
+      return false;
+    }
+  };
+
+  // 选择文件后先识别学校名称，用户确认/编辑后再导入
+  const [pending, setPending] = useState<{ fileName: string; text: string; school: string; count: number } | null>(null);
+  const onFile = async (f?: File) => {
+    if (!f) return;
+    const text = await f.text();
+    if (fileRef.current) fileRef.current.value = "";
+    try {
+      const count = parseCsv(text).length;
+      setPending({ fileName: f.name, text, school: schoolFromFileName(f.name), count });
     } catch (e) {
       toast.error("导入失败", { description: (e as Error).message });
     }
   };
-
-  const onFile = async (f?: File) => {
-    if (!f) return;
-    ingest(await f.text(), f.name + " ");
-    if (fileRef.current) fileRef.current.value = "";
+  const confirmImport = () => {
+    if (!pending) return;
+    const school = pending.school.trim();
+    if (!school) return toast.error("请填写学校名称");
+    if (ingest(pending.text, pending.fileName + " ", school)) setPending(null);
   };
 
   const downloadTpl = () => {
@@ -249,6 +271,22 @@ export function AdminStudentImport() {
           <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一ID · 手动生成</div>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">编码规则：区划码 6 位 + 学校码 2 位 + 出生日期 8 位 + 顺序号 2 位，全库唯一、不可修改。</p>
+        {pending && (
+          <div className="mt-3 flex flex-wrap items-center gap-3 rounded-lg border border-teal/30 bg-teal/5 p-3 text-xs">
+            <span className="text-slate-600">文件「{pending.fileName}」共 {pending.count} 名学生，导入学校：</span>
+            <input
+              value={pending.school}
+              onChange={(e) => setPending({ ...pending, school: e.target.value })}
+              placeholder="请输入学校名称"
+              className="w-48 rounded-lg border border-slate-200 bg-white px-3 py-1.5"
+            />
+            <span className="text-[11px] text-slate-400">已根据文件名自动识别，可修改；本次导入学生的学校将统一为此名称</span>
+            <div className="ml-auto flex gap-2">
+              <button onClick={() => setPending(null)} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 hover:bg-slate-50">取消</button>
+              <button onClick={confirmImport} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">确认导入</button>
+            </div>
+          </div>
+        )}
         {errors.length > 0 && (
           <div className="mt-3 rounded-lg bg-danger/10 p-3 text-[11px] text-danger">
             {errors.map((e) => <p key={e}>{e}</p>)}
