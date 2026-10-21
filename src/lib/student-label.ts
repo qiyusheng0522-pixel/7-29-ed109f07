@@ -38,8 +38,8 @@ async function renderSheetLabel(uid: string, name: string, sno: string, kind: Co
   const code = document.createElement("canvas");
   if (kind === "barcode") {
     const JsBarcode = (await import("jsbarcode")).default;
-    JsBarcode(code, uid, { format: "CODE128", width: 4, height: 220, displayValue: false, margin: 0 });
-    c.width = code.width + 40; c.height = 220 + 110;
+    JsBarcode(code, uid, { format: "CODE128", width: 4, height: 150, displayValue: false, margin: 0 });
+    c.width = code.width + 40; c.height = 150 + 110;
   } else {
     const QR = await import("qrcode");
     await QR.toCanvas(code, uid, { width: 360, margin: 0 });
@@ -66,7 +66,7 @@ export async function buildExamSheets(
   const out = await PDFDocument.create();
   const tpl = await PDFDocument.load(tplBytes);
   const tplPages = await out.embedPdf(tpl, tpl.getPageIndices());
-  const SCALE = 0.9;
+  const SCALE = 0.95;
   for (const s of list) {
     tplPages.forEach((tp) => {
       const { width, height } = tp;
@@ -77,9 +77,9 @@ export async function buildExamSheets(
     const first = out.getPage(out.getPageCount() - tplPages.length);
     const { width, height } = first.getSize();
     const png = await out.embedPng(await renderSheetLabel(s.uid, s.name, s.sno, kind));
-    const topSpace = height * (1 - SCALE) - 10;
+    const topSpace = height * (1 - SCALE) + 30;
     const lh = topSpace - 6;
-    const lw = Math.min((png.width / png.height) * lh, 190);
+    const lw = Math.min((png.width / png.height) * lh, 200);
     const fh = (png.height / png.width) * lw;
     first.drawImage(png, { x: width - lw - 18, y: height - fh - 6, width: lw, height: fh });
   }
