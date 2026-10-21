@@ -51,5 +51,5 @@ export async function buildExamSheets(
     const h = (png.height / png.width) * w;
     first.drawImage(png, { x: width - w - 8, y: height - h - 4, width: w, height: h });
   }
-  return new Blob([await out.save()], { type: "application/pdf" });
+  return new Blob([(await out.save()) as Uint8Array<ArrayBuffer>], { type: "application/pdf" });
 }
