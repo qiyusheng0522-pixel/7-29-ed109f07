@@ -87,7 +87,7 @@ function AdminConsole() {
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "overview", label: "总览", icon: "📊" },
-    { id: "students", label: "学生信息导入", icon: "🏫" },
+    { id: "students", label: "学生管理", icon: "🏫" },
     { id: "plan", label: "班级安排 / 统筹", icon: "🗓️" },
     { id: "stats", label: "数据回流 / 统计", icon: "📈" },
   ];
