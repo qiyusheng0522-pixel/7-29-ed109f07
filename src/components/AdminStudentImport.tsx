@@ -171,7 +171,7 @@ export function AdminStudentImport() {
 
   const ingest = (text: string, source: string, schoolName?: string) => {
     try {
-      const list = parseCsv(text).map((b) => (schoolName ? { ...b, school: schoolName } : b));
+      const list = parseCsv(text).map((b) => ({ ...b, school: b.school || schoolName || "" }));
       const existing = new Map(rows.map((r) => [keyOf(r), r]));
       const used = new Set(rows.map((r) => r.uid));
       const seen = new Set<string>();
@@ -269,7 +269,8 @@ export function AdminStudentImport() {
     } catch (e) {
       toast.error("生成失败", { description: (e as Error).message });
     } finally {
-      setPrinting(false);
+      const sch = [...new Set(list.map((r) => r.school))].join("、");
+      downloadUrl(url, `${sch}_${list.length}人.pdf`);
     }
   };
 
