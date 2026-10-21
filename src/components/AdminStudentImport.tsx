@@ -1,5 +1,6 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { renderLabel, downloadUrl, type CodeKind } from "@/lib/student-label";
 
 // 后台唯一入口：仅支持通过数据导入学生基本信息
 export const IMPORT_FIELDS = ["学校", "学号", "姓名", "性别", "出生日期", "年级", "班级"] as const;
@@ -126,15 +127,56 @@ const GROUP_CLS: Record<string, string> = {
 };
 
 export function AdminStudentImport() {
-  // 预置示例数据，便于直接预览回显效果
+  // 预置示例数据：前 5 人已生成 ID，后 2 人待手动生成
   const [rows, setRows] = useState<StudentRow[]>(() => {
     const used = new Set<string>();
-    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: genUid(b, used), ...mockExam(i, b.birth) }));
+    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: i < 5 ? genUid(b, used) : "", ...mockExam(i, b.birth) }));
   });
   const [errors, setErrors] = useState<string[]>([]);
   const [view, setView] = useState<"base" | "exam">("base");
   const [q, setQ] = useState("");
+  const [kind, setKind] = useState<CodeKind>("barcode");
+  const [sel, setSel] = useState<Set<string>>(new Set());
+  const [preview, setPreview] = useState<Record<string, string>>({});
   const fileRef = useRef<HTMLInputElement>(null);
+  const keyOf = (r: StudentRow) => r.school + r.sno;
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all(rows.filter((r) => r.uid).map(async (r) => [keyOf(r), await renderLabel(r.uid, r.name, r.sno, kind)] as const))
+      .then((list) => alive && setPreview(Object.fromEntries(list)));
+    return () => { alive = false; };
+  }, [rows, kind]);
+
+  const generate = (keys?: Set<string>) => {
+    const used = new Set(rows.map((r) => r.uid).filter(Boolean));
+    let n = 0;
+    const next = rows.map((r) => {
+      if (r.uid || (keys && !keys.has(keyOf(r)))) return r;
+      n++;
+      return { ...r, uid: genUid(r, used) };
+    });
+    setRows(next);
+    toast.success(n ? `已生成 ${n} 个唯一ID及${kind === "qr" ? "二维码" : "条码"}` : "所选学生均已生成ID");
+  };
+
+  const downloadOne = async (r: StudentRow) => {
+    downloadUrl(await renderLabel(r.uid, r.name, r.sno, kind), `${r.name}_${r.sno}_${kind === "qr" ? "二维码" : "条码"}.png`);
+  };
+
+  const downloadBatch = async () => {
+    const list = rows.filter((r) => r.uid && (sel.size === 0 || sel.has(keyOf(r))));
+    if (!list.length) return toast.error("没有可下载的学生", { description: "请先生成唯一ID" });
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+    for (const r of list) {
+      const url = await renderLabel(r.uid, r.name, r.sno, kind);
+      zip.file(`${r.grade}${r.cls}_${r.name}_${r.sno}.png`, url.split(",")[1], { base64: true });
+    }
+    const blob = await zip.generateAsync({ type: "blob" });
+    downloadUrl(URL.createObjectURL(blob), `学生${kind === "qr" ? "二维码" : "条码"}_${list.length}人.zip`);
+    toast.success(`已打包下载 ${list.length} 张标签`);
+  };
 
   const ingest = (text: string, source: string) => {
     try {
@@ -150,12 +192,13 @@ export function AdminStudentImport() {
         if (!["男", "女"].includes(b.gender)) return errs.push(`第 ${line} 行：性别应为 男/女`);
         if (snos.has(b.school + b.sno)) return errs.push(`第 ${line} 行：学号 ${b.sno} 已存在`);
         snos.add(b.school + b.sno);
-        added.push({ ...b, uid: genUid(b, used), ...mockExam(rows.length + added.length, b.birth) });
+        added.push({ ...b, uid: "", ...mockExam(rows.length + added.length, b.birth) });
       });
+      void used;
       setRows((r) => [...r, ...added]);
       setErrors(errs);
       toast.success(`${source}导入完成：成功 ${added.length} 条`, {
-        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "已为每名学生生成 18 位唯一标识编码",
+        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "请点击「生成ID」为学生生成唯一编码及条码/二维码",
       });
     } catch (e) {
       toast.error("导入失败", { description: (e as Error).message });
@@ -189,7 +232,7 @@ export function AdminStudentImport() {
           <div>
             <p className="text-sm font-semibold">学生基本信息导入</p>
             <p className="text-[11px] text-slate-500">
-              学生信息仅支持后台数据导入（CSV，Excel 另存为 CSV 即可），导入后系统自动生成 18 位唯一标识编码
+              学生信息仅支持后台数据导入（CSV，Excel 另存为 CSV 即可），导入后可手动生成 18 位唯一ID及条码/二维码，支持单个或批量下载
             </p>
           </div>
           <div className="flex shrink-0 gap-2">
@@ -203,7 +246,7 @@ export function AdminStudentImport() {
           {IMPORT_FIELDS.map((f) => (
             <div key={f} className="rounded-lg bg-slate-50 px-3 py-2 text-center text-slate-600">{f}<span className="text-danger"> *</span></div>
           ))}
-          <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一编码 · 自动</div>
+          <div className="rounded-lg bg-teal/10 px-3 py-2 text-center text-teal">唯一ID · 手动生成</div>
         </div>
         <p className="mt-2 text-[11px] text-slate-400">编码规则：区划码 6 位 + 学校码 2 位 + 出生日期 8 位 + 顺序号 2 位，全库唯一、不可修改。</p>
         {errors.length > 0 && (
@@ -226,23 +269,66 @@ export function AdminStudentImport() {
         {rows.length === 0 ? (
           <p className="py-10 text-center text-xs text-slate-400">暂无学生数据，请先导入学生基本信息</p>
         ) : view === "base" ? (
-          <div className="overflow-x-auto">
-            <table className="w-full whitespace-nowrap text-xs">
-              <thead className="text-slate-500">
-                <tr className="border-b border-slate-100 text-left">
-                  <th className="py-2 pr-3 font-normal">唯一标识编码</th>
-                  {IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((r) => (
-                  <tr key={r.uid} className="border-b border-slate-50">
-                    <td className="py-2 pr-3 font-mono text-slate-600">{r.uid}</td>
-                    {[r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
-                  </tr>
+          <div>
+            <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg bg-slate-50 p-2 text-xs">
+              <span className="text-slate-500">体检单标签：</span>
+              <div className="flex gap-1 rounded-md bg-white p-0.5">
+                {([["barcode", "条码"], ["qr", "二维码"]] as const).map(([k, l]) => (
+                  <button key={k} onClick={() => setKind(k)} className={`rounded px-2.5 py-1 ${kind === k ? "bg-teal text-white" : "text-slate-500"}`}>{l}</button>
                 ))}
-              </tbody>
-            </table>
+              </div>
+              <span className="text-slate-400">已选 {sel.size} 人 · 未生成 {rows.filter((r) => !r.uid).length} 人</span>
+              <div className="ml-auto flex gap-2">
+                <button onClick={() => generate(sel.size ? sel : undefined)} className="rounded-lg border border-teal px-3 py-1.5 text-teal hover:bg-teal/10">
+                  {sel.size ? "为所选生成ID" : "一键生成全部ID"}
+                </button>
+                <button onClick={downloadBatch} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">
+                  批量下载{sel.size ? "所选" : "全部"}（ZIP）
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full whitespace-nowrap text-xs">
+                <thead className="text-slate-500">
+                  <tr className="border-b border-slate-100 text-left">
+                    <th className="py-2 pr-2">
+                      <input type="checkbox" checked={shown.length > 0 && shown.every((r) => sel.has(keyOf(r)))}
+                        onChange={(e) => setSel(e.target.checked ? new Set(shown.map(keyOf)) : new Set())} />
+                    </th>
+                    <th className="pr-3 font-normal">唯一标识编码</th>
+                    {IMPORT_FIELDS.map((f) => <th key={f} className="pr-3 font-normal">{f}</th>)}
+                    <th className="pr-3 font-normal">标签预览（体检单右上角）</th>
+                    <th className="font-normal">操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map((r) => {
+                    const k = keyOf(r);
+                    return (
+                      <tr key={k} className="border-b border-slate-50">
+                        <td className="py-2 pr-2">
+                          <input type="checkbox" checked={sel.has(k)} onChange={(e) => {
+                            const s = new Set(sel); e.target.checked ? s.add(k) : s.delete(k); setSel(s);
+                          }} />
+                        </td>
+                        <td className="pr-3 font-mono text-slate-600">{r.uid || <span className="text-slate-400">未生成</span>}</td>
+                        {[r.school, r.sno, r.name, r.gender, r.birth, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
+                        <td className="pr-3">
+                          {r.uid && preview[k] ? <img src={preview[k]} alt={`${r.name}标签`} className={`rounded border border-slate-200 ${kind === "qr" ? "h-16" : "h-12"}`} /> : <span className="text-slate-300">—</span>}
+                        </td>
+                        <td>
+                          {r.uid ? (
+                            <button onClick={() => downloadOne(r)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">下载</button>
+                          ) : (
+                            <button onClick={() => generate(new Set([k]))} className="rounded bg-teal/10 px-2 py-1 text-teal">生成ID</button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : (
           <div>
@@ -271,8 +357,8 @@ export function AdminStudentImport() {
                 </thead>
                 <tbody>
                   {shown.map((r) => (
-                    <tr key={r.uid} className="hover:bg-slate-50">
-                      <td className="sticky left-0 border-r border-slate-100 bg-white px-3 py-2 font-mono text-slate-600">{r.uid}</td>
+                    <tr key={r.school + r.sno} className="hover:bg-slate-50">
+                      <td className="sticky left-0 border-r border-slate-100 bg-white px-3 py-2 font-mono text-slate-600">{r.uid || "未生成"}</td>
                       <td className="sticky left-[150px] border-r border-slate-100 bg-white px-3 py-2 font-medium">{r.name}</td>
                       <td className="border-r border-slate-100 px-3 py-2">{r.gender}</td>
                       <td className="border-r border-slate-100 px-3 py-2">{r.birth}</td>
