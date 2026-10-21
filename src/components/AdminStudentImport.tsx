@@ -262,7 +262,6 @@ export function AdminStudentImport() {
     try {
       const blob = await buildExamSheets(examTemplate.url, list, kind);
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
       downloadUrl(url, `体检档案_${list.length}人.pdf`);
       toast.success(`已生成 ${list.length} 份体检档案`, { description: "已按学号顺序排列，可直接打印" });
     } catch (e) {
