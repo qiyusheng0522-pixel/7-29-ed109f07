@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { renderLabel, downloadUrl, buildExamSheets, type CodeKind } from "@/lib/student-label";
 import examTemplate from "@/assets/health-exam-template.pdf.asset.json";
+import questionnaireTemplate from "@/assets/pre-exam-questionnaire.pdf.asset.json";
+import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
 
 // 后台唯一入口：仅支持通过数据导入学生基本信息
 export const IMPORT_FIELDS = ["学校", "学生编号", "学生姓名", "学生性别", "所属年级", "所属班级"] as const;
@@ -255,6 +258,26 @@ export function AdminStudentImport() {
 
   // 按 学校→年级→班级→学号 顺序套打《江苏省中小学健康体检档案》，每人一份（2 页），右上角印条码
   const [printing, setPrinting] = useState(false);
+  const [printingQuestionnaire, setPrintingQuestionnaire] = useState(false);
+  const printQuestionnaires = async () => {
+    const list = shown
+      .filter((r) => sel.size === 0 || sel.has(keyOf(r)))
+      .sort((a, b) => [a.school, a.grade, a.cls, a.sno].join("|").localeCompare([b.school, b.grade, b.cls, b.sno].join("|"), "zh"));
+    if (!list.length) return toast.error("当前筛选条件下没有学生");
+    setPrintingQuestionnaire(true);
+    try {
+      const blob = await buildExamSheets(questionnaireTemplate.url, list, "barcode");
+      const url = URL.createObjectURL(blob);
+      const scope = [...new Set(list.map((r) => `${r.school}-${r.grade}-${r.cls}`))].join("、");
+      downloadUrl(url, `${scope}_${list.length}人_体检问卷.pdf`);
+      setTimeout(() => URL.revokeObjectURL(url), 30_000);
+      toast.success(`已生成 ${list.length} 份体检问卷`, { description: "每位学生一页，右上角附学生条码、姓名及学号" });
+    } catch (e) {
+      toast.error("生成问卷失败", { description: (e as Error).message });
+    } finally {
+      setPrintingQuestionnaire(false);
+    }
+  };
   const printSheets = async () => {
     const list = shown
       .filter((r) => sel.size === 0 || sel.has(keyOf(r)))
@@ -320,7 +343,7 @@ export function AdminStudentImport() {
             <button onClick={() => { setFName(""); setFSno(""); setFSchool(""); }} className="text-slate-500 hover:underline">重置</button>
           )}
           {view === "base" && (
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
               <div className="flex gap-1 rounded-md bg-white p-0.5">
                 {([["barcode", "条码"], ["qr", "二维码"]] as const).map(([k, l]) => (
                   <button key={k} onClick={() => setKind(k)} className={`rounded px-2.5 py-1 ${kind === k ? "bg-teal text-white" : "text-slate-500"}`}>{l}</button>
@@ -332,6 +355,10 @@ export function AdminStudentImport() {
               <button onClick={printSheets} disabled={printing} className="rounded-lg bg-deep px-3 py-1.5 text-white hover:opacity-90 disabled:opacity-60">
                 {printing ? "生成中…" : "打印体检档案（PDF）"}
               </button>
+              <Button onClick={printQuestionnaires} disabled={printingQuestionnaire} size="sm" variant="outline">
+                <Printer aria-hidden="true" />
+                {printingQuestionnaire ? "问卷生成中…" : "打印体检问卷（PDF）"}
+              </Button>
             </div>
           )}
         </div>
