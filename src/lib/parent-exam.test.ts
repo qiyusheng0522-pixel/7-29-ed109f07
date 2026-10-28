@@ -39,17 +39,8 @@ describe("parent reports use only the bound child's saved exam", () => {
 });
 import { buildCarePlan as _bcp } from "./parent-exam";
 describe("care plan rules", () => {
-  it("flags BMI >= 24 as obesity with follow-up", () => {
-    const p = _bcp({}, "男", "25.0");
-    expect(p.findings[0]).toContain("肥胖");
-  });
-  it("flags vision <= 4.0 as severe", () => {
-    expect(_bcp({ "vision-l": { value: 4.0 } }, "女", null).findings[0]).toContain("重度");
-  });
-  it("flags spine ATR >= 7", () => {
-    expect(_bcp({ spine: { value: 7 } }, "男", null).findings[0]).toContain("脊柱侧弯");
-  });
-  it("all-normal data gives no findings", () => {
-    expect(_bcp({ "vision-l": { value: 5.0 }, spine: { value: 1 } }, "男", "20.0").findings).toHaveLength(0);
-  });
+  test("BMI >= 24 is obesity", () => assert.ok(_bcp({}, "男", "25.0").findings[0].includes("肥胖")));
+  test("vision <= 4.0 is severe", () => assert.ok(_bcp({ "vision-l": { value: 4.0 } }, "女", null).findings[0].includes("重度")));
+  test("spine ATR >= 7 suspected scoliosis", () => assert.ok(_bcp({ spine: { value: 7 } }, "男", null).findings[0].includes("脊柱侧弯")));
+  test("normal data has no findings", () => assert.equal(_bcp({ "vision-l": { value: 5.0 }, spine: { value: 1 } }, "男", "20.0").findings.length, 0));
 });

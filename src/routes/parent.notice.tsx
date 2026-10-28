@@ -276,7 +276,6 @@ function NoticePage() {
                             toastDescription={`监护人手写签名已保存 · ${child.name}`}
                           >
                             <SignaturePad onChange={setSignature} />
-                            </div>
                           </ActionSheet>
                         ) : it.questionnaireId ? (
                           <PreExamQuestionnaireSheet
