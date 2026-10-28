@@ -14,3 +14,4 @@
 - Student roster and exam results live in Lovable Cloud tables (students, exam_results) accessed via src/lib/students-db.ts; admin import, parent binding and doctor entry all share this one source so data stays consistent across roles.
 - Keep stage-specific preview cohorts isolated from live student tables and reuse one browser-safe cohort and progress store across preview roles; demonstrations must not modify real student records.
 - Read consent and questionnaire storage only after hydration and persist confirmed actions; route entry must never reset authorization or completed answers.
+- Live parent reports and follow-up share a bound-child query and a persisted-values-only adapter; missing clinical assessments or follow-up records must stay empty, never infer them from recorder demo ranges or preview data.

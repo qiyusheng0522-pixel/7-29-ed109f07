@@ -16,7 +16,8 @@ export async function listStudents(): Promise<DbStudent[]> {
 }
 
 export async function getStudent(uid: string): Promise<DbStudent | null> {
-  const { data } = await supabase.from("students").select("uid,school,sno,name,gender,grade,cls").eq("uid", uid).maybeSingle();
+  const { data, error } = await supabase.from("students").select("uid,school,sno,name,gender,grade,cls").eq("uid", uid).maybeSingle();
+  if (error) throw error;
   return data ?? null;
 }
 
@@ -57,4 +58,8 @@ export function mergeValues(results: DbResult[], uid: string): Record<string, Ex
 // 家长端绑定的孩子（原型无登录，绑定关系保存在本机）
 const BIND_KEY = "parent_bound_uid_v1";
 export const getBoundUid = () => (typeof window === "undefined" ? null : localStorage.getItem(BIND_KEY));
-export const setBoundUid = (uid: string | null) => (uid ? localStorage.setItem(BIND_KEY, uid) : localStorage.removeItem(BIND_KEY));
+export const setBoundUid = (uid: string | null) => {
+  if (uid) localStorage.setItem(BIND_KEY, uid);
+  else localStorage.removeItem(BIND_KEY);
+  window.dispatchEvent(new Event("parent-binding-updated"));
+};
