@@ -14,7 +14,80 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      exam_results: {
+        Row: {
+          created_at: string
+          crit_count: number
+          doctor: string | null
+          id: string
+          item_values: Json
+          station_id: string
+          student_uid: string
+        }
+        Insert: {
+          created_at?: string
+          crit_count?: number
+          doctor?: string | null
+          id?: string
+          item_values?: Json
+          station_id: string
+          student_uid: string
+        }
+        Update: {
+          created_at?: string
+          crit_count?: number
+          doctor?: string | null
+          id?: string
+          item_values?: Json
+          station_id?: string
+          student_uid?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_results_student_uid_fkey"
+            columns: ["student_uid"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
+      students: {
+        Row: {
+          cls: string
+          created_at: string
+          gender: string
+          grade: string
+          name: string
+          school: string
+          sno: string
+          uid: string
+          updated_at: string
+        }
+        Insert: {
+          cls: string
+          created_at?: string
+          gender: string
+          grade: string
+          name: string
+          school: string
+          sno: string
+          uid: string
+          updated_at?: string
+        }
+        Update: {
+          cls?: string
+          created_at?: string
+          gender?: string
+          grade?: string
+          name?: string
+          school?: string
+          sno?: string
+          uid?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
