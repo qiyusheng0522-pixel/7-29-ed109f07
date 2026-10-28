@@ -9,7 +9,8 @@ import { EIcon } from "@/components/EIcon";
 import { DietCheckinSheet, ExerciseCheckinSheet } from "@/components/CheckinSheets";
 import { readCheckins, type CheckinRecord } from "@/lib/checkin";
 import { getBoundUid, getStudent } from "@/lib/students-db";
-import { readConsent, writeConsent, type ConsentStatus } from "@/lib/parent-consent";
+import { readConsent, writeConsent, saveSignature, type ConsentStatus } from "@/lib/parent-consent";
+import { SignaturePad } from "@/components/SignaturePad";
 
 /** 首页任务行上展示的本次打卡摘要 */
 function summarize(rec: CheckinRecord) {
@@ -174,7 +175,8 @@ function ParentHome() {
   }, []);
   const doneCount = todayTasks.filter((t) => checkins[t.kind]).length;
   const [consent, setConsent] = useState<ConsentStatus | null>(null);
-  const [signed, setSigned] = useState(false);
+  const [signature, setSignature] = useState<string | null>(null);
+  const signed = Boolean(signature);
   const [hasReport, setHasReport] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
     return window.localStorage.getItem(VIEW_KEY) !== "0";
@@ -193,7 +195,8 @@ function ParentHome() {
   }, []);
 
   const agree = () => {
-    if (!signed) return;
+    if (!signature) return;
+    saveSignature(window.localStorage, signature);
     writeConsent(window.localStorage, "agreed");
     setConsent("agreed");
   };
@@ -228,27 +231,8 @@ function ParentHome() {
                 <p className="text-[11px] font-medium text-muted-foreground">
                   监护人手写签名 <span className="text-rose">*</span>
                 </p>
-                {signed && (
-                  <button
-                    type="button"
-                    onClick={() => setSigned(false)}
-                    className="text-[11px] text-muted-foreground underline"
-                  >
-                    清除重签
-                  </button>
-                )}
               </div>
-              <button
-                type="button"
-                onClick={() => setSigned(true)}
-                className={`grid h-20 w-full place-items-center rounded-xl border-2 border-dashed text-xs transition ${
-                  signed
-                    ? "border-rose bg-rose/10 text-rose"
-                    : "border-border text-muted-foreground"
-                }`}
-              >
-                {signed ? " 李妈妈 · 2026-04-08 20:14" : "点击此处手写签名"}
-              </button>
+              <SignaturePad onChange={setSignature} />
             </div>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button onClick={decline} className="rounded-full bg-surface-2 py-2.5 text-[13px] font-medium text-muted-foreground">

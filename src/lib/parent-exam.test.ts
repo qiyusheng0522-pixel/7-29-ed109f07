@@ -37,3 +37,10 @@ describe("parent reports use only the bound child's saved exam", () => {
     assert.equal(exam.bmi, null);
   });
 });
+import { buildCarePlan as _bcp } from "./parent-exam";
+describe("care plan rules", () => {
+  test("BMI >= 24 is obesity", () => assert.ok(_bcp({}, "男", "25.0").findings[0].includes("肥胖")));
+  test("vision <= 4.0 is severe", () => assert.ok(_bcp({ "vision-l": { value: 4.0 } }, "女", null).findings[0].includes("重度")));
+  test("spine ATR >= 7 suspected scoliosis", () => assert.ok(_bcp({ spine: { value: 7 } }, "男", null).findings[0].includes("脊柱侧弯")));
+  test("normal data has no findings", () => assert.equal(_bcp({ "vision-l": { value: 5.0 }, spine: { value: 1 } }, "男", "20.0").findings.length, 0));
+});
