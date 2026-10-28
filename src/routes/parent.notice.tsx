@@ -4,7 +4,8 @@ import { toast } from "sonner";
 import { ActionSheet } from "@/components/ActionSheet";
 import { child } from "@/lib/mock-data";
 import { useEffect, useState } from "react";
-import { readConsent, writeConsent } from "@/lib/parent-consent";
+import { readConsent, writeConsent, saveSignature } from "@/lib/parent-consent";
+import { SignaturePad } from "@/components/SignaturePad";
 
 import { EIcon } from "@/components/EIcon";
 import { PreExamQuestionnaireSheet } from "@/components/PreExamQuestionnaireSheet";
@@ -137,7 +138,8 @@ const cats: Cat[] = ["todo", "info", "sign"];
 
 function NoticePage() {
   const [tab, setTab] = useState<Cat>("todo");
-  const [signed, setSigned] = useState(false);
+  const [signature, setSignature] = useState<string | null>(null);
+  const signed = Boolean(signature);
   const [consented, setConsented] = useState(false);
   useEffect(() => {
     setConsented(readConsent(localStorage) === "agreed");
@@ -269,19 +271,11 @@ function NoticePage() {
                             description="请签字确认同意学校采集本次体检数据用于生成健康报告。"
                             confirmText={signed ? "确认提交" : "请先签名"}
                             disabled={!signed}
-                            onConfirm={() => { writeConsent(localStorage, "agreed"); setConsented(true); }}
+                            onConfirm={() => { if (signature) saveSignature(localStorage, signature); writeConsent(localStorage, "agreed"); setConsented(true); }}
                             toastMessage="授权成功 · 已同步学校"
-                            toastDescription={`签名人：李妈妈 · ${child.name}`}
+                            toastDescription={`监护人手写签名已保存 · ${child.name}`}
                           >
-                            <div
-                              onClick={() => setSigned(true)}
-                              className={`grid h-24 place-items-center rounded-xl border-2 border-dashed text-xs transition ${
-                                signed
-                                  ? "border-warm bg-warm/10 text-warm"
-                                  : "border-border text-muted-foreground"
-                              }`}
-                            >
-                              {signed ? " 李妈妈 · 2026-04-08 20:14" : "点击此处手写签名"}
+                            <SignaturePad onChange={setSignature} />
                             </div>
                           </ActionSheet>
                         ) : it.questionnaireId ? (
@@ -328,7 +322,7 @@ function NoticePage() {
             danger
             onConfirm={() => { writeConsent(localStorage, "declined"); setConsented(false); }}
             toastMessage={revokeScope === "all" ? "已终止全部健康管理" : "已撤回本次体检授权"}
-            toastDescription={`签名人：李妈妈 · ${child.name}`}
+            toastDescription={`监护人手写签名已保存 · ${child.name}`}
           >
             <div className="space-y-2 text-xs">
               {[
