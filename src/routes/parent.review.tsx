@@ -1,146 +1,32 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
-import { ActionSheet } from "@/components/ActionSheet";
+import { Button } from "@/components/ui/button";
+import { ParentExamState } from "@/components/ParentExamState";
+import { useParentExam } from "@/hooks/use-parent-exam";
+import { examDate } from "@/lib/parent-exam";
 
-import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/parent/review")({
-  component: ReviewPage,
+  head: () => ({ meta: [
+    { title: "孩子的复评随访 · 阳光校园健康" },
+    { name: "description", content: "查看绑定孩子的真实体检基线与待复核项目。" },
+    { property: "og:title", content: "孩子的复评随访 · 阳光校园健康" },
+    { property: "og:description", content: "基于孩子已提交体检结果的复评随访信息。" },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }), component: ReviewPage,
 });
 
-const timeline = [
-  {
-    key: "7 天随访",
-    date: "2026-04-22",
-    status: "已完成",
-    goal: "是否看懂报告、是否开始家庭任务",
-    highlight: "已完成 · 家长反馈：任务清晰",
-  },
-  {
-    key: "1 月复评",
-    date: "2026-05-15",
-    status: "进行中",
-    goal: "看家庭任务执行率",
-    highlight: "本周待填写问卷（3 题）",
-  },
-  {
-    key: "3 月复评",
-    date: "2026-07-15",
-    status: "待开始",
-    goal: "看 BMI / 呼吸症状 / 睡眠指标变化",
-  },
-  {
-    key: "6 月复评",
-    date: "2026-10-15",
-    status: "待开始",
-    goal: "看整体风险等级是否下降",
-  },
-  {
-    key: "12 月年度报告",
-    date: "2027-04-15",
-    status: "待开始",
-    goal: "全年健康变化总结",
-  },
-];
-
 function ReviewPage() {
-  return (
-    <div>
-      <StatusBar title="复评随访" />
-      <div className="px-5 pb-8 pt-2">
-        <header className="mb-4">
-          <h1 className="text-xl font-bold">小雨的复评时间线</h1>
-          <p className="text-xs text-muted-foreground">每次复评都是一次小小的鼓励 · 看变化，不比较</p>
-        </header>
-
-        <div className="mb-4 rounded-3xl bg-gradient-to-br from-teal/25 to-warm/15 p-4 ring-1 ring-teal/20">
-          <p className="text-xs text-muted-foreground">下一次复评</p>
-          <p className="mt-1 text-lg font-bold">1 月复评 · 5 月 15 日</p>
-          <p className="mt-1 text-xs text-foreground/80">本周会推送 3 题问卷，1 分钟即可完成 {<EIcon e="✍️" className="inline-block h-[1.15em] w-[1.15em] align-[-0.15em]" />}</p>
-          <ActionSheet
-            trigger={
-              <button className="mt-3 rounded-full bg-warm px-4 py-1.5 text-xs font-medium text-warm-foreground">
-                提前填写
-              </button>
-            }
-            title="1 月复评问卷（3 题）"
-            description="根据孩子近一个月的情况如实填写，医生将据此调整方案。"
-            confirmText="提交问卷"
-            toastMessage="问卷已提交"
-            toastDescription="感谢反馈，医生将在复评时参考"
-          >
-            <div className="space-y-3 text-xs">
-              {[
-                "家庭饮食/运动任务的执行情况如何？",
-                "孩子近一个月夜间咳嗽/睡眠是否改善？",
-                "体重变化是否符合预期？",
-              ].map((q, i) => (
-                <div key={i}>
-                  <p className="mb-1 font-medium text-foreground">{i + 1}. {q}</p>
-                  <div className="flex gap-2">
-                    {["较好", "一般", "欠佳"].map((o) => (
-                      <label key={o} className="flex-1">
-                        <input type="radio" name={`q${i}`} className="peer hidden" defaultChecked={o === "一般"} />
-                        <span className="block rounded-lg bg-surface-2 py-1.5 text-center peer-checked:bg-warm peer-checked:text-warm-foreground">{o}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ActionSheet>
-        </div>
-
-        <ol className="relative space-y-4 border-l-2 border-dashed border-teal/40 pl-5">
-          {timeline.map((t, i) => (
-            <li key={t.key} className="relative">
-              <span
-                className={`absolute -left-[26px] top-1 grid h-5 w-5 place-items-center rounded-full text-[10px] ring-2 ring-surface ${
-                  t.status === "已完成"
-                    ? "bg-success text-success-foreground"
-                    : t.status === "进行中"
-                    ? "bg-warm text-warm-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {i + 1}
-              </span>
-              <div className="rounded-2xl bg-surface p-3 shadow-sm ring-1 ring-border/60">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold">{t.key}</p>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] ${
-                      t.status === "已完成"
-                        ? "bg-success/15 text-success"
-                        : t.status === "进行中"
-                        ? "bg-warm/15 text-warm"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {t.status}
-                  </span>
-                </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">{t.date} · {t.goal}</p>
-                {t.highlight && (
-                  <p className="mt-2 rounded-lg bg-surface-2 px-2 py-1.5 text-[11px] text-foreground/80">
-                    {t.highlight}
-                  </p>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-
-        <Link
-          to="/parent/comm"
-          className="mt-5 flex items-center justify-between rounded-2xl bg-gradient-to-r from-warm/15 to-teal/10 p-4 ring-1 ring-warm/20"
-        >
-          <div>
-            <p className="text-sm font-semibold">看不懂复评结果？</p>
-            <p className="text-[11px] text-muted-foreground">找健康管理师解读，1 对 1 回复</p>
-          </div>
-          <span className="rounded-full bg-warm px-3 py-1.5 text-xs text-warm-foreground">去咨询</span>
-        </Link>
-      </div>
-    </div>
-  );
+  const state = useParentExam();
+  const data = state.data;
+  if (state.loading || state.isError || !data) return <div><StatusBar title="复评随访" /><div className="px-5"><ParentExamState state={state} /></div></div>;
+  const { student, exam } = data;
+  return <div><StatusBar title="复评随访" /><div className="px-5 pb-8 pt-2">
+    <header className="mb-5"><h1 className="text-xl font-bold">{student.name}的复评随访</h1><p className="mt-2 text-xs text-muted-foreground">{student.school} · {student.grade}{student.cls}</p><p className="mt-1 text-xs text-muted-foreground">学号 {student.sno}</p></header>
+    {exam.recordedCount === 0 ? <section className="border-y border-border py-8 text-center"><h2 className="text-base font-semibold">暂无体检基线</h2><p className="mt-2 text-xs text-muted-foreground">体检数据提交后，可查看孩子的复评参考指标。</p></section> : <>
+      <section className="border-y border-border py-4"><h2 className="text-sm font-semibold">本次体检基线</h2><p className="mt-1 text-xs text-muted-foreground">最近提交 {examDate(exam.latestDate)} · 已录入 {exam.recordedCount} 项</p><dl className="mt-3 divide-y divide-border">{exam.items.filter(i => i.display !== null).map(item => <div key={item.id} className="flex justify-between gap-3 py-2 text-xs"><dt>{item.label}</dt><dd className="text-right font-medium">{item.display}</dd></div>)}{exam.bmi && <div className="flex justify-between py-2 text-xs"><dt>BMI</dt><dd className="font-medium">{exam.bmi}</dd></div>}</dl></section>
+      <section className="py-4"><h2 className="text-sm font-semibold">医生标记的复核项目</h2>{exam.reviewItems.length ? <ul className="mt-2 divide-y divide-border">{exam.reviewItems.map(item => <li key={item.id} className="py-3"><p className="text-xs font-medium">{item.label} · {item.display}</p><p className="mt-1 text-[11px] text-muted-foreground">{item.record?.doctor ?? "医生未记录"} · {examDate(item.record?.created_at ?? null)}</p><p className="mt-1 text-xs text-warm">需复核，复查时间待医生确认</p></li>)}</ul> : <p className="mt-2 text-xs text-muted-foreground">暂无医生标记的复核项目；不代表已完成综合健康评估。</p>}{exam.criticalCount > 0 && <p className="mt-2 text-xs text-danger">体检记录含 {exam.criticalCount} 项风险值处理标记，请向体检医生核实后续安排。</p>}</section>
+    </>}
+    <section className="border-t border-border py-5"><h2 className="text-sm font-semibold">随访计划与记录</h2><p className="mt-3 text-sm text-muted-foreground">暂无已保存的随访计划或随访记录</p><p className="mt-2 text-xs text-muted-foreground">下一次复评日期、就诊反馈及完成状态尚未记录。</p></section>
+    <Button asChild variant="outline" className="w-full"><Link to="/parent/report">查看完整体检报告</Link></Button>
+  </div></div>;
 }
