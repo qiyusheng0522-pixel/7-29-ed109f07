@@ -249,7 +249,7 @@ export function AdminStudentImport() {
     if (!pending) return;
     const school = pending.school.trim();
     if (!school) return toast.error("请填写学校名称");
-    if (ingest(pending.text, pending.fileName + " ", school)) setPending(null);
+    ingest(pending.text, pending.fileName + " ", school).then((ok) => ok && setPending(null));
   };
 
   const downloadTpl = () => {
