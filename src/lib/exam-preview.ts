@@ -24,13 +24,13 @@ export const bmiOf = (student: PreviewStudent) => Number((student.weight / (stud
 export const needsReferral = (student: PreviewStudent) => student.risk === "橙色" || student.risk === "红色";
 export type StudentProgress = {
   consent: boolean; questionnaires: string[]; planConfirmed: boolean; reportRead: boolean;
-  referralSent: boolean; appointment: boolean; checkins: string[]; followup: string | null;
+  referralSent: boolean; appointment: boolean; checkins: string[]; followup: string | null; planSummary: string | null;
 };
 export function initialProgress(stage: PreviewStage): Record<string, StudentProgress> {
   return Object.fromEntries(previewStudents.map((student) => [student.uid, {
     consent: stage === "post", questionnaires: stage === "post" ? ["allergy", "psychology"] : [],
     planConfirmed: stage === "post", reportRead: false, referralSent: student.risk === "红色" && stage === "post",
-    appointment: false, checkins: [], followup: null,
+    appointment: false, checkins: [], followup: null, planSummary: null,
   }]));
 }
 export function progressKey(stage: PreviewStage) { return `exam-preview-${stage}-v1`; }
