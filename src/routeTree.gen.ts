@@ -50,6 +50,8 @@ import { Route as ParentRecordRouteImport } from './routes/parent.record'
 import { Route as ParentReportRouteImport } from './routes/parent.report'
 import { Route as ParentReviewRouteImport } from './routes/parent.review'
 import { Route as ParentTerminateRouteImport } from './routes/parent.terminate'
+import { Route as PreviewPostRouteImport } from './routes/preview.post'
+import { Route as PreviewPreRouteImport } from './routes/preview.pre'
 import { Route as RecordIdRouteImport } from './routes/record.$id'
 import { Route as SchoolIndexRouteImport } from './routes/school.index'
 import { Route as SchoolAbnormalRouteImport } from './routes/school.abnormal'
@@ -273,6 +275,16 @@ const ParentTerminateRoute = ParentTerminateRouteImport.update({
   path: '/terminate',
   getParentRoute: () => ParentRoute,
 } as any)
+const PreviewPostRoute = PreviewPostRouteImport.update({
+  id: '/preview/post',
+  path: '/preview/post',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewPreRoute = PreviewPreRouteImport.update({
+  id: '/preview/pre',
+  path: '/preview/pre',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecordIdRoute = RecordIdRouteImport.update({
   id: '/record/$id',
   path: '/record/$id',
@@ -398,6 +410,8 @@ export interface FileRoutesByFullPath {
   '/parent/report': typeof ParentReportRoute
   '/parent/review': typeof ParentReviewRoute
   '/parent/terminate': typeof ParentTerminateRoute
+  '/preview/post': typeof PreviewPostRoute
+  '/preview/pre': typeof PreviewPreRoute
   '/record/$id': typeof RecordIdRoute
   '/school/abnormal': typeof SchoolAbnormalRoute
   '/school/absent': typeof SchoolAbsentRoute
@@ -454,6 +468,8 @@ export interface FileRoutesByTo {
   '/parent/report': typeof ParentReportRoute
   '/parent/review': typeof ParentReviewRoute
   '/parent/terminate': typeof ParentTerminateRoute
+  '/preview/post': typeof PreviewPostRoute
+  '/preview/pre': typeof PreviewPreRoute
   '/record/$id': typeof RecordIdRoute
   '/school/abnormal': typeof SchoolAbnormalRoute
   '/school/absent': typeof SchoolAbsentRoute
@@ -515,6 +531,8 @@ export interface FileRoutesById {
   '/parent/report': typeof ParentReportRoute
   '/parent/review': typeof ParentReviewRoute
   '/parent/terminate': typeof ParentTerminateRoute
+  '/preview/post': typeof PreviewPostRoute
+  '/preview/pre': typeof PreviewPreRoute
   '/record/$id': typeof RecordIdRoute
   '/school/abnormal': typeof SchoolAbnormalRoute
   '/school/absent': typeof SchoolAbsentRoute
@@ -577,6 +595,8 @@ export interface FileRouteTypes {
     | '/parent/report'
     | '/parent/review'
     | '/parent/terminate'
+    | '/preview/post'
+    | '/preview/pre'
     | '/record/$id'
     | '/school/abnormal'
     | '/school/absent'
@@ -633,6 +653,8 @@ export interface FileRouteTypes {
     | '/parent/report'
     | '/parent/review'
     | '/parent/terminate'
+    | '/preview/post'
+    | '/preview/pre'
     | '/record/$id'
     | '/school/abnormal'
     | '/school/absent'
@@ -693,6 +715,8 @@ export interface FileRouteTypes {
     | '/parent/report'
     | '/parent/review'
     | '/parent/terminate'
+    | '/preview/post'
+    | '/preview/pre'
     | '/record/$id'
     | '/school/abnormal'
     | '/school/absent'
@@ -723,6 +747,8 @@ export interface RootRouteChildren {
   DoctorRoute: typeof DoctorRouteWithChildren
   ParentRoute: typeof ParentRouteWithChildren
   SchoolRoute: typeof SchoolRouteWithChildren
+  PreviewPostRoute: typeof PreviewPostRoute
+  PreviewPreRoute: typeof PreviewPreRoute
   RecordIdRoute: typeof RecordIdRoute
 }
 
@@ -1015,6 +1041,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentTerminateRouteImport
       parentRoute: typeof ParentRoute
     }
+    '/preview/post': {
+      id: '/preview/post'
+      path: '/preview/post'
+      fullPath: '/preview/post'
+      preLoaderRoute: typeof PreviewPostRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview/pre': {
+      id: '/preview/pre'
+      path: '/preview/pre'
+      fullPath: '/preview/pre'
+      preLoaderRoute: typeof PreviewPreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/record/$id': {
       id: '/record/$id'
       path: '/record/$id'
@@ -1282,6 +1322,8 @@ const rootRouteChildren: RootRouteChildren = {
   DoctorRoute: DoctorRouteWithChildren,
   ParentRoute: ParentRouteWithChildren,
   SchoolRoute: SchoolRouteWithChildren,
+  PreviewPostRoute: PreviewPostRoute,
+  PreviewPreRoute: PreviewPreRoute,
   RecordIdRoute: RecordIdRoute,
 }
 export const routeTree = rootRouteImport
