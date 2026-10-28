@@ -9,6 +9,7 @@ import { EIcon } from "@/components/EIcon";
 import { DietCheckinSheet, ExerciseCheckinSheet } from "@/components/CheckinSheets";
 import { readCheckins, type CheckinRecord } from "@/lib/checkin";
 import { getBoundUid, getStudent } from "@/lib/students-db";
+import { readConsent, writeConsent, type ConsentStatus } from "@/lib/parent-consent";
 
 /** 首页任务行上展示的本次打卡摘要 */
 function summarize(rec: CheckinRecord) {
@@ -21,10 +22,16 @@ function summarize(rec: CheckinRecord) {
 }
 
 // 演示：默认已有体检报告；可通过右上角"视角"按钮切换到"检前 · 无报告"
-const CONSENT_KEY = "parent_consent_v1";
 const VIEW_KEY = "parent_view_hasreport_v1";
 
 export const Route = createFileRoute("/parent/")({
+  head: () => ({ meta: [
+    { title: "家长健康工作台 · 阳光校园健康" },
+    { name: "description", content: "查看孩子的体检报告、授权状态与家庭健康任务。" },
+    { property: "og:title", content: "家长健康工作台 · 阳光校园健康" },
+    { property: "og:description", content: "学生体检授权、报告及检后健康服务。" },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: ParentHome,
 });
 
@@ -166,7 +173,7 @@ function ParentHome() {
     return () => window.removeEventListener("checkin-updated", sync);
   }, []);
   const doneCount = todayTasks.filter((t) => checkins[t.kind]).length;
-  const [consent, setConsent] = useState<"pending" | "agreed" | "declined">("pending");
+  const [consent, setConsent] = useState<ConsentStatus | null>(null);
   const [signed, setSigned] = useState(false);
   const [hasReport, setHasReport] = useState<boolean>(() => {
     if (typeof window === "undefined") return true;
@@ -180,21 +187,18 @@ function ParentHome() {
     });
   };
 
-  // 每次进入家长端首页都需要重新签署授权（演示需求）
+  // Read saved consent after hydration; never clear it on route entry.
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.removeItem(CONSENT_KEY);
-    setConsent("pending");
-    setSigned(false);
+    setConsent(readConsent(window.localStorage));
   }, []);
 
   const agree = () => {
     if (!signed) return;
-    window.localStorage.setItem(CONSENT_KEY, "agreed");
+    writeConsent(window.localStorage, "agreed");
     setConsent("agreed");
   };
   const decline = () => {
-    window.localStorage.setItem(CONSENT_KEY, "declined");
+    writeConsent(window.localStorage, "declined");
     setConsent("declined");
   };
 
@@ -275,12 +279,12 @@ function ParentHome() {
             </p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               <button
-                onClick={() => setConsent("pending")}
+                onClick={() => setConsent(null)}
                 className="rounded-full bg-surface-2 py-2.5 text-[13px] font-medium text-muted-foreground"
               >
                 仅浏览小程序
               </button>
-              <button onClick={agree} className="rounded-full bg-rose py-2.5 text-[13px] font-semibold text-rose-foreground">
+              <button onClick={() => setConsent("pending")} className="rounded-full bg-rose py-2.5 text-[13px] font-semibold text-rose-foreground">
                 重新查看协议
               </button>
             </div>

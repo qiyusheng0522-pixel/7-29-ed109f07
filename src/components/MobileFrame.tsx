@@ -7,9 +7,11 @@ import { ScreenPortalProvider } from "./screen-portal";
 export function MobileFrame({
   children,
   bg = "bg-surface-2",
+  showRoleSwitcher = true,
 }: {
   children: ReactNode;
   bg?: string;
+  showRoleSwitcher?: boolean;
 }) {
   // Overlays are portaled into the screen element so they stay inside the device.
   const [screen, setScreen] = useState<HTMLDivElement | null>(null);
@@ -54,7 +56,7 @@ export function MobileFrame({
           </div>
         </div>
 
-        <RoleSwitcher />
+        {showRoleSwitcher && <RoleSwitcher />}
       </div>
     </div>
   );

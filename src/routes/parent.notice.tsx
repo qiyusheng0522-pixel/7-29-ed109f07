@@ -3,7 +3,8 @@ import { StatusBar } from "@/components/MobileFrame";
 import { toast } from "sonner";
 import { ActionSheet } from "@/components/ActionSheet";
 import { child } from "@/lib/mock-data";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { readConsent, writeConsent } from "@/lib/parent-consent";
 
 import { EIcon } from "@/components/EIcon";
 import { PreExamQuestionnaireSheet } from "@/components/PreExamQuestionnaireSheet";
@@ -137,10 +138,16 @@ const cats: Cat[] = ["todo", "info", "sign"];
 function NoticePage() {
   const [tab, setTab] = useState<Cat>("todo");
   const [signed, setSigned] = useState(false);
+  const [consented, setConsented] = useState(false);
+  useEffect(() => {
+    setConsented(readConsent(localStorage) === "agreed");
+    try { setSubmittedQuestionnaires(JSON.parse(localStorage.getItem("parent-questionnaire-submissions-v1") ?? "{}")); } catch { /* Invalid saved state */ }
+  }, []);
   const [revokeScope, setRevokeScope] = useState<"this" | "all">("this");
   const [submittedQuestionnaires, setSubmittedQuestionnaires] = useState<Partial<Record<PreExamQuestionnaireId, boolean>>>({});
   const effectiveGrouped = {
     ...grouped,
+    sign: { ...grouped.sign, items: grouped.sign.items.map((item): Item => ({ ...item, status: consented ? "已签署" : "待办" })) },
     todo: {
       ...grouped.todo,
       items: grouped.todo.items.map((item): Item => ({
@@ -261,6 +268,8 @@ function NoticePage() {
                             title="签署体检知情同意书"
                             description="请签字确认同意学校采集本次体检数据用于生成健康报告。"
                             confirmText={signed ? "确认提交" : "请先签名"}
+                            disabled={!signed}
+                            onConfirm={() => { writeConsent(localStorage, "agreed"); setConsented(true); }}
                             toastMessage="授权成功 · 已同步学校"
                             toastDescription={`签名人：李妈妈 · ${child.name}`}
                           >
@@ -279,10 +288,13 @@ function NoticePage() {
                           <PreExamQuestionnaireSheet
                             questionnaire={preExamQuestionnaires[it.questionnaireId]}
                             submitted={Boolean(submittedQuestionnaires[it.questionnaireId])}
+                            storageKey={`parent-questionnaire-${it.questionnaireId}`}
                             onSubmit={() => {
                               const id = it.questionnaireId;
                               if (!id) return;
-                              setSubmittedQuestionnaires((current) => ({ ...current, [id]: true }));
+                              const next = { ...submittedQuestionnaires, [id]: true };
+                              localStorage.setItem("parent-questionnaire-submissions-v1", JSON.stringify(next));
+                              setSubmittedQuestionnaires(next);
                             }}
                           />
                         ) : (
@@ -314,6 +326,7 @@ function NoticePage() {
             description="请选择撤回范围。撤回后学校与健管师将立即停止对应数据处理。"
             confirmText="确认撤回"
             danger
+            onConfirm={() => { writeConsent(localStorage, "declined"); setConsented(false); }}
             toastMessage={revokeScope === "all" ? "已终止全部健康管理" : "已撤回本次体检授权"}
             toastDescription={`签名人：李妈妈 · ${child.name}`}
           >

@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActionSheet } from "@/components/ActionSheet";
 import { Button } from "@/components/ui/button";
 import type { PreExamQuestionnaire } from "@/lib/pre-exam-questionnaires";
 
-export function PreExamQuestionnaireSheet({ questionnaire, submitted, onSubmit }: {
+export function PreExamQuestionnaireSheet({ questionnaire, submitted, onSubmit, storageKey }: {
   questionnaire: PreExamQuestionnaire;
   submitted: boolean;
   onSubmit: () => void;
+  storageKey?: string;
 }) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
+  useEffect(() => {
+    if (!storageKey) return;
+    try { setAnswers(JSON.parse(localStorage.getItem(storageKey) ?? "{}")); } catch { setAnswers({}); }
+  }, [storageKey]);
   const answered = questionnaire.questions.filter((_, i) => answers[i] !== undefined).length;
   const complete = answered === questionnaire.questions.length;
 
@@ -20,7 +25,10 @@ export function PreExamQuestionnaireSheet({ questionnaire, submitted, onSubmit }
       description={questionnaire.subtitle}
       confirmText={complete ? (submitted ? "确认修改" : "提交问卷") : "请完成全部题目"}
       disabled={!complete}
-      onConfirm={onSubmit}
+      onConfirm={() => {
+        if (storageKey) localStorage.setItem(storageKey, JSON.stringify(answers));
+        onSubmit();
+      }}
       toastMessage="问卷已提交"
     >
       <div className="space-y-4 pb-3">
