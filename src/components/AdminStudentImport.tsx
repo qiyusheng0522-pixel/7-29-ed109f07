@@ -5,6 +5,8 @@ import examTemplate from "@/assets/health-exam-template.pdf.asset.json";
 import questionnaireTemplate from "@/assets/pre-exam-questionnaire.pdf.asset.json";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
+import type { ExamValue } from "@/lib/exam-record";
+import { listStudents, listResults, mergeValues, upsertStudents, deleteStudent, type DbStudent } from "@/lib/students-db";
 
 // 后台唯一入口：仅支持通过数据导入学生基本信息
 export const IMPORT_FIELDS = ["学校", "学生编号", "学生姓名", "学生性别", "所属年级", "所属班级"] as const;
@@ -144,12 +146,33 @@ const GROUP_CLS: Record<string, string> = {
   口腔: "bg-amber-50 text-amber-600", 内外科: "bg-emerald-50 text-emerald-600",
 };
 
+/** 医生端录入值 → 历史体检表字段 */
+function toExam(v: Record<string, ExamValue>, grade: string): Exam {
+  if (!Object.keys(v).length) return { status: "待检" };
+  const h = v.height?.value, w = v.weight?.value;
+  const bpS = v.bp?.value, bpD = v.bp?.valueDia;
+  return {
+    status: "已检", age: 5 + (GRADE_NO[grade] ?? 3),
+    height: h, weight: w, bmi: h && w ? +(w / ((h / 100) ** 2)).toFixed(1) : undefined,
+    bpS, bpD, bpDiff: bpS != null && bpD != null ? bpS - bpD : undefined,
+    visionR: v["vision-r"]?.value, visionL: v["vision-l"]?.value,
+    spine: v.spine?.choice, dentition: v.oral?.choice,
+  };
+}
+
 export function AdminStudentImport() {
-  // 导入即自动生成唯一ID；列表只保存已有唯一ID的学生
-  const [rows, setRows] = useState<StudentRow[]>(() => {
-    const used = new Set<string>();
-    return parseCsv(SAMPLE_CSV).map((b, i) => ({ ...b, uid: genUid(b, used), ...mockExam(i, b.grade) }));
-  });
+  // 数据来自数据库：导入即自动生成唯一ID并入库
+  const [rows, setRows] = useState<StudentRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const reload = async () => {
+    try {
+      const [ss, rs] = await Promise.all([listStudents(), listResults()]);
+      setRows(ss.map((s) => ({ ...s, birth: "", ...toExam(mergeValues(rs, s.uid), s.grade) })));
+    } catch (e) {
+      toast.error("读取学生数据失败", { description: (e as Error).message });
+    } finally { setLoading(false); }
+  };
+  useEffect(() => { reload(); }, []);
   const [errors, setErrors] = useState<string[]>([]);
   const [view, setView] = useState<"base" | "exam">("base");
   const [fName, setFName] = useState("");
@@ -165,22 +188,23 @@ export function AdminStudentImport() {
     downloadUrl(await renderLabel(r.uid, r.name, r.sno, kind), `${r.uid}_${r.name}_${r.sno}.png`);
   };
 
-  const remove = (r: StudentRow) => {
+  const remove = async (r: StudentRow) => {
     if (!confirm(`确认删除学生「${r.name}（${r.sno}）」？`)) return;
+    try { await deleteStudent(r.uid); } catch (e) { return toast.error("删除失败", { description: (e as Error).message }); }
     setRows((list) => list.filter((x) => keyOf(x) !== keyOf(r)));
     setSel((s) => { const n = new Set(s); n.delete(keyOf(r)); return n; });
     toast.success(`已删除 ${r.name}`);
   };
 
-  const ingest = (text: string, source: string, schoolName?: string) => {
+  const ingest = async (text: string, source: string, schoolName?: string) => {
     try {
       const list = parseCsv(text).map((b) => ({ ...b, school: b.school || schoolName || "" }));
       const existing = new Map(rows.map((r) => [keyOf(r), r]));
       const used = new Set(rows.map((r) => r.uid));
       const seen = new Set<string>();
       const errs: string[] = [];
-      const added: StudentRow[] = [];
-      let updated = 0;
+      const toSave: DbStudent[] = [];
+      let added = 0, updated = 0;
       list.forEach((b, i) => {
         const line = i + 2;
         if ([b.school, b.sno, b.name, b.gender, b.grade, b.cls].some((v) => !v)) return errs.push(`第 ${line} 行：字段不完整`);
@@ -189,13 +213,15 @@ export function AdminStudentImport() {
         if (seen.has(k)) return errs.push(`第 ${line} 行：学生编号 ${b.sno} 在文件中重复`);
         seen.add(k);
         const old = existing.get(k);
-        if (old) { existing.set(k, { ...old, ...b, birth: old.birth, uid: old.uid }); updated++; return; }
-        added.push({ ...b, uid: genUid(b, used), ...mockExam(rows.length + added.length, b.grade) });
+        const uid = old ? old.uid : genUid(b, used);
+        old ? updated++ : added++;
+        toSave.push({ uid, school: b.school, sno: b.sno, name: b.name, gender: b.gender, grade: b.grade, cls: b.cls });
       });
-      setRows([...existing.values(), ...added]);
+      await upsertStudents(toSave);
+      await reload();
       setErrors(errs);
-      toast.success(`${source}导入完成：新增 ${added.length} 人，更新 ${updated} 人`, {
-        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "新增学生已自动生成唯一ID；重复导入的学生保留原ID",
+      toast.success(`${source}导入完成：新增 ${added} 人，更新 ${updated} 人`, {
+        description: errs.length ? `${errs.length} 条校验失败，请修正后重新导入` : "已保存到数据库；重复导入的学生保留原ID",
       });
       return true;
     } catch (e) {
@@ -223,7 +249,7 @@ export function AdminStudentImport() {
     if (!pending) return;
     const school = pending.school.trim();
     if (!school) return toast.error("请填写学校名称");
-    if (ingest(pending.text, pending.fileName + " ", school)) setPending(null);
+    ingest(pending.text, pending.fileName + " ", school).then((ok) => ok && setPending(null));
   };
 
   const downloadTpl = () => {

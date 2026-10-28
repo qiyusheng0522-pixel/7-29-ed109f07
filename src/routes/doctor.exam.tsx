@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
 import { useEffect, useState } from "react";
-import { EXAM_USERS as users, type ExamStatus as Status } from "@/lib/exam-users";
+import { type ExamStatus as Status, type ExamUser } from "@/lib/exam-users";
+import { listStudents, listResults } from "@/lib/students-db";
 import {
   CURRENT_STATION_ID,
   findStation,
@@ -34,6 +35,22 @@ function UsersPage() {
   const queueView = view === "queue";
   const [filter, setFilter] = useState<Status | "全部" | "已检">("全部");
   const [q, setQ] = useState("");
+  // 学生清单来自后台导入的数据库，已提交本工位数据即为已检
+  const [users, setUsers] = useState<ExamUser[]>([]);
+  useEffect(() => {
+    Promise.all([listStudents(), listResults()]).then(([ss, rs]) => {
+      setUsers(ss.map((s) => {
+        const r = rs.find((x) => x.student_uid === s.uid && x.station_id === CURRENT_STATION_ID);
+        return {
+          id: s.uid, name: s.name, gender: s.gender === "女" ? "女" : "男",
+          age: 5 + (["一年级","二年级","三年级","四年级","五年级","六年级"].indexOf(s.grade) + 1 || 3),
+          grade: `${s.school} ${s.grade}${s.cls}`,
+          status: r ? (r.crit_count > 0 ? "已检-异常" : "已检-正常") : "待检",
+          note: `学号 ${s.sno}${r ? " · 已提交 " + new Date(r.created_at).toLocaleTimeString() : ""}`,
+        } as ExamUser;
+      }));
+    }).catch(() => {});
+  }, []);
 
   const counts = users.reduce<Record<string, number>>((acc, u) => {
     acc[u.status] = (acc[u.status] ?? 0) + 1;
@@ -88,8 +105,8 @@ function UsersPage() {
           <h1 className="text-xl font-bold">{queueView ? "体检录入" : "用户"}</h1>
           <p className="text-xs text-muted-foreground">
             {queueView
-              ? `阳光小学 · 三年级 3 班 · ${pendingCount} 人待检 · ${doneCount} 人已检`
-              : `阳光小学 · 三年级 3 班 · 共 ${users.length} 人`}
+              ? `${pendingCount} 人待检 · ${doneCount} 人已检`
+              : `共 ${users.length} 人`}
           </p>
         </div>
 
@@ -290,7 +307,7 @@ function ScanOverlay({
   onDone,
 }: {
   stationName: string;
-  student?: (typeof users)[number];
+  student?: ExamUser;
   onClose: () => void;
   onDone: (uid: string) => void;
 }) {

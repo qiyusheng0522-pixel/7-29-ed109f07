@@ -8,6 +8,7 @@ import { ActionSheet } from "@/components/ActionSheet";
 import { EIcon } from "@/components/EIcon";
 import { DietCheckinSheet, ExerciseCheckinSheet } from "@/components/CheckinSheets";
 import { readCheckins, type CheckinRecord } from "@/lib/checkin";
+import { getBoundUid, getStudent } from "@/lib/students-db";
 
 /** 首页任务行上展示的本次打卡摘要 */
 function summarize(rec: CheckinRecord) {
@@ -148,7 +149,13 @@ const encyclopedia = [
 
 function ParentHome() {
   const [activeKid, setActiveKid] = useState(kids[0].id);
-  const kid = kids.find((k) => k.id === activeKid) ?? kids[0];
+  const [boundName, setBoundName] = useState<string | null>(null);
+  useEffect(() => {
+    const uid = getBoundUid();
+    if (uid) getStudent(uid).then((s) => s && setBoundName(s.name)).catch(() => {});
+  }, []);
+  const baseKid = kids.find((k) => k.id === activeKid) ?? kids[0];
+  const kid = boundName && activeKid === kids[0].id ? { ...baseKid, name: boundName, short: boundName.slice(-1) } : baseKid;
   const [catTab, setCatTab] = useState("全部");
   // 打卡结果来自打卡页写入的记录，进入首页时读取并监听更新
   const [checkins, setCheckins] = useState<ReturnType<typeof readCheckins>>({});

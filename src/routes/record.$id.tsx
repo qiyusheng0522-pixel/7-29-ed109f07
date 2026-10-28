@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { X, Check, RotateCcw, Delete, ArrowRight, ChevronUp, Zap, ShieldAlert, Siren } from "lucide-react";
 import { MobileFrame } from "@/components/MobileFrame";
 import { EIcon } from "@/components/EIcon";
-import { EXAM_USERS, findExamUser, nextPendingExamUser } from "@/lib/exam-users";
+import { findExamUser } from "@/lib/exam-users";
+import { getStudent, listStudents, listResults, saveResult } from "@/lib/students-db";
 import {
   EXAM_ITEMS,
   evalItem,
@@ -59,7 +60,16 @@ function Recorder() {
   const { id } = Route.useParams();
   const { station: stationId } = Route.useSearch();
   const navigate = useNavigate();
-  const user = findExamUser(id);
+  const mockUser = findExamUser(id);
+  const [user, setUser] = useState<{ name: string; grade: string } | undefined>(mockUser);
+  const [queue, setQueue] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    getStudent(id).then((s) => s && setUser({ name: s.name, grade: `${s.grade}${s.cls} · ${s.school}` }));
+    Promise.all([listStudents(), listResults()]).then(([ss, rs]) =>
+      setQueue(ss.filter((x) => x.uid === id || !rs.some((r) => r.student_uid === x.uid && r.station_id === (stationId ?? "s1")))
+        .map((x) => ({ id: x.uid, name: x.name }))),
+    ).catch(() => {});
+  }, [id, stationId]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -71,12 +81,8 @@ function Recorder() {
 
 
   // 现场队列：医生在学校连续给一队学生录入
-  const queue = useMemo(
-    () => EXAM_USERS.filter((u) => u.status === "待检" || u.status === "进行中"),
-    [],
-  );
   const queueIdx = queue.findIndex((u) => u.id === id);
-  const nextUser = nextPendingExamUser(id);
+  const nextUser = queueIdx >= 0 ? queue[queueIdx + 1] : queue.find((u) => u.id !== id);
 
   // 设备自动项预采集读数直接落库，超范围自动标记需重测
   const [values, setValues] = useState<Record<string, ExamValue>>(() => {
@@ -183,7 +189,7 @@ function Recorder() {
 
   const unverified = items.filter((it) => it.source === "auto" && !verified[it.id]);
 
-  function submit() {
+  async function submit() {
     if (unverified.length > 0) {
       toast.error("设备读数尚未核对", {
         description: `${unverified.map((it) => it.label).join("、")} 未确认与设备显示一致`,
@@ -198,6 +204,12 @@ function Recorder() {
       });
       const idx = items.findIndex((it) => it.id === openCrits[0].id);
       if (idx >= 0) scrollTo(idx);
+      return;
+    }
+    try {
+      await saveResult({ student_uid: id, station_id: stationId ?? "s1", doctor: station?.doctor ?? null, item_values: values, crit_count: critCount });
+    } catch (e) {
+      toast.error("同步失败", { description: (e as Error).message });
       return;
     }
     if (critCount > 0) {

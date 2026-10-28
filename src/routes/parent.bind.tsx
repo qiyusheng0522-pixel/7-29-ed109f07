@@ -1,7 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StatusBar } from "@/components/MobileFrame";
 import { ActionSheet } from "@/components/ActionSheet";
-import { child } from "@/lib/mock-data";
+import { child as mockChild } from "@/lib/mock-data";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { findStudentBySnoName, getStudent, getBoundUid, setBoundUid, listResults, type DbStudent } from "@/lib/students-db";
 
 import { EIcon } from "@/components/EIcon";
 export const Route = createFileRoute("/parent/bind")({
@@ -14,10 +17,47 @@ const guardians = [
 ];
 
 function BindPage() {
+  const [bound, setBound] = useState<DbStudent | null>(null);
+  const [examined, setExamined] = useState(0);
+  const [sno, setSno] = useState("");
+  const [name, setName] = useState("");
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const uid = getBoundUid();
+    if (uid) getStudent(uid).then((s) => { setBound(s); if (!s) setBoundUid(null); });
+  }, []);
+  useEffect(() => {
+    if (bound) listResults(bound.uid).then((r) => setExamined(r.length)).catch(() => {});
+  }, [bound]);
+  const bind = async () => {
+    if (!sno.trim() || !name.trim()) return toast.error("请填写学生编号和姓名");
+    setBusy(true);
+    const s = await findStudentBySnoName(sno, name).catch(() => null);
+    setBusy(false);
+    if (!s) return toast.error("未找到该学生", { description: "请核对学生编号与姓名，需与学校导入的名单一致" });
+    setBoundUid(s.uid); setBound(s); setSno(""); setName("");
+    toast.success(`已绑定 ${s.name}`, { description: `${s.school} · ${s.grade}${s.cls}` });
+  };
+  const child = bound
+    ? { ...mockChild, name: bound.name, gender: bound.gender, school: bound.school, grade: bound.grade, className: bound.cls, studentId: bound.sno,
+        age: 5 + (["一年级","二年级","三年级","四年级","五年级","六年级"].indexOf(bound.grade) + 1 || 3) }
+    : mockChild;
   return (
     <div>
       <StatusBar title="儿童绑定" />
       <div className="px-5 pb-8 pt-2">
+        <section className="mb-4 rounded-2xl bg-surface p-4 shadow-sm ring-1 ring-border/60">
+          <h2 className="text-sm font-semibold">{bound ? "更换绑定的孩子" : "绑定我的孩子"}</h2>
+          <p className="mt-1 text-[11px] text-muted-foreground">输入学校导入名单中的学生编号与姓名完成绑定</p>
+          <div className="mt-3 space-y-2 text-xs">
+            <input value={sno} onChange={(e) => setSno(e.target.value)} placeholder="学生编号，如 20230301" className="w-full rounded-xl bg-surface-2 px-3 py-2.5 outline-none" />
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="学生姓名" className="w-full rounded-xl bg-surface-2 px-3 py-2.5 outline-none" />
+            <button onClick={bind} disabled={busy} className="w-full rounded-xl bg-warm py-2.5 text-sm font-semibold text-warm-foreground disabled:opacity-50">
+              {busy ? "核验中…" : "核验并绑定"}
+            </button>
+          </div>
+        </section>
+        {!bound && <p className="mb-2 text-center text-[11px] text-muted-foreground">未绑定，以下为示例孩子</p>}
         <div className="mb-4 overflow-hidden rounded-3xl bg-gradient-to-br from-warm to-warm/70 p-5 text-white shadow-lg shadow-warm/20">
           <div className="flex items-center gap-3">
             <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/25 text-2xl backdrop-blur">
@@ -28,7 +68,7 @@ function BindPage() {
               <p className="text-xs text-white/85">{child.school} · {child.grade}{child.className}</p>
               <p className="text-[11px] text-white/70">学号 {child.studentId}</p>
             </div>
-            <span className="rounded-full bg-white/25 px-2 py-1 text-[11px]">已绑定</span>
+            <span className="rounded-full bg-white/25 px-2 py-1 text-[11px]">{bound ? (examined ? `已绑定 · 已检${examined}站` : "已绑定 · 待体检") : "示例"}</span>
           </div>
         </div>
 
