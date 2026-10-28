@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { initialProgress, readProgress, saveProgress, previewStudents, bmiOf } from "./exam-preview";
 import { readConsent, writeConsent } from "./parent-consent";

@@ -45,7 +45,7 @@ export function ExamStagePreview({ stage }: { stage: PreviewStage }) {
   const consentCount = previewStudents.filter(s => progress[s.uid].consent).length;
   const referralCount = previewStudents.filter(s => progress[s.uid].referralSent).length;
 
-  return <MobileFrame>
+  return <MobileFrame showRoleSwitcher={false}>
     <StatusBar title={isPost ? "初中检后健康管理" : "初中检前准备"} back={false} />
     <div className="flex items-center justify-between border-b border-border px-4 py-2 text-[10px] text-muted-foreground">
       <span>示例学校 · 虚构学生 · 不写入真实名单</span>
