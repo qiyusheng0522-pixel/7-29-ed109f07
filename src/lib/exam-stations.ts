@@ -24,7 +24,7 @@ export const EXAM_STATIONS: ExamStation[] = [
     devices: ["身高体脂分析仪", "视力筛查仪"],
     itemIds: ["height", "weight", "bodyfat", "vision-l", "vision-r"],
     doctor: "陈医生",
-    location: "阳光小学 · 一楼多功能厅 A 区",
+    location: "南京市建邺高级中学 · 一楼多功能厅 A 区",
   },
   {
     id: "s2",
@@ -33,7 +33,7 @@ export const EXAM_STATIONS: ExamStation[] = [
     devices: ["腰臀围尺", "血压测量仪"],
     itemIds: ["waist", "hip", "bp"],
     doctor: "林医生",
-    location: "阳光小学 · 一楼多功能厅 B 区",
+    location: "南京市建邺高级中学 · 一楼多功能厅 B 区",
   },
   {
     id: "s3",
@@ -42,7 +42,7 @@ export const EXAM_STATIONS: ExamStation[] = [
     devices: ["脊柱侧弯测量尺（手工）", "口腔目测"],
     itemIds: ["spine", "oral"],
     doctor: "赵医生",
-    location: "阳光小学 · 一楼多功能厅 C 区",
+    location: "南京市建邺高级中学 · 一楼多功能厅 C 区",
   },
 ];
 
