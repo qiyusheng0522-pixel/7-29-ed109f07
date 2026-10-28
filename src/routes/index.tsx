@@ -5,6 +5,13 @@ import { EIcon } from "@/components/EIcon";
 import { MobileFrame, StatusBar } from "@/components/MobileFrame";
 
 export const Route = createFileRoute("/")({
+  head: () => ({ meta: [
+    { title: "阳光校园健康 · 检前检后预览入口" },
+    { name: "description", content: "选择检前准备、初中检后健康管理或各角色工作台。" },
+    { property: "og:title", content: "阳光校园健康 · 检前检后预览入口" },
+    { property: "og:description", content: "初中体检报告与家校医社区协同健康管理演示。" },
+    { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
+  ] }),
   component: Landing,
 });
 
@@ -71,6 +78,10 @@ function Landing() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
+        <div className="mb-3 grid grid-cols-2 gap-2">
+          <Link to="/preview/pre" className="rounded-lg border border-border bg-surface p-3 text-center text-sm font-semibold">检前预览</Link>
+          <Link to="/preview/post" className="rounded-lg bg-deep p-3 text-center text-sm font-semibold text-deep-foreground">初中检后预览</Link>
+        </div>
         <nav aria-label="选择身份" className="flex flex-col gap-2.5">
           {roles.map((r) => (
             <Link
