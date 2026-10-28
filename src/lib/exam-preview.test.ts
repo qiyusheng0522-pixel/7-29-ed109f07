@@ -1,5 +1,5 @@
-/// <reference types="bun" />
-import { describe, expect, test } from "bun:test";
+import { describe, test } from "node:test";
+import { strict as assert } from "node:assert";
 import { initialProgress, readProgress, saveProgress, previewStudents, bmiOf } from "./exam-preview";
 import { readConsent, writeConsent } from "./parent-consent";
 
@@ -12,23 +12,23 @@ describe("exam preview business rules", () => {
     const store = storage(); const progress = initialProgress("pre");
     const student = previewStudents[0]; progress[student.uid].consent = true;
     saveProgress("pre", progress, store);
-    expect(readProgress("pre", store)[student.uid].consent).toBe(true);
+    assert.equal(readProgress("pre", store)[student.uid].consent, true);
   });
   test("post-exam historical authorization does not authorize the pre-exam flow", () => {
     const store = storage(); saveProgress("post", initialProgress("post"), store);
-    expect(readProgress("post", store)[previewStudents[0].uid].consent).toBe(true);
-    expect(readProgress("pre", store)[previewStudents[0].uid].consent).toBe(false);
+    assert.equal(readProgress("post", store)[previewStudents[0].uid].consent, true);
+    assert.equal(readProgress("pre", store)[previewStudents[0].uid].consent, false);
   });
   test("all demo students are middle-school students", () => {
-    expect(previewStudents.length).toBe(6);
-    expect(previewStudents.every(s => ["初一", "初二", "初三"].includes(s.grade) && s.age >= 12)).toBe(true);
+    assert.equal(previewStudents.length, 6);
+    assert.equal(previewStudents.every(s => ["初一", "初二", "初三"].includes(s.grade) && s.age >= 12), true);
   });
   test("BMI is derived from the report measurements, not independent mock values", () => {
-    expect(bmiOf(previewStudents[0])).toBe(26.6);
+    assert.equal(bmiOf(previewStudents[0]), 26.6);
   });
   test("live parent authorization is not cleared on revisit", () => {
     const store = storage(); writeConsent(store, "agreed");
-    expect(readConsent(store)).toBe("agreed");
-    writeConsent(store, "declined"); expect(readConsent(store)).toBe("declined");
+    assert.equal(readConsent(store), "agreed");
+    writeConsent(store, "declined"); assert.equal(readConsent(store), "declined");
   });
 });
