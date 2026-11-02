@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { ActionSheet } from "@/components/ActionSheet";
 import { Button } from "@/components/ui/button";
 import type { PreExamQuestionnaire } from "@/lib/pre-exam-questionnaires";
+import { BloodReportUpload } from "@/components/BloodReportUpload";
+import { needsBloodReport } from "@/lib/questionnaire-attachment";
 
 export function PreExamQuestionnaireSheet({ questionnaire, submitted, onSubmit, storageKey }: {
   questionnaire: PreExamQuestionnaire;
@@ -57,6 +59,7 @@ export function PreExamQuestionnaireSheet({ questionnaire, submitted, onSubmit, 
             </div>
           </fieldset>
         ))}
+        {needsBloodReport(questionnaire.id, answers) && <BloodReportUpload storageKey={`${storageKey ?? questionnaire.id}-blood-report`} />}
       </div>
     </ActionSheet>
   );
