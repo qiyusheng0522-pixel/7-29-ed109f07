@@ -13,20 +13,20 @@ function positiveForm() {
   form.waist = "72.5";
   form.feno = "38";
   form.spineResult = "阳性";
-  form.angles["spine-thoracic-left"] = "5";
-  form.angles["spine-thoracic-right"] = "3.5";
-  form.angles["spine-lumbar-right"] = "7";
+  form.angles["spine-thoracic"] = "5";
+  form.angles["spine-thoracolumbar"] = "3.5";
+  form.angles["spine-lumbar"] = "7";
   return form;
 }
 
 describe("admin exam entry", () => {
-  test("positive screening keeps left and right angles for each entered segment", () => {
+  test("positive screening stores one angle per segment", () => {
     const values = buildAdminExamValues(positiveForm());
     assert.equal(values.waist?.value, 72.5);
     assert.equal(values.feno?.value, 38);
-    assert.equal(values["spine-thoracic-left"]?.value, 5);
-    assert.equal(values["spine-thoracic-right"]?.value, 3.5);
-    assert.equal(values["spine-lumbar-right"]?.value, 7);
+    assert.equal(values["spine-thoracic"]?.value, 5);
+    assert.equal(values["spine-thoracolumbar"]?.value, 3.5);
+    assert.equal(values["spine-lumbar"]?.value, 7);
     assert.equal(values.spine?.value, 7);
     assert.equal(values.spine?.choice, "阳性");
   });
@@ -43,7 +43,7 @@ describe("admin exam entry", () => {
     const values = buildAdminExamValues(form);
     assert.equal(values.spine?.choice, "阴性");
     assert.equal(values.spine?.value, undefined);
-    assert.equal(values["spine-thoracic-left"], undefined);
+    assert.equal(values["spine-thoracic"], undefined);
   });
 
   test("saved values reload into the same editable form", () => {
@@ -51,8 +51,19 @@ describe("admin exam entry", () => {
     assert.deepEqual(readAdminExamForm(buildAdminExamValues(original)), original);
   });
 
-  test("spine summary includes segment sides and negative result", () => {
-    assert.match(formatAdminSpineSummary(buildAdminExamValues(positiveForm())) ?? "", /胸段 左5° \/ 右3.5°/);
+  test("legacy left/right angles reload as that segment's angle", () => {
+    const form = readAdminExamForm({
+      spine: { choice: "阳性", value: 6 },
+      "spine-thoracic-left": { value: 5 },
+      "spine-thoracic-right": { value: 6 },
+    });
+    assert.equal(form.spineResult, "阳性");
+    assert.equal(form.angles["spine-thoracic"], "6");
+    assert.equal(form.angles["spine-lumbar"], "");
+  });
+
+  test("spine summary lists segments without sides and shows negative result", () => {
+    assert.match(formatAdminSpineSummary(buildAdminExamValues(positiveForm())) ?? "", /胸段 5°/);
     const negative = positiveForm();
     negative.spineResult = "阴性";
     assert.equal(formatAdminSpineSummary(buildAdminExamValues(negative)), "阴性");

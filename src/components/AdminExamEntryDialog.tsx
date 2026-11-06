@@ -94,7 +94,7 @@ export function AdminExamEntryDialog({ student, onClose, onSaved }: {
 
             <section className="rounded-lg border border-border p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div><h3 className="text-sm font-semibold">脊柱侧弯筛查</h3><p className="mt-1 text-xs text-muted-foreground">选择阳性后，分别填写胸段、腰胸段、腰段的左右侧 ATR 角度。</p></div>
+                <div><h3 className="text-sm font-semibold">脊柱侧弯筛查</h3><p className="mt-1 text-xs text-muted-foreground">选择阳性后，分别填写胸段、腰胸段、腰段的 ATR 角度。</p></div>
                 <div className="flex rounded-lg bg-muted p-1" aria-label="脊柱侧弯筛查结果">
                   {(["阴性", "阳性"] as const).map((result) => (
                     <button key={result} type="button" aria-pressed={form.spineResult === result} onClick={() => setSpineResult(result)}
@@ -106,14 +106,13 @@ export function AdminExamEntryDialog({ student, onClose, onSaved }: {
               </div>
               {form.spineResult === "阳性" && (
                 <div className="mt-4 overflow-x-auto rounded-lg border border-border">
-                  <table className="w-full min-w-[480px] text-sm">
-                    <thead className="bg-muted text-left text-xs text-muted-foreground"><tr><th className="px-4 py-3 font-medium">节段</th><th className="px-4 py-3 font-medium">左侧角度（°）</th><th className="px-4 py-3 font-medium">右侧角度（°）</th></tr></thead>
+                  <table className="w-full min-w-[360px] text-sm">
+                    <thead className="bg-muted text-left text-xs text-muted-foreground"><tr><th className="px-4 py-3 font-medium">节段</th><th className="px-4 py-3 font-medium">角度（°）</th></tr></thead>
                     <tbody className="divide-y divide-border">
                       {SPINE_SEGMENTS.map((segment) => (
                         <tr key={segment.id}>
                           <th className="px-4 py-3 text-left font-medium">{segment.label}</th>
-                          <td className="px-4 py-3"><Input aria-label={`${segment.label}左侧角度`} type="number" min="0" step="0.1" inputMode="decimal" value={form.angles[segment.left]} onChange={(event) => setAngle(segment.left, event.target.value)} placeholder="未录入" /></td>
-                          <td className="px-4 py-3"><Input aria-label={`${segment.label}右侧角度`} type="number" min="0" step="0.1" inputMode="decimal" value={form.angles[segment.right]} onChange={(event) => setAngle(segment.right, event.target.value)} placeholder="未录入" /></td>
+                          <td className="px-4 py-3"><Input aria-label={`${segment.label}角度`} type="number" min="0" step="0.1" inputMode="decimal" value={form.angles[segment.key]} onChange={(event) => setAngle(segment.key, event.target.value)} placeholder="未录入" /></td>
                         </tr>
                       ))}
                     </tbody>

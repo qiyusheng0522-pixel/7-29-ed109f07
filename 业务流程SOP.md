@@ -282,6 +282,28 @@
 - `/admin`：区域管理（学校、计划、账号、指标配置）。
 - `/bigscreen`：区域体检大屏（完成率、异常率、五色分布、危机值台账）。
 
+### 6.1 学生管理（`src/components/AdminStudentImport.tsx`）
+
+1. 导入：支持 CSV / TXT / Excel（`.xlsx`、`.xls`、`.xlsm`、`.ods`），列名可为「学校、学生编号、学生姓名、学生性别、所属年级、所属班级」。
+2. 导入即入库（Lovable Cloud 表 `public.students`），自动生成 18 位唯一体检编码；同一学校 + 学生编号重复导入只更新信息，**唯一编码不变**。
+3. 列表只展示已有唯一编码的学生；支持按姓名 / 学号 / 学校筛选，支持单条删除。
+4. 标签：按编码生成 CODE128 条码或二维码 + 「姓名 学号：xxx」，单个下载 PNG 或批量 ZIP 导出，文件名 `唯一ID_姓名_学号.png`。
+5. 打印体检档案（PDF）：以《江苏省中小学健康体检档案》模板为底，逐生复制 2 页并在第 1 页右上角印标签；文件名 `学校-年级-班级_人数.pdf`。
+6. 打印体检问卷（PDF）：以《儿童体检前健康补充调查问卷》为模板，逐生 1 页 + 标签；文件名 `学校-年级-班级_人数_体检问卷.pdf`。
+
+### 6.2 录入体检数据（`src/components/AdminExamEntryDialog.tsx`、`src/lib/admin-exam-entry.ts`）
+
+1. 学生列表操作列「录入体检数据」打开弹窗，读取该生已有体检记录回填。
+2. 可录项目：腰围（cm）、脊柱侧弯筛查（阴性 / 阳性）、呼出气一氧化氮 FeNO（ppb）。
+3. 脊柱侧弯为**阳性**时，按**胸段、腰胸段、腰段三个节段分别录入一个 ATR 角度（不分左右侧）**；为**阴性**时不填角度。
+4. 校验：腰围 > 0；FeNO ≥ 0；各节段角度 ≥ 0；阳性至少填一个节段角度；三项至少要填一项。
+5. 保存写入独立工位 `admin-entry`（`管理后台补录`），与医生工位数据按项目合并，**不覆盖医生已录的其他项目**；最大 ATR 由已填节段角度取最大值写入 `spine`。
+6. 回显：后台「体检数据回显」脊柱列显示 `阳性；胸段 5°；腰段 7°` 形式；家长端报告「脊柱」分组与「呼吸功能」分组展示各节段角度与 FeNO。
+
+### 6.3 体检数据回显
+
+后台按历史入学体检表字段顺序（一般检查 / 眼科 / 口腔 / 内外科）展示完整大表，学生编码与姓名冻结在左，横向滚动查看全部字段；数据来自 `public.exam_results` 各工位合并结果。
+
 ---
 
 ## 7. 状态机汇总
@@ -338,6 +360,10 @@
 | 家长报告 | `src/routes/parent.report.tsx` |
 | 家长 AI 会话 | `src/routes/parent.comm.tsx` |
 | 社区高风险 | `src/routes/community.risk.tsx` |
+| 学生 / 体检结果数据库 | `src/lib/students-db.ts`（表 `students`、`exam_results`） |
+| 后台学生管理与打印 | `src/components/AdminStudentImport.tsx`、`src/lib/student-label.ts` |
+| 后台补录体检数据 | `src/lib/admin-exam-entry.ts`、`src/components/AdminExamEntryDialog.tsx` |
+| 家长真实报告与呵护方案 | `src/lib/parent-exam.ts`、`src/hooks/use-parent-exam.ts` |
 
 ---
 

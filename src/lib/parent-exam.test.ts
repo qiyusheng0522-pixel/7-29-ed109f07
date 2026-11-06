@@ -39,12 +39,12 @@ describe("parent reports use only the bound child's saved exam", () => {
   test("admin supplemental spine segments and FeNO appear in the child's report", () => {
     const exam = buildParentExam([record("A", "admin-entry", {
       spine: { choice: "阳性", value: 7 },
-      "spine-thoracic-left": { value: 5 },
-      "spine-thoracic-right": { value: 3.5 },
+      "spine-thoracic": { value: 5 },
+      "spine-lumbar": { value: 7 },
       feno: { value: 38 },
     })], "A");
     assert.equal(exam.items.find(i => i.id === "spine")?.display, "阳性 · 最大 ATR 7°");
-    assert.equal(exam.items.find(i => i.id === "spine-thoracic-left")?.display, "5 °");
+    assert.equal(exam.items.find(i => i.id === "spine-thoracic")?.display, "5 °");
     assert.equal(exam.items.find(i => i.id === "feno")?.display, "38 ppb");
   });
   test("a negative spine screening remains explicit without inventing an angle", () => {
