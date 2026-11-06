@@ -50,9 +50,12 @@ export async function saveResult(r: Omit<DbResult, "created_at">) {
   if (error) throw error;
 }
 
-/** 合并某学生所有工位的录入值 */
+/** 合并某学生所有工位的录入值；同一项目以最近一次提交为准。 */
 export function mergeValues(results: DbResult[], uid: string): Record<string, ExamValue> {
-  return results.filter((r) => r.student_uid === uid).reduce((acc, r) => ({ ...acc, ...r.item_values }), {} as Record<string, ExamValue>);
+  return results
+    .filter((r) => r.student_uid === uid)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at))
+    .reduce((acc, r) => ({ ...acc, ...r.item_values }), {} as Record<string, ExamValue>);
 }
 
 // 家长端绑定的孩子（原型无登录，绑定关系保存在本机）

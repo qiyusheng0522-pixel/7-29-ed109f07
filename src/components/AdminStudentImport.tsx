@@ -5,6 +5,8 @@ import examTemplate from "@/assets/health-exam-template.pdf.asset.json";
 import questionnaireTemplate from "@/assets/pre-exam-questionnaire.pdf.asset.json";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
+import { AdminExamEntryDialog } from "@/components/AdminExamEntryDialog";
+import { formatAdminSpineSummary } from "@/lib/admin-exam-entry";
 import type { ExamValue } from "@/lib/exam-record";
 import { listStudents, listResults, mergeValues, upsertStudents, deleteStudent, type DbStudent } from "@/lib/students-db";
 
@@ -19,7 +21,7 @@ type Base = { school: string; sno: string; name: string; gender: string; birth: 
 type Exam = {
   status: "已检" | "待检";
   age?: number;
-  height?: number; weight?: number; bmi?: number;
+  height?: number; weight?: number; bmi?: number; waist?: number; feno?: number;
   bpS?: number; bpD?: number; bpDiff?: number;
   conjunctiva?: string; cornea?: string; lens?: string; pupil?: string; eyePos?: string; eyeMove?: string;
   abnormalVision?: string; glasses?: string;
@@ -119,6 +121,7 @@ type Col = { label: string; key: keyof Exam; group: string };
 const EXAM_COLS: Col[] = [
   { label: "年龄", key: "age", group: "基本信息" },
   { label: "身高", key: "height", group: "一般检查" }, { label: "体重", key: "weight", group: "一般检查" }, { label: "BMI", key: "bmi", group: "一般检查" },
+  { label: "腰围", key: "waist", group: "一般检查" },
   { label: "收缩压", key: "bpS", group: "一般检查" }, { label: "舒张压", key: "bpD", group: "一般检查" }, { label: "压差", key: "bpDiff", group: "一般检查" },
   { label: "结膜", key: "conjunctiva", group: "眼科" }, { label: "角膜", key: "cornea", group: "眼科" }, { label: "晶体", key: "lens", group: "眼科" },
   { label: "瞳孔", key: "pupil", group: "眼科" }, { label: "眼位", key: "eyePos", group: "眼科" }, { label: "眼球运动", key: "eyeMove", group: "眼科" },
@@ -139,11 +142,12 @@ const EXAM_COLS: Col[] = [
   { label: "胸部", key: "chest", group: "内外科" }, { label: "近期不适症状", key: "symptoms", group: "内外科" },
   { label: "心率", key: "heartRate", group: "内外科" }, { label: "心脏杂音", key: "murmur", group: "内外科" }, { label: "心律", key: "rhythm", group: "内外科" },
   { label: "肺部罗音", key: "lungRales", group: "内外科" }, { label: "肝", key: "liver", group: "内外科" }, { label: "脾", key: "spleen", group: "内外科" },
+  { label: "呼出气一氧化氮 FeNO（ppb）", key: "feno", group: "呼吸功能" },
 ];
-const GROUPS = ["基本信息", "一般检查", "眼科", "口腔", "内外科"];
+const GROUPS = ["基本信息", "一般检查", "眼科", "口腔", "内外科", "呼吸功能"];
 const GROUP_CLS: Record<string, string> = {
   基本信息: "bg-slate-100 text-slate-600", 一般检查: "bg-teal/10 text-teal", 眼科: "bg-blue-50 text-blue-600",
-  口腔: "bg-amber-50 text-amber-600", 内外科: "bg-emerald-50 text-emerald-600",
+  口腔: "bg-amber-50 text-amber-600", 内外科: "bg-emerald-50 text-emerald-600", 呼吸功能: "bg-accent text-accent-foreground",
 };
 
 /** 医生端录入值 → 历史体检表字段 */
@@ -154,9 +158,10 @@ function toExam(v: Record<string, ExamValue>, grade: string): Exam {
   return {
     status: "已检", age: 5 + (GRADE_NO[grade] ?? 3),
     height: h, weight: w, bmi: h && w ? +(w / ((h / 100) ** 2)).toFixed(1) : undefined,
+    waist: v.waist?.value, feno: v.feno?.value,
     bpS, bpD, bpDiff: bpS != null && bpD != null ? bpS - bpD : undefined,
     visionR: v["vision-r"]?.value, visionL: v["vision-l"]?.value,
-    spine: v.spine?.choice, dentition: v.oral?.choice,
+    spine: formatAdminSpineSummary(v), dentition: v.oral?.choice,
   };
 }
 
@@ -174,6 +179,7 @@ export function AdminStudentImport() {
   };
   useEffect(() => { reload(); }, []);
   const [errors, setErrors] = useState<string[]>([]);
+  const [entryStudent, setEntryStudent] = useState<DbStudent | null>(null);
   const [view, setView] = useState<"base" | "exam">("base");
   const [fName, setFName] = useState("");
   const [fSno, setFSno] = useState("");
@@ -418,6 +424,7 @@ export function AdminStudentImport() {
                         <td className="pr-3 font-mono text-slate-600">{r.uid}</td>
                         {[r.school, r.sno, r.name, r.gender, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
                         <td className="space-x-2">
+                          <button onClick={() => setEntryStudent(r)} className="rounded border border-teal/30 px-2 py-1 text-teal hover:bg-teal/10">录入体检数据</button>
                           <button onClick={() => downloadOne(r)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">下载{kind === "qr" ? "二维码" : "条码"}</button>
                           <button onClick={() => remove(r)} className="rounded border border-danger/30 px-2 py-1 text-danger hover:bg-danger/10">删除</button>
                         </td>
@@ -475,6 +482,7 @@ export function AdminStudentImport() {
           </div>
         )}
       </div>
+      <AdminExamEntryDialog student={entryStudent} onClose={() => setEntryStudent(null)} onSaved={reload} />
     </div>
   );
 }

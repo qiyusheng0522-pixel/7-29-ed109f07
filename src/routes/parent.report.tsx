@@ -6,6 +6,7 @@ import { EIcon } from "@/components/EIcon";
 import { useParentExam } from "@/hooks/use-parent-exam";
 import { buildCarePlan, examDate } from "@/lib/parent-exam";
 import { findStation } from "@/lib/exam-stations";
+import { ADMIN_STATION_ID, ADMIN_STATION_NAME } from "@/lib/admin-exam-entry";
 import child3d from "@/assets/child-3d.png";
 
 export const Route = createFileRoute("/parent/report")({
@@ -43,7 +44,7 @@ function ReportPage() {
           {item.needsReview && <div className="mt-2 flex flex-wrap items-center justify-between gap-2"><span className="text-xs text-warm">医生已标记需复核</span><Button asChild variant="outline" size="sm"><Link to="/parent/comm" search={{ topic: item.label, from: "report" }}>立即咨询</Link></Button></div>}
         </li>)}{group === "体格发育" && <li className="flex justify-between gap-3 py-3 text-xs"><span>BMI（根据身高、体重计算）</span><span className="font-semibold">{exam.bmi ?? "数据不足"}</span></li>}</ul>
       </details>)}
-      <section className="mt-5 border-t border-border pt-4"><h2 className="text-sm font-semibold">体检提交记录</h2><ul className="mt-2 divide-y divide-border">{exam.records.map(record => <li key={record.station_id} className="py-3 text-xs"><p className="font-medium">{findStation(record.station_id)?.name ?? record.station_id}</p><p className="mt-1 text-muted-foreground">{record.doctor ?? "医生未记录"} · {examDate(record.created_at)}</p></li>)}</ul></section>
+      <section className="mt-5 border-t border-border pt-4"><h2 className="text-sm font-semibold">体检提交记录</h2><ul className="mt-2 divide-y divide-border">{exam.records.map(record => <li key={record.station_id} className="py-3 text-xs"><p className="font-medium">{record.station_id === ADMIN_STATION_ID ? ADMIN_STATION_NAME : (findStation(record.station_id)?.name ?? record.station_id)}</p><p className="mt-1 text-muted-foreground">{record.doctor ?? "医生未记录"} · {examDate(record.created_at)}</p></li>)}</ul></section>
       {(() => { const plan = buildCarePlan(exam.values, data.student.gender, exam.bmi); return <section className="mt-4 border-t border-border pt-4"><h2 className="text-sm font-semibold">{data.student.name}的专属呵护方案</h2><p className="mt-2 rounded-xl bg-surface-2 p-3 text-xs leading-relaxed">{plan.summary}</p>{plan.sections.map(sec => <div key={sec.title} className="mt-3"><p className="text-xs font-semibold text-teal">{sec.title}</p><ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-foreground/80">{sec.tips.map(t => <li key={t}>{t}</li>)}</ul></div>)}<p className="mt-3 text-[11px] text-muted-foreground">方案依据本次体检数据自动生成，具体诊疗以医生意见为准。</p></section>; })()}
     </>}
     <Button asChild variant="outline" className="mt-5 w-full"><Link to="/parent/review">查看复评随访</Link></Button>

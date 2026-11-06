@@ -1,14 +1,21 @@
 import { EXAM_ITEMS, type ExamValue } from "./exam-record";
+import { ADMIN_EXAM_ITEMS } from "./admin-exam-entry";
 import type { DbResult } from "./students-db";
 
+const ALL_EXAM_ITEMS = [...EXAM_ITEMS, ...ADMIN_EXAM_ITEMS];
 const groups: Record<string, string> = {
   height: "体格发育", weight: "体格发育", bodyfat: "体格发育", waist: "体格发育", hip: "体格发育",
   "vision-l": "视力筛查", "vision-r": "视力筛查", bp: "血压", spine: "脊柱", oral: "口腔",
 };
+for (const item of ADMIN_EXAM_ITEMS) groups[item.id] = item.id === "feno" ? "呼吸功能" : "脊柱";
 
 export function formatExamValue(id: string, value: ExamValue | undefined): string | null {
-  const item = EXAM_ITEMS.find(i => i.id === id);
+  const item = ALL_EXAM_ITEMS.find(i => i.id === id);
   if (!item || !value) return null;
+  if (id === "spine" && value.choice === "阴性") return "阴性";
+  if (id === "spine" && value.choice === "阳性") {
+    return typeof value.value === "number" ? `阳性 · 最大 ATR ${value.value}°` : "阳性";
+  }
   if (item.kind === "choice") return value.choice?.trim() || null;
   if (typeof value.value !== "number" || !Number.isFinite(value.value)) return null;
   if (item.kind === "bp") {
@@ -32,7 +39,7 @@ export function buildParentExam(results: DbResult[], uid: string) {
       values[id] = value; owners.set(id, record);
     }
   }
-  const items = EXAM_ITEMS.map(item => {
+  const items = ALL_EXAM_ITEMS.map(item => {
     const value = values[item.id];
     const display = formatExamValue(item.id, value);
     return { id: item.id, label: item.label, icon: item.icon, group: groups[item.id], display,

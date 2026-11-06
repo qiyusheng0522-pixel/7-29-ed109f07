@@ -36,6 +36,22 @@ describe("parent reports use only the bound child's saved exam", () => {
     assert.equal(exam.items.find(i => i.id === "oral")?.display, "正常");
     assert.equal(exam.bmi, null);
   });
+  test("admin supplemental spine segments and FeNO appear in the child's report", () => {
+    const exam = buildParentExam([record("A", "admin-entry", {
+      spine: { choice: "阳性", value: 7 },
+      "spine-thoracic-left": { value: 5 },
+      "spine-thoracic-right": { value: 3.5 },
+      feno: { value: 38 },
+    })], "A");
+    assert.equal(exam.items.find(i => i.id === "spine")?.display, "阳性 · 最大 ATR 7°");
+    assert.equal(exam.items.find(i => i.id === "spine-thoracic-left")?.display, "5 °");
+    assert.equal(exam.items.find(i => i.id === "feno")?.display, "38 ppb");
+  });
+  test("a negative spine screening remains explicit without inventing an angle", () => {
+    const exam = buildParentExam([record("A", "admin-entry", { spine: { choice: "阴性" } })], "A");
+    assert.equal(exam.items.find(i => i.id === "spine")?.display, "阴性");
+    assert.equal(exam.values.spine?.value, undefined);
+  });
 });
 import { buildCarePlan as _bcp } from "./parent-exam";
 describe("care plan rules", () => {
