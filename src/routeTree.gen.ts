@@ -15,6 +15,7 @@ import { Route as BigscreenRouteImport } from './routes/bigscreen'
 import { Route as CommunityRouteImport } from './routes/community'
 import { Route as DoctorRouteImport } from './routes/doctor'
 import { Route as ParentRouteImport } from './routes/parent'
+import { Route as QuestionnaireRouteImport } from './routes/questionnaire'
 import { Route as SchoolRouteImport } from './routes/school'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as CommunityConsultRouteImport } from './routes/community.consult'
@@ -98,6 +99,11 @@ const DoctorRoute = DoctorRouteImport.update({
 const ParentRoute = ParentRouteImport.update({
   id: '/parent',
   path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestionnaireRoute = QuestionnaireRouteImport.update({
+  id: '/questionnaire',
+  path: '/questionnaire',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SchoolRoute = SchoolRouteImport.update({
@@ -378,6 +384,7 @@ export interface FileRoutesByFullPath {
   '/community': typeof CommunityRouteWithChildren
   '/doctor': typeof DoctorRouteWithChildren
   '/parent': typeof ParentRouteWithChildren
+  '/questionnaire': typeof QuestionnaireRoute
   '/school': typeof SchoolRouteWithChildren
   '/community/consult': typeof CommunityConsultRoute
   '/community/edu': typeof CommunityEduRoute
@@ -437,6 +444,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/bigscreen': typeof BigscreenRoute
+  '/questionnaire': typeof QuestionnaireRoute
   '/community/consult': typeof CommunityConsultRoute
   '/community/edu': typeof CommunityEduRoute
   '/community/me': typeof CommunityMeRoute
@@ -499,6 +507,7 @@ export interface FileRoutesById {
   '/community': typeof CommunityRouteWithChildren
   '/doctor': typeof DoctorRouteWithChildren
   '/parent': typeof ParentRouteWithChildren
+  '/questionnaire': typeof QuestionnaireRoute
   '/school': typeof SchoolRouteWithChildren
   '/community/consult': typeof CommunityConsultRoute
   '/community/edu': typeof CommunityEduRoute
@@ -563,6 +572,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/doctor'
     | '/parent'
+    | '/questionnaire'
     | '/school'
     | '/community/consult'
     | '/community/edu'
@@ -622,6 +632,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/bigscreen'
+    | '/questionnaire'
     | '/community/consult'
     | '/community/edu'
     | '/community/me'
@@ -683,6 +694,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/doctor'
     | '/parent'
+    | '/questionnaire'
     | '/school'
     | '/community/consult'
     | '/community/edu'
@@ -746,6 +758,7 @@ export interface RootRouteChildren {
   CommunityRoute: typeof CommunityRouteWithChildren
   DoctorRoute: typeof DoctorRouteWithChildren
   ParentRoute: typeof ParentRouteWithChildren
+  QuestionnaireRoute: typeof QuestionnaireRoute
   SchoolRoute: typeof SchoolRouteWithChildren
   PreviewPostRoute: typeof PreviewPostRoute
   PreviewPreRoute: typeof PreviewPreRoute
@@ -794,6 +807,13 @@ declare module '@tanstack/react-router' {
       path: '/parent'
       fullPath: '/parent'
       preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/questionnaire': {
+      id: '/questionnaire'
+      path: '/questionnaire'
+      fullPath: '/questionnaire'
+      preLoaderRoute: typeof QuestionnaireRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/school': {
@@ -1321,6 +1341,7 @@ const rootRouteChildren: RootRouteChildren = {
   CommunityRoute: CommunityRouteWithChildren,
   DoctorRoute: DoctorRouteWithChildren,
   ParentRoute: ParentRouteWithChildren,
+  QuestionnaireRoute: QuestionnaireRoute,
   SchoolRoute: SchoolRouteWithChildren,
   PreviewPostRoute: PreviewPostRoute,
   PreviewPreRoute: PreviewPreRoute,

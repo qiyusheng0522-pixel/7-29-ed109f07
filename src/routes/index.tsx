@@ -17,6 +17,14 @@ export const Route = createFileRoute("/")({
 
 const roles = [
   {
+    to: "/questionnaire",
+    tint: "bg-secondary text-secondary-foreground",
+    ring: "ring-teal/25",
+    icon: <EIcon e="📋" />,
+    title: "问卷采集端",
+    features: ["拍照识别", "答案核对", "学生归档"],
+  },
+  {
     to: "/parent",
     tint: "bg-warm text-warm-foreground",
     ring: "ring-warm/25",
@@ -57,7 +65,7 @@ function Landing() {
       {/* The whole picker is sized to fit one screen without scrolling, so the
           four role rows stay comparable at a glance. No page-wide gradient:
           colour comes only from the per-role tiles. */}
-      <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 pb-5 pt-4">
         <header className="mb-5 text-center">
           <div className="mx-auto mb-3 grid h-14 w-14 place-items-center rounded-[20px] bg-warm text-[26px] text-warm-foreground shadow-md shadow-warm/25">
             <EIcon e="🌤️" />

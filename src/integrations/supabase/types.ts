@@ -52,6 +52,68 @@ export type Database = {
           },
         ]
       }
+      questionnaire_ai_blocks: {
+        Row: {
+          created_at: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      questionnaire_records: {
+        Row: {
+          answers: Json
+          created_at: string
+          id: string
+          identity: Json
+          original_path: string
+          owner_id: string
+          signature_present: boolean | null
+          student_uid: string
+          template_version: string
+        }
+        Insert: {
+          answers: Json
+          created_at?: string
+          id?: string
+          identity: Json
+          original_path: string
+          owner_id?: string
+          signature_present?: boolean | null
+          student_uid: string
+          template_version?: string
+        }
+        Update: {
+          answers?: Json
+          created_at?: string
+          id?: string
+          identity?: Json
+          original_path?: string
+          owner_id?: string
+          signature_present?: boolean | null
+          student_uid?: string
+          template_version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_records_student_uid_fkey"
+            columns: ["student_uid"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["uid"]
+          },
+        ]
+      }
       students: {
         Row: {
           cls: string

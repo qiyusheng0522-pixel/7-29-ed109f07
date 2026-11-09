@@ -4,6 +4,7 @@ import { renderLabel, downloadUrl, buildExamSheets, type CodeKind } from "@/lib/
 import examTemplate from "@/assets/health-exam-template.pdf.asset.json";
 import questionnaireTemplate from "@/assets/pre-exam-questionnaire.pdf.asset.json";
 import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { Printer } from "lucide-react";
 import { AdminExamEntryDialog } from "@/components/AdminExamEntryDialog";
 import { formatAdminSpineSummary } from "@/lib/admin-exam-entry";
@@ -424,6 +425,7 @@ export function AdminStudentImport() {
                         <td className="pr-3 font-mono text-slate-600">{r.uid}</td>
                         {[r.school, r.sno, r.name, r.gender, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
                         <td className="space-x-2">
+                          <Button asChild variant="outline" size="sm"><Link to="/questionnaire" search={{ uid: r.uid }}>问卷档案</Link></Button>
                           <button onClick={() => setEntryStudent(r)} className="rounded border border-teal/30 px-2 py-1 text-teal hover:bg-teal/10">录入体检数据</button>
                           <button onClick={() => downloadOne(r)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">下载{kind === "qr" ? "二维码" : "条码"}</button>
                           <button onClick={() => remove(r)} className="rounded border border-danger/30 px-2 py-1 text-danger hover:bg-danger/10">删除</button>
