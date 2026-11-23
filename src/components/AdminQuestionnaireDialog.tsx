@@ -17,10 +17,7 @@ export function AdminQuestionnaireDialog({ student, refresh, onClose }: {
           </DialogDescription>
         </DialogHeader>
         <div className="overflow-y-auto px-6 py-5">
-          <p className="mb-4 rounded-lg bg-muted p-3 text-xs text-muted-foreground">
-            以下内容来自线下问卷的线上识别与人工核对结果；未填写、多选和无法辨认均按原状保留，不自动推断答案或诊断。
-          </p>
-          {student && <PaperQuestionnaireRecords uid={student.uid} refresh={refresh} />}
+          {student && <PaperQuestionnaireRecords uid={student.uid} refresh={refresh} answersOnly />}
         </div>
       </DialogContent>
     </Dialog>
