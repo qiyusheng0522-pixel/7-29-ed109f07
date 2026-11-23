@@ -5,6 +5,7 @@ import { EIcon } from "@/components/EIcon";
 import { AdminStudentImport } from "@/components/AdminStudentImport";
 
 export const Route = createFileRoute("/admin")({
+  validateSearch: (search: Record<string, unknown>) => search.tab === "students" ? { tab: "students" as const } : {},
   component: AdminConsole,
   head: () => ({
     meta: [
@@ -83,7 +84,8 @@ const abnormalStats = [
 ];
 
 function AdminConsole() {
-  const [tab, setTab] = useState<Tab>("overview");
+  const search = Route.useSearch();
+  const [tab, setTab] = useState<Tab>(search.tab ?? "overview");
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
     { id: "overview", label: "总览", icon: "📊" },

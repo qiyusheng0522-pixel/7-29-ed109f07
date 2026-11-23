@@ -1,14 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
+import { FileText, LogIn, Printer, RefreshCw } from "lucide-react";
 import { renderLabel, downloadUrl, buildExamSheets, type CodeKind } from "@/lib/student-label";
 import examTemplate from "@/assets/health-exam-template.pdf.asset.json";
 import questionnaireTemplate from "@/assets/pre-exam-questionnaire.pdf.asset.json";
 import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
-import { Printer } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AdminExamEntryDialog } from "@/components/AdminExamEntryDialog";
+import { AdminQuestionnaireDialog } from "@/components/AdminQuestionnaireDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { formatAdminSpineSummary } from "@/lib/admin-exam-entry";
 import type { ExamValue } from "@/lib/exam-record";
+import { listPaperRecords } from "@/lib/paper-questionnaire.functions";
 import { listStudents, listResults, mergeValues, upsertStudents, deleteStudent, type DbStudent } from "@/lib/students-db";
 
 // 后台唯一入口：仅支持通过数据导入学生基本信息
@@ -170,6 +175,36 @@ export function AdminStudentImport() {
   // 数据来自数据库：导入即自动生成唯一ID并入库
   const [rows, setRows] = useState<StudentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const readPaperRecords = useServerFn(listPaperRecords);
+  const [paperCounts, setPaperCounts] = useState<Record<string, number>>({});
+  const [paperSignedIn, setPaperSignedIn] = useState(false);
+  const [paperAuthReady, setPaperAuthReady] = useState(false);
+  const [paperError, setPaperError] = useState("");
+  const [paperLoginOpen, setPaperLoginOpen] = useState(false);
+  const [paperLoginError, setPaperLoginError] = useState("");
+  const [questionnaireStudent, setQuestionnaireStudent] = useState<DbStudent | null>(null);
+  const [paperRefresh, setPaperRefresh] = useState(0);
+  const reloadQuestionnaires = async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      setPaperSignedIn(!!data.session);
+      setPaperAuthReady(true);
+      setPaperError("");
+      if (!data.session) { setPaperCounts({}); return; }
+      const records = await readPaperRecords({ data: { uid: null } });
+      const counts: Record<string, number> = {};
+      for (const record of records) counts[record.student_uid] = (counts[record.student_uid] ?? 0) + 1;
+      setPaperCounts(counts);
+    } catch (e) {
+      setPaperAuthReady(true);
+      setPaperError((e as Error).message || "问卷状态读取失败");
+    }
+  };
+  const loginForPapers = async (provider: "google" | "lovable") => {
+    setPaperLoginError("");
+    const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: `${window.location.origin}/admin?tab=students` });
+    if (result.error) setPaperLoginError(result.error.message);
+  };
   const reload = async () => {
     try {
       const [ss, rs] = await Promise.all([listStudents(), listResults()]);
@@ -178,7 +213,13 @@ export function AdminStudentImport() {
       toast.error("读取学生数据失败", { description: (e as Error).message });
     } finally { setLoading(false); }
   };
-  useEffect(() => { reload(); }, []);
+  useEffect(() => {
+    void reload();
+    void reloadQuestionnaires();
+    const onFocus = () => { void reloadQuestionnaires(); };
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
   const [errors, setErrors] = useState<string[]>([]);
   const [entryStudent, setEntryStudent] = useState<DbStudent | null>(null);
   const [view, setView] = useState<"base" | "exam">("base");
@@ -341,14 +382,20 @@ export function AdminStudentImport() {
               <button key={k} onClick={() => setView(k)} className={`rounded-md px-3 py-1 ${view === k ? "bg-white font-semibold shadow-sm" : "text-slate-500"}`}>{l}</button>
             ))}
           </div>
-          <p className="text-xs text-slate-500">共 {shown.length} 人 · 已检 {done} · 待检 {shown.length - done}</p>
+          <p className="text-xs text-slate-500">共 {shown.length} 人 · 已检 {done} · 待检 {shown.length - done}{paperSignedIn ? ` · 问卷已归档 ${Object.keys(paperCounts).length} 人` : ""}</p>
           <div className="flex gap-2 text-xs">
+            {paperAuthReady && (paperSignedIn ? (
+              <button onClick={() => void reloadQuestionnaires()} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 hover:bg-slate-50"><RefreshCw className="h-3.5 w-3.5" />刷新问卷状态</button>
+            ) : (
+              <button onClick={() => setPaperLoginOpen(true)} className="inline-flex items-center gap-1 rounded-lg border border-teal/30 px-3 py-1.5 text-teal hover:bg-teal/10"><LogIn className="h-3.5 w-3.5" />问卷账号登录</button>
+            ))}
             <button onClick={downloadTpl} className="rounded-lg border border-slate-200 px-3 py-1.5 hover:bg-slate-50">下载模板</button>
             <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-teal px-3 py-1.5 text-white hover:opacity-90">导入学生</button>
             <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx,.xls,.xlsm,.ods,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
           </div>
         </div>
         <p className="mb-3 text-[11px] text-slate-400">导入字段：{IMPORT_FIELDS.join("、")}。导入后自动生成 18 位唯一ID；同一学校同一学生编号重复导入只更新信息，不改变唯一ID。</p>
+        {paperError && <p role="alert" className="mb-3 rounded-lg bg-danger/10 p-3 text-xs text-danger">问卷状态读取失败：{paperError}</p>}
         {pending && (
           <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-teal/30 bg-teal/5 p-3 text-xs">
             <span className="text-slate-600">文件「{pending.fileName}」共 {pending.count} 名学生，导入学校：</span>
@@ -425,7 +472,15 @@ export function AdminStudentImport() {
                         <td className="pr-3 font-mono text-slate-600">{r.uid}</td>
                         {[r.school, r.sno, r.name, r.gender, r.grade, r.cls].map((v, i) => <td key={i} className="pr-3">{v}</td>)}
                         <td className="space-x-2">
-                          <Button asChild variant="outline" size="sm"><Link to="/questionnaire" search={{ uid: r.uid }}>问卷档案</Link></Button>
+                          <Button
+                            variant={paperCounts[r.uid] ? "default" : "outline"}
+                            size="sm"
+                            disabled={!paperCounts[r.uid]}
+                            title={paperCounts[r.uid] ? `查看 ${r.name} 的 ${paperCounts[r.uid]} 份问卷` : paperSignedIn ? "暂无已归档问卷" : "登录问卷账号后显示可查看的问卷"}
+                            onClick={() => { setQuestionnaireStudent(r); setPaperRefresh((value) => value + 1); }}
+                          >
+                            <FileText />查看问卷结果{paperCounts[r.uid] ? `（${paperCounts[r.uid]}）` : ""}
+                          </Button>
                           <button onClick={() => setEntryStudent(r)} className="rounded border border-teal/30 px-2 py-1 text-teal hover:bg-teal/10">录入体检数据</button>
                           <button onClick={() => downloadOne(r)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">下载{kind === "qr" ? "二维码" : "条码"}</button>
                           <button onClick={() => remove(r)} className="rounded border border-danger/30 px-2 py-1 text-danger hover:bg-danger/10">删除</button>
@@ -485,6 +540,20 @@ export function AdminStudentImport() {
         )}
       </div>
       <AdminExamEntryDialog student={entryStudent} onClose={() => setEntryStudent(null)} onSaved={reload} />
+      <AdminQuestionnaireDialog student={questionnaireStudent} refresh={paperRefresh} onClose={() => setQuestionnaireStudent(null)} />
+      <Dialog open={paperLoginOpen} onOpenChange={setPaperLoginOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>登录问卷查看账号</DialogTitle>
+            <DialogDescription>问卷包含儿童健康信息。请使用与问卷采集端相同的账号登录，后台仅显示该账号有权查看的记录。</DialogDescription>
+          </DialogHeader>
+          {paperLoginError && <p role="alert" className="rounded-lg bg-danger/10 p-3 text-sm text-danger">{paperLoginError}</p>}
+          <div className="grid gap-2">
+            <Button onClick={() => void loginForPapers("lovable")}>使用 Lovable 登录</Button>
+            <Button variant="outline" onClick={() => void loginForPapers("google")}>使用 Google 登录</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
