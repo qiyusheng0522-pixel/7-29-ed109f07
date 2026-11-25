@@ -8,8 +8,11 @@ import { buildCarePlan, examDate } from "@/lib/parent-exam";
 import { findStation } from "@/lib/exam-stations";
 import { ADMIN_STATION_ID, ADMIN_STATION_NAME } from "@/lib/admin-exam-entry";
 import child3d from "@/assets/child-3d.png";
+import { ParentExampleReport } from "@/components/ParentExampleReport";
+import { shouldShowExampleReport } from "@/lib/exam-preview";
 
 export const Route = createFileRoute("/parent/report")({
+  validateSearch: (search: Record<string, unknown>): { example?: boolean } => ({ example: search["example"] === true || search["example"] === "true" }),
   head: () => ({ meta: [
     { title: "孩子的体检报告 · 阳光校园健康" },
     { name: "description", content: "查看绑定孩子已提交的体检指标、医生及采集记录。" },
@@ -21,6 +24,8 @@ export const Route = createFileRoute("/parent/report")({
 
 function ReportPage() {
   const state = useParentExam();
+  const { example } = Route.useSearch();
+  if (shouldShowExampleReport(state.loading, state.uid, example)) return <ParentExampleReport />;
   const data = state.data;
   if (state.loading || state.isError || !data) return <div><StatusBar title="体检报告" /><div className="px-5"><ParentExamState state={state} /></div></div>;
   const { student, exam } = data;

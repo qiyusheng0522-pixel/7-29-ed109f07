@@ -17,4 +17,5 @@
 - Read consent and questionnaire storage only after hydration and persist confirmed actions; route entry must never reset authorization or completed answers.
 - Keep questionnaire attachment blobs in browser IndexedDB under the questionnaire storage namespace, not answer JSON; this preserves files across refreshes without mixing preview and live answers, and does not imply cloud delivery.
 - Live parent reports and follow-up share a bound-child query and a persisted-values-only adapter; missing clinical assessments or follow-up records must stay empty, never infer them from recorder demo ranges or preview data.
+- Unbound parent report viewing uses a clearly labeled fictional report from the shared preview cohort, without writing a binding or clinical data; bound reports remain persisted-only unless example viewing is explicitly requested.
 - Paper questionnaire capture uses authenticated server-side OCR and owner-scoped cloud records/private originals; explicit student and answer review prevents OCR guesses from entering clinical measurements.

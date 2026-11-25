@@ -21,6 +21,9 @@ export const previewStudents: PreviewStudent[] = [
 ];
 
 export const bmiOf = (student: PreviewStudent) => Number((student.weight / (student.height / 100) ** 2).toFixed(1));
+export function shouldShowExampleReport(loading: boolean, boundUid: string | null, requested = false) {
+  return requested || (!loading && !boundUid);
+}
 export const needsReferral = (student: PreviewStudent) => student.risk === "橙色" || student.risk === "红色";
 export type StudentProgress = {
   consent: boolean; questionnaires: string[]; planConfirmed: boolean; reportRead: boolean;

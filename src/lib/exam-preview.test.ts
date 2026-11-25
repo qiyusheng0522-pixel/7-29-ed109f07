@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import { initialProgress, readProgress, saveProgress, previewStudents, bmiOf } from "./exam-preview";
+import { initialProgress, readProgress, saveProgress, previewStudents, bmiOf, shouldShowExampleReport } from "./exam-preview";
 import { readConsent, writeConsent } from "./parent-consent";
 
 const storage = () => {
@@ -8,6 +8,14 @@ const storage = () => {
   return { getItem: (key: string) => values.get(key) ?? null, setItem: (key: string, value: string) => { values.set(key, value); } };
 };
 describe("exam preview business rules", () => {
+  test("an unbound parent sees a report example without binding", () => {
+    assert.equal(shouldShowExampleReport(false, null), true);
+  });
+  test("bound parents keep real reports unless explicitly viewing an example", () => {
+    assert.equal(shouldShowExampleReport(false, "student-001"), false);
+    assert.equal(shouldShowExampleReport(false, "student-001", true), true);
+    assert.equal(shouldShowExampleReport(true, null), false);
+  });
   test("pre-exam authorization persists after revisiting", () => {
     const store = storage(); const progress = initialProgress("pre");
     const student = previewStudents[0]; progress[student.uid].consent = true;
